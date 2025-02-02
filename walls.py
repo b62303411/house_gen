@@ -119,44 +119,42 @@ def move_to_collection(obj, target_coll):
 # UTILITY: Create a "board" (cube scaled to desired X×Y×Z)
 # -------------------------------------------------------------------
 class BoardFactory:
-    def add_cladding(wall_name, cladding_type, wall_length, wall_height, thickness, y_offset, material, location,
-                     wall_coll, sheet_length, sheet_height):
-        # Calculate number of sheets needed in length and height directions
-        num_length_sheets = int(wall_length // sheet_length)
+    def add_cladding(wall_name, cladding_type, wall_length, wall_height, thickness, y_offset, 
+                material, location, wall_coll, sheet_length, sheet_height):
+       # Calculate number of full sheets and if a partial sheet is needed
+        num_length_sheets = wall_length // sheet_length
+        num_height_sheets = wall_height // sheet_height
         remaining_length = wall_length % sheet_length
-        num_height_sheets = int(wall_height // sheet_height)
         remaining_height = wall_height % sheet_height
 
-        # Wall's origin coordinates (bottom-left corner)
-        start_x = location[0] - wall_length / 2
-        start_z = location[2]
+        # Wall origin (bottom-left corner)
+        start_x = location[0] - (wall_length / 2)
+        start_z = location[2]  # Base of the wall
 
-        # Create sheets in grid pattern
-        for col in range(num_length_sheets + 1):
-            for row in range(num_height_sheets + 1):
-                # Determine current sheet dimensions
-                cladding_length = sheet_length if col < num_length_sheets else remaining_length
+        for col in range(int(num_length_sheets) + (1 if remaining_length > 0 else 0)):
+            cladding_length = sheet_length if col < num_length_sheets else remaining_length
+
+            for row in range(int(num_height_sheets) + (1 if remaining_height > 0 else 0)):
                 cladding_height = sheet_height if row < num_height_sheets else remaining_height
 
-                # Skip if no remaining space
                 if cladding_length <= 0 or cladding_height <= 0:
-                    continue
+                    continue  # Skip empty tiles
 
-                # Calculate sheet position (center coordinates)
-                pos_x = start_x + (col * sheet_length) + cladding_length / 2
-                pos_z = start_z + (row * sheet_height) + cladding_height / 2
-                pos_y = y_offset  # Already calculated offset from wall center
+                # Calculate sheet position
+                pos_x = start_x + col * sheet_length + (cladding_length / 2)
+                pos_z = start_z + row * sheet_height + (cladding_height / 2)
 
+                # Create the cladding sheet
                 sheet_obj = BoardFactory.add_board(
                     board_name=f"{wall_name}_{cladding_type}_{col}_{row}",
                     length=cladding_length,
                     height=cladding_height,
                     depth=thickness,
-                    location=(pos_x, pos_y, pos_z),
+                    location=(pos_x, y_offset, pos_z),
                     material=material
                 )
                 move_to_collection(sheet_obj, wall_coll)
-    def add_board(board_name, length, height, depth, location, material=None):
+    def add_board(board_name, length, height, depth, location, material=None, bevel_width=0.01, bevel_segments=3):
         """
         Create a rectangular 'board' from a unit cube:
           - X-axis = length
@@ -167,13 +165,22 @@ class BoardFactory:
         bpy.ops.mesh.primitive_cube_add(size=1, location=location)
         obj = bpy.context.object
         obj.name = board_name
-        obj.scale = (length/2.0, depth/2.0, height/2.0)
+
+        # Correct scaling
+        obj.scale = (length, depth, height)  # Ensure full size scaling
+
+        # Apply scale
         bpy.ops.object.transform_apply(scale=True)
 
+        # Add Bevel Modifier for smoother edges
+        bevel = obj.modifiers.new(name="Bevel", type='BEVEL')
+        bevel.width = bevel_width  # Adjust to control bevel size
+        bevel.segments = bevel_segments  # More segments = smoother edges
+        bevel.profile = 0.7  # Adjust profile curve
+
+        # Assign material if provided
         if material:
             obj.data.materials.append(material)
-
-        return obj
 
 # -------------------------------------------------------------------
 # OPTIONAL WINDOW CREATION: Header, sill, jack studs
@@ -191,12 +198,44 @@ class WindowFactory:
         stud_size,
         wall_height,
         second_top_plate_height=0.0381,
-        material=None
+        material=None,
+        wall_ll=None
     ):
         """
         Creates a minimal window framing: a header, sill, and left/right jack studs
         within the total 'wall_height'.
         """
+        
+         # **STEP 1: Detect the Wall Components (Collection or Object with Children)**
+        wall_objects = []
+        
+        if isinstance(wall_coll, bpy.types.Collection):  # If it's a collection
+            wall_objects = [obj for obj in wall_coll.objects if obj.type == 'MESH']
+        
+        elif isinstance(wall_coll, bpy.types.Object) and wall_structure.type == 'MESH':  # If it's a single object
+            wall_objects.append(wall_structure)
+        
+        elif isinstance(wall_coll, bpy.types.Object):  # If it's a parent object with children
+            wall_objects = [child for child in wall_coll.children if child.type == 'MESH']
+        
+        else:
+            print("Error: Invalid wall structure provided.")
+            return
+
+        # **STEP 2: Create a Cutout Object for the Window**
+        bpy.ops.mesh.primitive_cube_add(
+            size=1, 
+            location=(window_center_x, 0, bottom_plate_height + window_bottom_z + (window_height / 2))
+        )
+        cutout_obj = bpy.context.object
+        cutout_obj.name = f"{name_prefix}_WindowCutout"
+
+        # Scale the cutout to match the window opening (extended Y to fully cut)
+        cutout_obj.scale = (window_width / 2, 0.2, window_height / 2)
+        bpy.ops.object.transform_apply(scale=True)
+
+        
+        
         # For simplicity, we'll assume one 2×4 thick header (on edge).
         header_thickness = stud_size["height"]  # ~0.0381
         header_width     = stud_size["width"]   # ~0.0889
