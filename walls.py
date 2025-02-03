@@ -160,7 +160,7 @@ class BoardFactory:
         remaining_height = wall_height % sheet_height
 
         # Wall origin (bottom-left corner)
-        start_x = location[0] - (wall_length / 2)
+        start_x = - (wall_length / 2)
         start_z = location[2]  # Base of the wall
 
         for col in range(int(num_length_sheets) + (1 if remaining_length > 0 else 0)):
@@ -175,20 +175,22 @@ class BoardFactory:
                 # Calculate sheet position
                 pos_x = start_x + col * sheet_length + (cladding_length / 2)
                 pos_z = start_z + row * sheet_height + (cladding_height / 2)
-
+                world_position = Vector((pos_x, y_offset, pos_z))
                 # Create the cladding sheet
-                sheet_obj = BoardFactory.add_board(
-                    board_name=f"{wall_name}_{cladding_type}_{col}_{row}",
-                    length=cladding_length,
-                    height=cladding_height,
-                    depth=thickness,
-                    location=(pos_x, y_offset, pos_z),
-                    material=material
-                )
-                sheet_obj.parent = wall
+                sheet_obj = BoardFactory.add_board(wall,
+                                                   board_name=f"{wall_name}_{cladding_type}_{col}_{row}",
+                                                   length=cladding_length,
+                                                   height=cladding_height,
+                                                   depth=thickness,
+                                                   location=world_position,
+                                                   material=material
+                                                   )
+                # sheet_obj.parent = wall
+                # sheet_obj.location = wall.matrix_world.inverted() @ world_position
                 # move_to_collection(sheet_obj, wall_coll)
 
-    def add_board(board_name, length, height, depth, location, material=None, bevel_width=0.01, bevel_segments=3):
+    def add_board(parent=None, board_name=None, length=None, height=None, depth=None, location=None, material=None,
+                  bevel_width=0.01, bevel_segments=3):
         """
         Create a rectangular 'board' from a unit cube:
           - X-axis = length
@@ -204,8 +206,9 @@ class BoardFactory:
         obj.scale = (length, depth, height)  # Ensure full size scaling
 
         # Apply scale
-        bpy.ops.object.transform_apply(scale=True)
-
+        bpy.ops.object.transform_apply(scale=True, location=False)
+        # **Ensure Origin is at the Actual Center of the Object**
+        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
         # Add Bevel Modifier for smoother edges
         bevel = obj.modifiers.new(name="Bevel", type='BEVEL')
         bevel.width = bevel_width  # Adjust to control bevel size
@@ -215,6 +218,11 @@ class BoardFactory:
         # Assign material if provided
         if material:
             obj.data.materials.append(material)
+
+        if parent is not None:
+            obj.parent = parent
+            obj.location = location
+
         return obj
 
 
@@ -264,11 +272,26 @@ class WindowFactory:
         if not wall_objects:
             print("❌ Error: No valid wall components found.")
             return False
+        # **STEP 1: Compute the Relative Position (Offset from Wall)**
+        relative_position = Vector((
+            float(window_center_x),
+            0.0,  # Y remains zero
+            float(bottom_plate_height + window_bottom_z + (window_height / 2))
+        ))
 
+        # **STEP 2: Convert Wall Location to Vector**
+        wall_position_v = Vector((
+            float(wall_structure.location.x),
+            float(wall_structure.location.y),
+            float(wall_structure.location.z)
+        ))
+
+        # **STEP 3: Compute the Final Cutout Position**
+        cutout_position = wall_position_v + relative_position
         # **STEP 2: Create the Cutout Object with Correct Dimensions**
         bpy.ops.mesh.primitive_cube_add(
             size=1,
-            location=(window_center_x, 0, bottom_plate_height + window_bottom_z + (window_height / 2))
+            location=cutout_position
         )
         cutout_obj = bpy.context.object
         cutout_obj.name = f"{name_prefix}_WindowCutout"
@@ -284,7 +307,7 @@ class WindowFactory:
         )
 
         # Apply the transformation to lock in dimensions
-        bpy.ops.object.transform_apply(scale=True, location=True)
+        bpy.ops.object.transform_apply(scale=True, location=False)
 
         print(
             f"✅ Created window cutout: {cutout_obj.name} at X={window_center_x}, Z={bottom_plate_height + window_bottom_z}")
@@ -308,7 +331,7 @@ class WindowFactory:
                 success = True
 
         # Delete the cutout object after applying the cut
-        bpy.data.objects.remove(cutout_obj)
+        # bpy.data.objects.remove(cutout_obj)
 
         return success
 
@@ -357,29 +380,29 @@ class WindowFactory:
             right_king_x = right_x + stud_size["thickness"] + (i * stud_size["thickness"])
 
             # Left King Stud
-            lk = BoardFactory.add_board(
-                board_name=f"{name_prefix}_KingStudLeft_{i + 1}",
-                length=stud_size["thickness"],
-                height=king_stud_height,
-                depth=stud_size["width"],
-                location=(left_king_x, 0, bottom_plate_height + king_stud_height / 2.0),
-                material=material
-            )
-            if parent:
-                lk.parent = parent
+            lk = BoardFactory.add_board(parent,
+                                        board_name=f"{name_prefix}_KingStudLeft_{i + 1}",
+                                        length=stud_size["thickness"],
+                                        height=king_stud_height,
+                                        depth=stud_size["width"],
+                                        location=(left_king_x, 0, bottom_plate_height + king_stud_height / 2.0),
+                                        material=material
+                                        )
+            # if parent:
+            #    lk.parent = parent
             king_studs.append(lk)
 
             # Right King Stud
-            rk = BoardFactory.add_board(
-                board_name=f"{name_prefix}_KingStudRight_{i + 1}",
-                length=stud_size["thickness"],
-                height=king_stud_height,
-                depth=stud_size["width"],
-                location=(right_king_x, 0, bottom_plate_height + king_stud_height / 2.0),
-                material=material
-            )
-            if parent:
-                rk.parent = parent
+            rk = BoardFactory.add_board(parent,
+                                        board_name=f"{name_prefix}_KingStudRight_{i + 1}",
+                                        length=stud_size["thickness"],
+                                        height=king_stud_height,
+                                        depth=stud_size["width"],
+                                        location=(right_king_x, 0, bottom_plate_height + king_stud_height / 2.0),
+                                        material=material
+                                        )
+            # if parent:
+            #    rk.parent = parent
             king_studs.append(rk)
 
         print(f"✅ Created {len(king_studs)} King Studs for {name_prefix}")
@@ -442,18 +465,19 @@ class WindowFactory:
         if header_z > max_header_z:
             header_z = max_header_z
 
+        pos = Vector((window_center_x, 0, header_z + lintel_height / 2.0))
         # **STEP 3: Create the Lintel**
-        lintel = BoardFactory.add_board(
-            board_name=f"{name_prefix}_Lintel",
-            length=window_width + (stud_size["thickness"] * 2),  # Extend over jack studs
-            height=lintel_height,
-            depth=header_width,
-            location=(window_center_x, 0, header_z + lintel_height / 2.0),
-            material=material
-        )
+        lintel = BoardFactory.add_board(parent,
+                                        board_name=f"{name_prefix}_Lintel",
+                                        length=window_width + (stud_size["thickness"] * 2),  # Extend over jack studs
+                                        height=lintel_height,
+                                        depth=header_width,
+                                        location=pos,
+                                        material=material
+                                        )
 
-        if parent:
-            lintel.parent = parent  # Attach to window parent
+        # if parent:
+        #    lintel.parent = parent  # Attach to window parent
 
         print(f"✅ Created lintel: {lintel.name} | Height: {lintel_height:.3f}m | Load-Bearing: {is_load_bearing}")
 
@@ -500,10 +524,12 @@ class WindowFactory:
         # We'll place the header's bottom at that point, or clamp if near top plates.
         header_z = bottom_plate_height + window_bottom_z + window_height
         # **STEP 1: Create the Parent Wall Object**
-        bpy.ops.object.empty_add(type='PLAIN_AXES', location=wall.location)
+
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
         window_parent = bpy.context.object
         window_parent.name = f"{wall.name}_Window"
         window_parent.parent = wall
+
         is_load_bearing = False
         lintel = WindowFactory.create_lintel(
             name_prefix=name_prefix,
@@ -537,30 +563,30 @@ class WindowFactory:
             material=material,
             parent=window_parent)
 
-        header = BoardFactory.add_board(
-            board_name=f"{name_prefix}_Header",
-            length=window_width + stud_size["thickness"] * 2,
-            height=header_thickness,
-            depth=header_width,
-            location=(window_center_x, 0, header_z + header_thickness / 2.0),
-            material=material
-        )
-        header.parent = window_parent
+        header = BoardFactory.add_board(window_parent,
+                                        board_name=f"{name_prefix}_Header",
+                                        length=window_width + stud_size["thickness"] * 2,
+                                        height=header_thickness,
+                                        depth=header_width,
+                                        location=(window_center_x, 0, header_z + header_thickness / 2.0),
+                                        material=material
+                                        )
+        # header.parent = window_parent
         # move_to_collection(header, wall_coll)
 
         # Sill: place a horizontal 2×4 at the bottom of the window
         sill_thickness = stud_size["height"]
         sill_z = bottom_plate_height + window_bottom_z - sill_thickness
         if sill_z > bottom_plate_height:
-            sill = BoardFactory.add_board(
-                board_name=f"{name_prefix}_Sill",
-                length=window_width + stud_size["thickness"] * 2,
-                height=sill_thickness,
-                depth=stud_size["width"],
-                location=(window_center_x, 0, sill_z + sill_thickness / 2.0),
-                material=material
-            )
-            sill.parent = window_parent
+            sill = BoardFactory.add_board(window_parent,
+                                          board_name=f"{name_prefix}_Sill",
+                                          length=window_width + stud_size["thickness"] * 2,
+                                          height=sill_thickness,
+                                          depth=stud_size["width"],
+                                          location=(window_center_x, 0, sill_z + sill_thickness / 2.0),
+                                          material=material
+                                          )
+            # sill.parent = window_parent
             # move_to_collection(sill, wall_coll)
 
         # Jack studs
@@ -570,6 +596,7 @@ class WindowFactory:
             right_x = window_center_x + (window_width / 2.0) + (stud_size["thickness"] / 2.0)
 
             lj = BoardFactory.add_board(
+                window_parent,
                 board_name=f"{name_prefix}_JackStudLeft",
                 length=stud_size["thickness"],
                 height=jack_height,
@@ -577,10 +604,11 @@ class WindowFactory:
                 location=(left_x, 0, bottom_plate_height + jack_height / 2.0),
                 material=material
             )
-            lj.parent = window_parent
+            # lj.parent = window_parent
             # move_to_collection(lj, wall_coll)
 
             rj = BoardFactory.add_board(
+                window_parent,
                 board_name=f"{name_prefix}_JackStudRight",
                 length=stud_size["thickness"],
                 height=jack_height,
@@ -594,15 +622,16 @@ class WindowFactory:
         # **STEP 4: Create the Glass Pane**
         glass_thickness = 0.006  # 6mm thick glass
         glass_pane = BoardFactory.add_board(
+            window_parent,
             board_name=f"{name_prefix}_Glass",
             length=window_width,
             height=window_height,
             depth=glass_thickness,
             location=(
-            window_center_x, -glass_thickness / 2.0, bottom_plate_height + window_bottom_z + window_height / 2.0),
+                window_center_x, -glass_thickness / 2.0, bottom_plate_height + window_bottom_z + window_height / 2.0),
             material=glass_material
         )
-        glass_pane.parent = window_parent
+        # glass_pane.parent = window_parent
 
 
 # -------------------------------------------------------------------
@@ -620,6 +649,8 @@ class WallFactory:
         """
         Creates a framed wall and applies the correct rotation.
         """
+        print(f"create wall 🔎 , at 🔎: {name, str(location)}")
+
         window_spec = None
         if window_specs is not None:
             window_spec = window_specs[0]
@@ -647,6 +678,37 @@ class WallFactory:
         wall.rotation_euler = rotation
 
         return wall
+
+    def create_child(parent, board_name, length, height, depth, world_location, material):
+        """
+        Creates a board and ensures it is correctly positioned as a child of 'parent'.
+
+        Args:
+            parent (bpy.types.Object): The parent object to attach the new child to.
+            board_name (str): Name of the new object.
+            length (float): Length of the board.
+            height (float): Height of the board.
+            depth (float): Depth of the board.
+            world_location (tuple or Vector): World-space location.
+            material (bpy.types.Material): Material to apply.
+
+        Returns:
+            bpy.types.Object: The newly created board object.
+        """
+
+        board = BoardFactory.add_board(
+            board_name=board_name,
+            length=length,
+            height=height,
+            depth=depth,
+            location=Vector(world_location),  # Ensure it's a Vector
+            material=material
+        )
+
+        board.parent = parent
+        board.location = parent.matrix_world.inverted() @ Vector(world_location)  # Convert to local space
+
+        return board
 
     def create_framed_wall(
             name,
@@ -697,24 +759,27 @@ class WallFactory:
         bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
 
         # Apply all transforms (scale, rotation, location)
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 
         # 1) BOTTOM PLATES
         plate_thickness = stud_thickness
         plate_depth = stud_width
-
+        # wall_parent.matrix_world.inverted() @ plate_world_position
         total_bottom_height = plate_thickness * bottom_plate_count
         for i in range(bottom_plate_count):
             z_plate = location[2] + plate_thickness / 2.0 + i * plate_thickness
-            plate = BoardFactory.add_board(
-                board_name=f"{name}_BottomPlate_{i + 1}",
-                length=length,
-                height=plate_thickness,
-                depth=plate_depth,
-                location=(location[0], location[1], z_plate),
-                material=material_framing
-            )
-            plate.parent = wall_parent
+            plate_position = Vector((0, 0, z_plate))
+            # WallFactory.create_child(wall_parent,f"{name}_BottomPlate_{i + 1}",length,0)
+            plate = BoardFactory.add_board(wall_parent,
+                                           board_name=f"{name}_BottomPlate_{i + 1}",
+                                           length=length,
+                                           height=plate_thickness,
+                                           depth=plate_depth,
+                                           location=plate_position,
+                                           material=material_framing
+                                           )
+            # plate.parent = wall_parent
+            # plate.location = wall_parent.matrix_world.inverted() @ plate_world_position
             # move_to_collection(plate, wall_coll)
 
         # 2) TOP PLATES
@@ -722,15 +787,17 @@ class WallFactory:
         z_top_start = location[2] + height - total_top_height
         for i in range(top_plate_count):
             z_plate = z_top_start + plate_thickness / 2.0 + i * plate_thickness
-            plate = BoardFactory.add_board(
-                board_name=f"{name}_TopPlate_{i + 1}",
-                length=length,
-                height=plate_thickness,
-                depth=stud_width,
-                location=(location[0], location[1], z_plate),
-                material=material_framing
-            )
-            plate.parent = wall_parent  # Parent to the main wall object
+            plate_position = Vector((0, 0, z_plate))
+            plate = BoardFactory.add_board(wall_parent,
+                                           board_name=f"{name}_TopPlate_{i + 1}",
+                                           length=length,
+                                           height=plate_thickness,
+                                           depth=stud_width,
+                                           location=plate_position,
+                                           material=material_framing
+                                           )
+            # plate.parent = wall_parent  # Parent to the main wall object
+            # plate.location = wall_parent.matrix_world.inverted() @ plate_world_position
 
         # 3) STUD REGION
         # The "net" region for studs is from top of bottom plates to bottom of top plates.
@@ -740,30 +807,32 @@ class WallFactory:
         z_stud_bottom = location[2] + total_bottom_height
 
         # Place studs along X at 'stud_spacing' intervals
-        x_left = location[0] - (length / 2.0) + (stud_thickness / 2.0)
+        x_left = - (length / 2.0) + (stud_thickness / 2.0)
         n_studs = int((length - stud_width) // stud_spacing) + 1
 
         for i in range(n_studs):
             x_i = x_left + i * stud_spacing
-            if x_i + stud_width / 2.0 > (location[0] + length / 2.0):
+            if x_i + stud_width / 2.0 > (length / 2.0):
                 break
             z_center = z_stud_bottom + stud_region_height / 2.0
-            stud_obj = BoardFactory.add_board(
-                board_name=f"{name}_Stud_{i + 1}",
-                length=stud_thickness,
-                height=stud_region_height,
-                depth=stud_width,
-                location=(x_i, location[1], z_center),
-                material=material_framing
-            )
+            stud_position = Vector((x_i, 0, z_center))
+            stud_obj = BoardFactory.add_board(wall_parent,
+                                              board_name=f"{name}_Stud_{i + 1}",
+                                              length=stud_thickness,
+                                              height=stud_region_height,
+                                              depth=stud_width,
+                                              location=stud_position,
+                                              material=material_framing
+                                              )
             # move_to_collection(stud_obj, wall_coll)
-            stud_obj.parent = wall_parent
+            # stud_obj.parent = wall_parent
+            # stud_obj.location = wall_parent.matrix_world.inverted() @  stud_world_position
 
         # 5) Exterior Sheathing
         if add_sheathing:
             sheathing_thickness = 0.012  # ~12 mm
             # Sheathing goes on the "outside" (we'll treat negative Y as outside)
-            sheathing_y = location[1] - (plate_depth / 2.0 + sheathing_thickness / 2.0)
+            sheathing_y = - (plate_depth / 2.0 + sheathing_thickness / 2.0)
 
             BoardFactory.add_cladding(
                 wall_name=name,
@@ -785,16 +854,16 @@ class WallFactory:
         if add_drywall:
             drywall_thickness = 0.0127  # 1/2 inch ~ 0.0127 m
             # We'll treat +Y as inside, so place drywall behind studs
-            drywall_y = location[1] + (plate_depth / 2.0 + drywall_thickness / 2.0)
+            drywall_y = (plate_depth / 2.0 + drywall_thickness / 2.0)
             drywall_z = location[2] + height / 2.0
-            drywall_obj = BoardFactory.add_board(
-                board_name=f"{name}_Drywall",
-                length=length,
-                height=height,
-                depth=drywall_thickness,
-                location=(location[0], drywall_y, drywall_z),
-                material=material_drywall
-            )
+            drywall_obj = BoardFactory.add_board(wall_parent,
+                                                 board_name=f"{name}_Drywall",
+                                                 length=length,
+                                                 height=height,
+                                                 depth=drywall_thickness,
+                                                 location=(0, drywall_y, drywall_z),
+                                                 material=material_drywall
+                                                 )
             # move_to_collection(drywall_obj, wall_coll)
             drywall_obj.parent = wall_parent
         # 4) WINDOW FRAMING (optional)
@@ -913,9 +982,10 @@ class HouseFactory:
         """
         Uses the 1ft x 1ft grid to determine interior wall placement.
         """
+        materials = HouseFactory.materials
         walls = []
         lenght = HouseFactory.HOUSE_GRID_LENGTH * HouseFactory.GRID_SIZE
-        width = HouseFactory.HOUSE_GRID_WIDTH * GRID_SIZE
+        width = HouseFactory.HOUSE_GRID_WIDTH * HouseFactory.GRID_SIZE
         height = HouseFactory.HOUSE_HEIGHT
         # Interior Wall 1 (Living Room / Kitchen Separation)
         walls.append(WallFactory.create_wall(
@@ -942,7 +1012,7 @@ class HouseFactory:
         # Interior Wall 3 (Bathroom Division)
         walls.append(WallFactory.create_wall(
             name="InteriorWall3",
-            length=20 * GRID_SIZE,
+            length=20 * HouseFactory.GRID_SIZE,
             height=height,
             location=(10 * HouseFactory.GRID_SIZE, -15 * HouseFactory.GRID_SIZE, 0),
             thickness=INTERIOR_WALL_THICKNESS,
@@ -1026,6 +1096,32 @@ class HouseFactory:
         print(f"✅ Created {name} at {x}, {y}")
         return walls
 
+    def color_floor_by_room(room_name, floor_object):
+        """ Assigns a unique color to the floor based on room type. """
+
+        # Define room colors
+        ROOM_COLORS = {
+            "Kitchen": (1.0, 0.7, 0.3, 1),  # Orange
+            "Living Room": (0.2, 0.8, 0.3, 1),  # Green
+            "Master Bedroom": (0.5, 0.5, 1, 1),  # Blue
+            "Child Bedroom": (1.0, 0.4, 0.7, 1),  # Pink
+            "Office": (0.7, 0.3, 1, 1),  # Purple
+            "Storage": (0.3, 0.3, 0.3, 1),  # Gray
+            "Bathroom 1": (0.9, 0.9, 0.9, 1),  # White
+            "Bathroom 2": (0.9, 0.9, 0.9, 1),  # White
+            "Friends Room": (0.3, 0.8, 0.8, 1),  # Cyan
+        }
+
+        # Assign color (default to white if not defined)
+        color = ROOM_COLORS.get(room_name, (1, 1, 1, 1))  # Default White
+
+        # Create material
+        mat = bpy.data.materials.new(name=f"Room_Mat_{room_name}")
+        mat.diffuse_color = color
+
+        # Apply material
+        floor_object.data.materials.append(mat)
+
 
 # -------------------------------------------------------------------
 # TEST / DEMO
@@ -1058,13 +1154,14 @@ def demo_wall_test():
     }
     window_specs = []
     window_specs.append(window_info)
+    # rotation =math.radians(180 / math.pi)
     WallFactory.create_wall(
         name="SouthWall",
         length=wall_length,
         height=wall_height,
-        location=(0, -HouseFactory.HOUSE_GRID_LENGTH / 2 * HouseFactory.GRID_SIZE, 0),
+        location=(5, -10, 0),
         thickness=EXTERIOR_WALL_THICKNESS,
-        rotation=(0, 0, 0),  # No Rotation
+        rotation=(0, 0, math.radians(90)),  # No Rotation
         materials=HouseFactory.materials,
         window_specs=window_specs  # Add Windows
     )
@@ -1100,6 +1197,81 @@ def demo_wall_test():
     bpy.context.scene.render.resolution_y = 720
 
 
+def define_room_layout(grid_width, grid_depth):
+    """Defines which room each grid cell belongs to."""
+
+    layout = {}
+
+    for x in range(grid_width):
+        for y in range(grid_depth):
+            if x < 10 and y < 10:
+                layout[(x, y)] = "Kitchen"
+            elif x >= 10 and x < 20 and y < 10:
+                layout[(x, y)] = "Living Room"
+            elif x >= 20 and y < 10:
+                layout[(x, y)] = "Master Bedroom"
+            elif x < 10 and y >= 10 and y < 20:
+                layout[(x, y)] = "Office"
+            elif x >= 10 and x < 20 and y >= 10 and y < 20:
+                layout[(x, y)] = "Storage"
+            elif x >= 20 and y >= 10 and y < 20:
+                layout[(x, y)] = "Child Bedroom"
+            elif x < 10 and y >= 20:
+                layout[(x, y)] = "Bathroom 1"
+            elif x >= 20 and y >= 20:
+                layout[(x, y)] = "Bathroom 2"
+            else:
+                layout[(x, y)] = "Friends Room"
+
+    return layout
+
+
+def create_tiled_floor(grid_width, grid_depth, room_layout):
+    """Creates a tiled floor where each 1x1 ft tile is assigned a room and colored accordingly."""
+
+    # Define room colors
+    ROOM_COLORS = {
+        "Kitchen": (1.0, 0.7, 0.3, 1),  # Orange
+        "Living Room": (0.2, 0.8, 0.3, 1),  # Green
+        "Master Bedroom": (0.5, 0.5, 1, 1),  # Blue
+        "Child Bedroom": (1.0, 0.4, 0.7, 1),  # Pink
+        "Office": (0.7, 0.3, 1, 1),  # Purple
+        "Storage": (0.3, 0.3, 0.3, 1),  # Gray
+        "Bathroom 1": (0.9, 0.9, 0.9, 1),  # White
+        "Bathroom 2": (0.9, 0.9, 0.9, 1),  # White
+        "Friends Room": (0.3, 0.8, 0.8, 1),  # Cyan
+    }
+
+    tile_objects = []
+
+    for x in range(grid_width):
+        for y in range(grid_depth):
+            # Determine room assignment
+            room_name = room_layout.get((x, y), "Unknown")
+            tile_color = ROOM_COLORS.get(room_name, (1, 1, 1, 1))  # Default White
+
+            # Create a floor tile
+            bpy.ops.mesh.primitive_plane_add(size=1, location=(x + 0.5, y + 0.5, 0))
+            tile = bpy.context.object
+            tile.name = f"Tile_{x}_{y}_{room_name}"
+            tile_objects.append(tile)
+
+            # Assign material with color
+            mat = bpy.data.materials.new(name=f"Tile_Mat_{room_name}")
+            mat.diffuse_color = tile_color
+            tile.data.materials.append(mat)
+
+            # Add text label for the room name
+            bpy.ops.object.text_add(location=(x + 0.5, y + 0.5, 0.1))
+            text_obj = bpy.context.object
+            text_obj.data.body = room_name
+            text_obj.scale = (0.2, 0.2, 0.2)
+            text_obj.rotation_euler = (1.57, 0, 0)  # Rotate to face up
+            text_obj.name = f"Label_{room_name}"
+
+    return tile_objects
+
+
 def create_passive_house():
     # Constants
     EXTERIOR_WALL_THICKNESS = 0.4  # 40cm thick exterior walls
@@ -1114,6 +1286,12 @@ def create_passive_house():
 
     all_walls = []
 
+    grid_width, grid_depth = 30, 40  # Define house dimensions
+    # Define room layout
+    room_layout = define_room_layout(grid_width, grid_depth)
+
+    # Create tiled floor
+    create_tiled_floor(grid_width, grid_depth, room_layout)
     """
     Constructs the full passive house.
     """
@@ -1133,5 +1311,21 @@ def create_passive_house():
 
 
 if __name__ == "__main__":
-    demo_wall_test()
-    # create_passive_house()
+    # demo_wall_test()
+    create_passive_house()
+    # Camera
+    bpy.ops.object.camera_add(location=(5, -5, 2.5))
+    cam = bpy.context.object
+    cam.rotation_euler = (math.radians(60), 0, math.radians(45))
+    bpy.context.scene.camera = cam
+
+    # Sun
+    bpy.ops.object.light_add(type='SUN', location=(4, -4, 5))
+    sun = bpy.context.object
+    sun.rotation_euler = (math.radians(60), 0, math.radians(45))
+
+    # Render settings
+    bpy.context.scene.render.engine = 'CYCLES'
+    bpy.context.scene.cycles.samples = 64
+    bpy.context.scene.render.resolution_x = 1280
+    bpy.context.scene.render.resolution_y = 720
