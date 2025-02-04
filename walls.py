@@ -670,7 +670,7 @@ class WallFactory:
             location=location,
             stud_spacing=STUD_SPACING,
             stud_spec=stud_spec,
-            window_specs=window_spec,
+            window_specs=window_specs,
             materials=materials
         )
 
@@ -868,21 +868,22 @@ class WallFactory:
             drywall_obj.parent = wall_parent
         # 4) WINDOW FRAMING (optional)
         if window_specs:
-            WindowFactory.create_window_opening(
-                wall=wall_parent,
-                name_prefix=f"{name}_Window",
-                window_center_x=window_specs["center_x"],
-                window_bottom_z=window_specs["bottom_z"],
-                window_width=window_specs["width"],
-                window_height=window_specs["height"],
-                bottom_plate_height=total_bottom_height,
-                top_plate_height=plate_thickness,
-                stud_size={"thickness": stud_thickness, "width": stud_width, "height": stud_thickness},
-                wall_height=height,
-                second_top_plate_height=plate_thickness if top_plate_count > 1 else 0,
-                material=material_framing,
-                glass_material=material_glass
-            )
+            for ws in window_specs:
+                WindowFactory.create_window_opening(
+                    wall=wall_parent,
+                    name_prefix=f"{name}_Window",
+                    window_center_x=ws["center_x"],
+                    window_bottom_z=ws["bottom_z"],
+                    window_width=ws["width"],
+                    window_height=ws["height"],
+                    bottom_plate_height=total_bottom_height,
+                    top_plate_height=plate_thickness,
+                    stud_size={"thickness": stud_thickness, "width": stud_width, "height": stud_thickness},
+                    wall_height=height,
+                    second_top_plate_height=plate_thickness if top_plate_count > 1 else 0,
+                    material=material_framing,
+                    glass_material=material_glass
+                )
         return wall_parent
 
 
@@ -1243,7 +1244,7 @@ def create_tiled_floor(grid_width, grid_depth, room_layout):
     }
 
     tile_objects = []
-
+    meter_to_feet = 0.3048
     for x in range(grid_width):
         for y in range(grid_depth):
             # Determine room assignment
@@ -1251,23 +1252,24 @@ def create_tiled_floor(grid_width, grid_depth, room_layout):
             tile_color = ROOM_COLORS.get(room_name, (1, 1, 1, 1))  # Default White
 
             # Create a floor tile
-            bpy.ops.mesh.primitive_plane_add(size=1, location=(x + 0.5, y + 0.5, 0))
+            bpy.ops.mesh.primitive_plane_add(size=1, location=(x * meter_to_feet, y * meter_to_feet, 0))
             tile = bpy.context.object
             tile.name = f"Tile_{x}_{y}_{room_name}"
+            tile.scale = (meter_to_feet, meter_to_feet, 1)  # **Ensure each tile is exactly 1ft x 1ft**
             tile_objects.append(tile)
 
             # Assign material with color
             mat = bpy.data.materials.new(name=f"Tile_Mat_{room_name}")
             mat.diffuse_color = tile_color
             tile.data.materials.append(mat)
-
-            # Add text label for the room name
-            bpy.ops.object.text_add(location=(x + 0.5, y + 0.5, 0.1))
-            text_obj = bpy.context.object
-            text_obj.data.body = room_name
-            text_obj.scale = (0.2, 0.2, 0.2)
-            text_obj.rotation_euler = (1.57, 0, 0)  # Rotate to face up
-            text_obj.name = f"Label_{room_name}"
+            if x % 3 == 0 and y % 3 == 0:
+                # Add text label for the room name
+                bpy.ops.object.text_add(location=(x * meter_to_feet, y * meter_to_feet, 0.1))
+                text_obj = bpy.context.object
+                text_obj.data.body = room_name
+                text_obj.scale = (meter_to_feet / 4, meter_to_feet / 4, 0.2)
+                text_obj.rotation_euler = (1.57, 0, 0)  # Rotate to face up
+                text_obj.name = f"Label_{room_name}"
 
     return tile_objects
 
