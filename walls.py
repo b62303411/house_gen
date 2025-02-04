@@ -933,9 +933,9 @@ class HouseFactory:
 
     # Define South-facing Windows (for Passive Solar Heating)
     SOUTH_WALL_WINDOWS = [
-        {"center_x": -20 * GRID_SIZE, "bottom_z": 1, "width": 1, "height": 1.2},
-        {"center_x": 0 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2},
-        {"center_x": 20 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2}
+        {"center_x": -20 * GRID_SIZE, "bottom_z": 0.5, "width": 1.5, "height": 2},
+        {"center_x": 0 * GRID_SIZE, "bottom_z": 0.5, "width": 1.5, "height": 2},
+        {"center_x": 20 * GRID_SIZE, "bottom_z": 0.5, "width": 1.5, "height": 2}
     ]
 
     @staticmethod
@@ -1245,7 +1245,7 @@ def demo_wall_test():
     bpy.context.scene.render.resolution_x = 1280
     bpy.context.scene.render.resolution_y = 720
 
-@staticmethod
+
 def define_room_layout(grid_width, grid_depth):
     """Defines which room each grid cell belongs to."""
 
@@ -1274,7 +1274,7 @@ def define_room_layout(grid_width, grid_depth):
 
     return layout
 
-@staticmethod
+
 def create_tiled_floor(grid_width, grid_depth, room_layout):
     """Creates a tiled floor where each 1x1 ft tile is assigned a room and colored accordingly."""
 
@@ -1321,7 +1321,7 @@ def create_tiled_floor(grid_width, grid_depth, room_layout):
 
     return tile_objects
 
-@staticmethod
+
 def create_passive_house():
     # Constants
     EXTERIOR_WALL_THICKNESS = 0.4  # 40cm thick exterior walls
