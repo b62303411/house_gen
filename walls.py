@@ -7,6 +7,7 @@ from mathutils import Vector
 # MATERIALS (simple placeholders)
 # -------------------------------------------------------------------
 class MaterialFactory:
+    @staticmethod
     def create_wood_material(name="FramingWood"):
         mat = bpy.data.materials.new(name)
         mat.use_nodes = True
@@ -16,6 +17,7 @@ class MaterialFactory:
             bsdf.inputs["Roughness"].default_value = 0.5
         return mat
 
+    @staticmethod
     def create_sheathing_material(name="SheathingOSB"):
         mat = bpy.data.materials.new(name)
         mat.use_nodes = True
@@ -25,6 +27,7 @@ class MaterialFactory:
             bsdf.inputs["Roughness"].default_value = 0.7
         return mat
 
+    @staticmethod
     def create_drywall_material(name="Drywall"):
         mat = bpy.data.materials.new(name)
         mat.use_nodes = True
@@ -34,6 +37,7 @@ class MaterialFactory:
             bsdf.inputs["Roughness"].default_value = 0.8
         return mat
 
+    @staticmethod
     def create_simple_wood_material(name="Wood"):
         """
         Creates a simple brownish 'wood' material (non-procedural).
@@ -45,6 +49,7 @@ class MaterialFactory:
         bsdf.inputs["Roughness"].default_value = 0.5
         return mat
 
+    @staticmethod
     def create_procedural_material(name, material_type):
         """
         Creates a procedural material ('wood', 'earth', or 'glass') for demonstration.
@@ -107,6 +112,7 @@ class MaterialFactory:
 
         return material
 
+    @staticmethod
     def create_materials():
         mat_framing = MaterialFactory.create_wood_material("FramingWood")
         mat_sheathing = MaterialFactory.create_sheathing_material("SheathingOSB")
@@ -137,7 +143,7 @@ INTERIOR_WALL_THICKNESS = 0.15  # 15cm (Wood framing)
 # -------------------------------------------------------------------
 # UTILITY: Move object to a specific collection
 # -------------------------------------------------------------------
-
+@staticmethod
 def move_to_collection(obj, target_coll):
     """Unlink 'obj' from all collections, then link to 'target_coll'."""
     if not obj or not target_coll:
@@ -151,6 +157,7 @@ def move_to_collection(obj, target_coll):
 # UTILITY: Create a "board" (cube scaled to desired X×Y×Z)
 # -------------------------------------------------------------------
 class BoardFactory:
+    @staticmethod
     def add_cladding(wall_name, cladding_type, wall_length, wall_height, thickness, y_offset,
                      material, location, wall, sheet_length, sheet_height):
         # Calculate number of full sheets and if a partial sheet is needed
@@ -189,6 +196,7 @@ class BoardFactory:
                 # sheet_obj.location = wall.matrix_world.inverted() @ world_position
                 # move_to_collection(sheet_obj, wall_coll)
 
+    @staticmethod
     def add_board(parent=None, board_name=None, length=None, height=None, depth=None, location=None, material=None,
                   bevel_width=0.01, bevel_segments=3):
         """
@@ -230,7 +238,7 @@ class BoardFactory:
 # OPTIONAL WINDOW CREATION: Header, sill, jack studs
 # -------------------------------------------------------------------
 class WindowFactory:
-
+    @staticmethod
     def cut_window_opening(wall_structure, name_prefix, window_center_x, window_bottom_z,
                            window_width, window_height, bottom_plate_height, frame_thickness):
         """
@@ -335,6 +343,7 @@ class WindowFactory:
 
         return success
 
+    @staticmethod
     def create_king_studs(
             name_prefix,
             window_center_x,
@@ -409,6 +418,7 @@ class WindowFactory:
 
         return king_studs
 
+    @staticmethod
     def create_lintel(
             name_prefix,
             window_center_x,
@@ -483,6 +493,7 @@ class WindowFactory:
 
         return lintel
 
+    @staticmethod
     def create_window_opening(
             wall,
             name_prefix,
@@ -645,6 +656,7 @@ class WallFactory:
         "2x12": {"thickness": 0.0381, "width": 0.2921}  # 1.5" x 11.5"
     }
 
+    @staticmethod
     def create_wall(name, length, height, location, thickness, rotation, materials, window_specs=None, stud_spec="2x4"):
         """
         Creates a framed wall and applies the correct rotation.
@@ -679,6 +691,7 @@ class WallFactory:
 
         return wall
 
+    @staticmethod
     def create_child(parent, board_name, length, height, depth, world_location, material):
         """
         Creates a board and ensures it is correctly positioned as a child of 'parent'.
@@ -710,6 +723,7 @@ class WallFactory:
 
         return board
 
+    @staticmethod
     def create_framed_wall(
             name,
             length,
@@ -924,6 +938,7 @@ class HouseFactory:
         {"center_x": 20 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2}
     ]
 
+    @staticmethod
     def create_greenhouse_wall(grid_width, glass_angle=70):
         """Creates a sloped greenhouse wall with angled glass for optimal solar gain."""
 
@@ -951,6 +966,7 @@ class HouseFactory:
 
         return greenhouse_glass
 
+    @staticmethod
     def create_exterior_walls():
         """
         Creates the four exterior walls with correct rotation.
@@ -1007,6 +1023,7 @@ class HouseFactory:
         walls.append(HouseFactory.create_greenhouse_wall(HouseFactory.HOUSE_GRID_WIDTH))
         return walls
 
+    @staticmethod
     def create_interior_walls():
         """
         Uses the 1ft x 1ft grid to determine interior wall placement.
@@ -1051,6 +1068,7 @@ class HouseFactory:
 
         return walls
 
+    @staticmethod
     def create_room_walls(room_name, x_offset, y_offset, height=2.7):
         """
         Uses WallFactory to create walls for a given room.
@@ -1101,6 +1119,7 @@ class HouseFactory:
         print(f"✅ Created walls for {room_name} at {x_offset}, {y_offset}")
         return walls
 
+    @staticmethod
     def create_room(name, x_offset, y_offset, room_size, height=2.7, exterior=False):
         """
         Creates a room with walls and defines exterior or interior wall thickness.
@@ -1125,6 +1144,7 @@ class HouseFactory:
         print(f"✅ Created {name} at {x}, {y}")
         return walls
 
+    @staticmethod
     def color_floor_by_room(room_name, floor_object):
         """ Assigns a unique color to the floor based on room type. """
 
@@ -1155,7 +1175,7 @@ class HouseFactory:
 # -------------------------------------------------------------------
 # TEST / DEMO
 # -------------------------------------------------------------------
-
+@staticmethod
 def demo_wall_test():
     """
     Demonstrates creating one wall with:
@@ -1225,7 +1245,7 @@ def demo_wall_test():
     bpy.context.scene.render.resolution_x = 1280
     bpy.context.scene.render.resolution_y = 720
 
-
+@staticmethod
 def define_room_layout(grid_width, grid_depth):
     """Defines which room each grid cell belongs to."""
 
@@ -1254,7 +1274,7 @@ def define_room_layout(grid_width, grid_depth):
 
     return layout
 
-
+@staticmethod
 def create_tiled_floor(grid_width, grid_depth, room_layout):
     """Creates a tiled floor where each 1x1 ft tile is assigned a room and colored accordingly."""
 
@@ -1301,7 +1321,7 @@ def create_tiled_floor(grid_width, grid_depth, room_layout):
 
     return tile_objects
 
-
+@staticmethod
 def create_passive_house():
     # Constants
     EXTERIOR_WALL_THICKNESS = 0.4  # 40cm thick exterior walls
