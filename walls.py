@@ -161,7 +161,7 @@ class BoardFactory:
 
         # Wall origin (bottom-left corner)
         start_x = - (wall_length / 2)
-        start_z = location[2]  # Base of the wall
+        start_z = 0  # Base of the wall
 
         for col in range(int(num_length_sheets) + (1 if remaining_length > 0 else 0)):
             cladding_length = sheet_length if col < num_length_sheets else remaining_length
@@ -767,7 +767,7 @@ class WallFactory:
         # wall_parent.matrix_world.inverted() @ plate_world_position
         total_bottom_height = plate_thickness * bottom_plate_count
         for i in range(bottom_plate_count):
-            z_plate = location[2] + plate_thickness / 2.0 + i * plate_thickness
+            z_plate = plate_thickness / 2.0 + i * plate_thickness
             plate_position = Vector((0, 0, z_plate))
             # WallFactory.create_child(wall_parent,f"{name}_BottomPlate_{i + 1}",length,0)
             plate = BoardFactory.add_board(wall_parent,
@@ -784,7 +784,7 @@ class WallFactory:
 
         # 2) TOP PLATES
         total_top_height = plate_thickness * top_plate_count
-        z_top_start = location[2] + height - total_top_height
+        z_top_start = height - total_top_height
         for i in range(top_plate_count):
             z_plate = z_top_start + plate_thickness / 2.0 + i * plate_thickness
             plate_position = Vector((0, 0, z_plate))
@@ -804,7 +804,7 @@ class WallFactory:
         stud_region_height = height - (total_bottom_height + total_top_height)
         if stud_region_height < 0:
             stud_region_height = 0
-        z_stud_bottom = location[2] + total_bottom_height
+        z_stud_bottom = total_bottom_height
 
         # Place studs along X at 'stud_spacing' intervals
         x_left = - (length / 2.0) + (stud_thickness / 2.0)
@@ -848,14 +848,14 @@ class WallFactory:
                 sheet_height=1.22  # Standard 4ft sheet
             )
 
-            sheathing_z = location[2] + height / 2.0
+            sheathing_z = height / 2.0
 
         # 6) Interior Drywall
         if add_drywall:
             drywall_thickness = 0.0127  # 1/2 inch ~ 0.0127 m
             # We'll treat +Y as inside, so place drywall behind studs
             drywall_y = (plate_depth / 2.0 + drywall_thickness / 2.0)
-            drywall_z = location[2] + height / 2.0
+            drywall_z = height / 2.0
             drywall_obj = BoardFactory.add_board(wall_parent,
                                                  board_name=f"{name}_Drywall",
                                                  length=length,
@@ -919,10 +919,37 @@ class HouseFactory:
 
     # Define South-facing Windows (for Passive Solar Heating)
     SOUTH_WALL_WINDOWS = [
-        {"center_x": 0 * GRID_SIZE, "bottom_z": 1, "width": 1, "height": 1.2},
-        {"center_x": 30 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2},
-        {"center_x": 45 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2}
+        {"center_x": -20 * GRID_SIZE, "bottom_z": 1, "width": 1, "height": 1.2},
+        {"center_x": 0 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2},
+        {"center_x": 20 * GRID_SIZE, "bottom_z": 0.9, "width": 1.5, "height": 2}
     ]
+
+    def create_greenhouse_wall(grid_width, glass_angle=70):
+        """Creates a sloped greenhouse wall with angled glass for optimal solar gain."""
+
+        wall_thickness = 0.5  # 6-inch thick support wall
+        greenhouse_height = 12  # Total height of greenhouse side
+        glass_angle_rad = math.radians(glass_angle)  # Convert angle to radians
+
+        # **Calculate the glass wall's top position**
+        glass_base_x = 0  # The base of the greenhouse glass starts at x=0
+        glass_top_x = grid_width / 2  # The top leans forward toward the greenhouse
+        glass_top_z = greenhouse_height  # The highest point (aligned with roof)
+
+        # **Create the sloped glass plane**
+        greenhouse_glass = WallFactory.create_framed_wall(
+            name="Greenhouse_Glass",
+            length=grid_width,
+            height=greenhouse_height,
+            location=(grid_width / 2 - 0.5, -wall_thickness / 2, greenhouse_height / 2),
+            stud_spec="2x6",
+            materials={"framing": None, "sheathing": None, "drywall": None, "glass": "Glass"}
+        )
+
+        # **Rotate the glass wall to 70°**
+        greenhouse_glass.rotation_euler = (glass_angle_rad, 0, 0)
+
+        return greenhouse_glass
 
     def create_exterior_walls():
         """
@@ -976,7 +1003,8 @@ class HouseFactory:
             materials=HouseFactory.materials,
             window_specs=HouseFactory.SOUTH_WALL_WINDOWS  # Add Windows
         ))
-
+        # **Greenhouse (South Wall)**
+        walls.append(HouseFactory.create_greenhouse_wall(HouseFactory.HOUSE_GRID_WIDTH))
         return walls
 
     def create_interior_walls():
@@ -1293,7 +1321,7 @@ def create_passive_house():
     room_layout = define_room_layout(grid_width, grid_depth)
 
     # Create tiled floor
-    create_tiled_floor(grid_width, grid_depth, room_layout)
+    # create_tiled_floor(grid_width, grid_depth, room_layout)
     """
     Constructs the full passive house.
     """
@@ -1310,6 +1338,23 @@ def create_passive_house():
     print("✅ Interior Walls Created")
 
     print("🏡 Passive House Construction Completed!")
+
+    # Camera
+    bpy.ops.object.camera_add(location=(5, -5, 2.5))
+    cam = bpy.context.object
+    cam.rotation_euler = (math.radians(60), 0, math.radians(45))
+    bpy.context.scene.camera = cam
+
+    # Sun
+    bpy.ops.object.light_add(type='SUN', location=(4, -4, 5))
+    sun = bpy.context.object
+    sun.rotation_euler = (math.radians(60), 0, math.radians(45))
+
+    # Render settings
+    bpy.context.scene.render.engine = 'CYCLES'
+    bpy.context.scene.cycles.samples = 64
+    bpy.context.scene.render.resolution_x = 1280
+    bpy.context.scene.render.resolution_y = 720
 
 
 if __name__ == "__main__":
