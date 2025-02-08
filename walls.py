@@ -1376,10 +1376,32 @@ def create_passive_house():
     bpy.context.scene.render.resolution_x = 1280
     bpy.context.scene.render.resolution_y = 720
 
+def build_entire_perimeter_example():
+    # Example footprint: a rectangular building
+    footprint_points = [
+        (0, 0),
+        (10, 0),
+        (10, 6),
+        (0, 6)
+    ]
+
+    # Materials
+    mats = MaterialFactory.create_materials()
+
+    # Create the outer wall with segments & corners
+    wall_parent = create_outer_wall(
+        name="OuterWall",
+        footprint_points=footprint_points,
+        wall_height=3.0,
+        stud_spacing=0.4064,
+        materials=mats
+    )
+
+    print("✅ Finished building single multi-segment outer wall with corners.")
 
 if __name__ == "__main__":
     # demo_wall_test()
-    create_passive_house()
+    build_entire_perimeter_example()
     # Camera
     bpy.ops.object.camera_add(location=(5, -5, 2.5))
     cam = bpy.context.object
