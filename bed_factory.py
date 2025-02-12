@@ -1,6 +1,5 @@
 import bpy
-from mathutils import Vector
-from furniture_factory import FurnitureFactory
+
 from materials import MaterialFactory
 
 
@@ -31,7 +30,7 @@ class BedFactory:
         mattress.location = (0, 0, height/4+0.1)
 
         if matrice_mat:
-            FurnitureFactory.apply_material(mattress, matrice_mat)
+            MaterialFactory.apply_material(mattress, matrice_mat)
 
         # Headboard
         bpy.ops.mesh.primitive_cube_add(size=1)
@@ -42,7 +41,7 @@ class BedFactory:
         bpy.ops.object.transform_apply(scale=True)
         headboard.location = (length/2, 0, height/2)
         if board_mat:
-            FurnitureFactory.apply_material(headboard, board_mat)
+            MaterialFactory.apply_material(headboard, board_mat)
 
         board_thickness= 0.1
         # Board (Bed Frame)
@@ -55,7 +54,7 @@ class BedFactory:
         board.location = (0, 0, board_thickness / 2)
 
         if drape_mat:
-            FurnitureFactory.apply_material(board, board_mat)
+            MaterialFactory.apply_material(board, board_mat)
             # Drape (Cloth with Physics)
             bpy.ops.mesh.primitive_plane_add(size=1)
             drape = bpy.context.object

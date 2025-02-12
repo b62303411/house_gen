@@ -1,7 +1,6 @@
 import bpy
-from mathutils import Vector
-from furniture_factory import FurnitureFactory
 
+from materials import MaterialFactory
 
 class ChairFactory:
     @staticmethod
@@ -22,7 +21,7 @@ class ChairFactory:
         bpy.ops.object.transform_apply(scale=True)
         seat.location =(0,0,seat_height)
         if material:
-            FurnitureFactory.apply_material(seat, material)
+            MaterialFactory.apply_material(seat, material)
 
 
         half_seat_size = seat_size / 2
@@ -43,7 +42,7 @@ class ChairFactory:
             bpy.ops.object.transform_apply(scale=True)
             leg.location = pos
             if material:
-                FurnitureFactory.apply_material(leg, material)
+                MaterialFactory.apply_material(leg, material)
 
 
         # Backrest
@@ -56,6 +55,6 @@ class ChairFactory:
         backrest.location = (0,  - seat_size / 2 + 0.05, seat_height / 2 + back_height / 2)
 
         if material:
-            FurnitureFactory.apply_material(backrest, material)
+            MaterialFactory.apply_material(backrest, material)
 
         return chair_parent
