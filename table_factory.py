@@ -1,6 +1,7 @@
 import bpy
 from mathutils import Vector
-from furniture_factory import FurnitureFactory
+
+from materials import MaterialFactory
 
 
 class TableFactory:
@@ -25,7 +26,7 @@ class TableFactory:
             table_top.location = (0, 0, height)
 
             if material:
-                FurnitureFactory.apply_material(table_top, material)
+                MaterialFactory.apply_material(table_top, material)
             half_lenght= length / 2
             half_width = width / 2
             # Legs
@@ -45,6 +46,6 @@ class TableFactory:
                 bpy.ops.object.transform_apply(scale=True)
                 leg.location = pos
                 if material:
-                    FurnitureFactory.apply_material(leg, material)
+                    MaterialFactory.apply_material(leg, material)
 
             return table_parent

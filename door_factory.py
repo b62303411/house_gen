@@ -1,9 +1,13 @@
 # door_factory.py
+import importlib
+
 import bpy
 from mathutils import Vector
-from board_factory import BoardFactory
-from frame_factory import FramingFactory
 
+import frame_factory
+from board_factory import BoardFactory
+importlib.reload(frame_factory)
+from frame_factory import FramingFactory
 class DoorFactory:
     @staticmethod
     def create_door_opening(
@@ -39,6 +43,17 @@ class DoorFactory:
         door_parent.parent = wall
         door_parent.location = (door_center_x, 0, 0)
 
+        header_spec = FramingFactory.create_header_spec(
+                opening_width=door_width,
+                bottom_plate_height=bottom_plate_height,
+                opening_bottom_z=door_bottom_z,
+                opening_height=door_height,
+                wall_height=wall_height,
+                top_plate_height=top_plate_height,
+                second_top_plate_height=second_top_plate_height,
+                stud_spec=stud_spec,
+                is_load_bearing=True)
+
         # 2) Cut opening
         cut_ok = FramingFactory.cut_opening(
             opening_parent=door_parent,
@@ -46,7 +61,7 @@ class DoorFactory:
             name_prefix=name_prefix,
             bottom_z=door_bottom_z,
             opening_width=door_width,
-            opening_height=door_height,
+            opening_height=door_height+header_spec["header_height"],
             bottom_plate_height=bottom_plate_height,
             stud_spec=stud_spec
         )
@@ -71,15 +86,7 @@ class DoorFactory:
         if is_load_bearing:
             FramingFactory.create_header(
                 name_prefix=name_prefix,
-                opening_width=door_width,
-                bottom_plate_height=bottom_plate_height,
-                opening_bottom_z=door_bottom_z,
-                opening_height=door_height,
-                wall_height=wall_height,
-                top_plate_height=top_plate_height,
-                second_top_plate_height=second_top_plate_height,
-                stud_spec=stud_spec,
-                is_load_bearing=True,
+                header_spec=header_spec,
                 material=material,
                 parent=door_parent
             )

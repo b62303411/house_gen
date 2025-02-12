@@ -3,6 +3,15 @@ import bpy
 # MATERIALS (simple placeholders)
 # -------------------------------------------------------------------
 class MaterialFactory:
+
+    @staticmethod
+    def apply_material(obj, material):
+        """Applies material to an object if provided."""
+        if material:
+            if not obj.data.materials:
+                obj.data.materials.append(material)
+            else:
+                obj.data.materials[0] = material
     @staticmethod
     def get_material(name=None):
         # Check if a material with the same or a similar name exists
@@ -132,7 +141,7 @@ class MaterialFactory:
         # Configure BSDF for Blender 4.0
         bsdf.inputs["Roughness"].default_value = 0.9
         #bsdf.inputs["Sheen Tint"].default_value = 0.5  # Updated for Blender 4.0
-        bsdf.inputs["Sheen Roughness"].default_value = 0.5  # Updated for Blender 4.0
+        #bsdf.inputs["Sheen Roughness"].default_value = 0.5  # Updated for Blender 4.0
 
         return material
     @staticmethod

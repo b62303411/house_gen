@@ -69,11 +69,11 @@ class FramingFactory:
 
         # Increase the dimension so it extends beyond the actual opening
         # e.g., add some thickness to create a rough opening
-        frame_allowance = thickness * 2.0
+        frame_allowance = thickness
         cutout_obj.dimensions = (
-            opening_width + frame_allowance,
+            opening_width ,
             width * 2,                 # plenty of depth to cut through
-            opening_height + frame_allowance
+            opening_height
         )
         bpy.ops.object.transform_apply(scale=True, location=False)
 
@@ -94,10 +94,8 @@ class FramingFactory:
         bpy.data.objects.remove(cutout_obj, do_unlink=True)
 
         return success
-
     @staticmethod
-    def create_header(
-        name_prefix,
+    def create_header_spec(
         opening_width,
         bottom_plate_height,
         opening_bottom_z,
@@ -106,18 +104,8 @@ class FramingFactory:
         top_plate_height,
         second_top_plate_height,
         stud_spec,
-        is_load_bearing=True,
-        material=None,
-        parent=None
-    ):
-        """
-        Creates a lintel/header above the opening (door or window).
+        is_load_bearing=True):
 
-        Simple logic using 'opening_width' to pick an approximate
-        header size. Adjust as needed for building code.
-
-        Returns: The newly created header object.
-        """
         thickness = stud_spec["thickness"]
         width = stud_spec["width"]
 
@@ -137,8 +125,35 @@ class FramingFactory:
             opening_top_z = max_header_z
 
         header_z_center = opening_top_z + header_height / 2.0
-        header_length = opening_width + thickness * 2.0
+        header_length = opening_width + thickness * 2.
+        spec= {}
 
+        spec["header_z_center"] = header_z_center
+        spec["header_length"] = header_length
+        spec["header_height"] = header_height
+        spec["width"] = width
+
+        return spec
+
+    @staticmethod
+    def create_header(
+        name_prefix,
+        header_spec,
+        material=None,
+        parent=None
+    ):
+        """
+        Creates a lintel/header above the opening (door or window).
+
+        Simple logic using 'opening_width' to pick an approximate
+        header size. Adjust as needed for building code.
+
+        Returns: The newly created header object.
+        """
+        header_length = header_spec["header_length"]
+        header_height = header_spec["header_height"]
+        width = header_spec["width"]
+        header_z_center = header_spec["header_z_center"]
         header_obj = BoardFactory.add_board(
             parent=parent,
             board_name=f"{name_prefix}_Header",
@@ -166,15 +181,16 @@ class FramingFactory:
         """
         Creates full-height king studs on both sides of the opening.
         """
+        #"2x6": {"thickness": 0.0381, "width": 0.1397}
         thickness = stud_spec["thickness"]
         width = stud_spec["width"]
-
-        king_stud_height = wall_height - (top_plate_height + second_top_plate_height)
+        top_frame_thickness =  (top_plate_height - second_top_plate_height)
+        king_stud_height = wall_height
         half_opening = opening_width / 2.0
 
         # We'll place one king stud each side.
-        left_x = -half_opening - (thickness / 2.0)
-        right_x = half_opening + (thickness / 2.0)
+        left_x = -half_opening - (thickness*1.5)
+        right_x = half_opening + (thickness*1.5)
 
         l_king = BoardFactory.add_board(
             parent,

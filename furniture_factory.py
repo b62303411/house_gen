@@ -69,14 +69,7 @@ class FurnitureFactory:
 
         return new_obj
 
-    @staticmethod
-    def apply_material(obj, material):
-        """Applies material to an object if provided."""
-        if material:
-            if not obj.data.materials:
-                obj.data.materials.append(material)
-            else:
-                obj.data.materials[0] = material
+
 
     @staticmethod
     def create_furniture_prototypes():
