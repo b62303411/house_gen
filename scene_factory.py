@@ -4,6 +4,7 @@ import bpy
 from furniture_factory import FurnitureFactory
 from house_factory import HouseFactory
 from materials import MaterialFactory
+from node_render import NodeRender
 
 
 class SceneFactory:
@@ -60,11 +61,14 @@ class SceneFactory:
     def create_furniture():
         FurnitureFactory.create_furniture_prototypes()
         FurnitureFactory.place_furniture()
-
+    @staticmethod
+    def create_from_json():
+        NodeRender.build_from_data()
     @staticmethod
     def build_scene():
         # demo_wall_test()
-        SceneFactory.build_entire_perimeter_example()
+        #SceneFactory.build_entire_perimeter_example()
+        SceneFactory.create_from_json()
         SceneFactory.create_furniture()
         # Camera
         bpy.ops.object.camera_add(location=(5, -5, 2.5))
