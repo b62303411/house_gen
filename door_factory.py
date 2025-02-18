@@ -9,6 +9,104 @@ from board_factory import BoardFactory
 importlib.reload(frame_factory)
 from frame_factory import FramingFactory
 class DoorFactory:
+
+    @staticmethod
+    def create_single_door(parent, name_prefix, width, height, thickness, material):
+        """Creates a single door."""
+        door = BoardFactory.add_board(
+            parent=parent,
+            board_name=f"{name_prefix}_SingleDoor",
+            length=width,
+            height=height,
+            depth=thickness,
+            location=(0, 0, height/2),
+            material=material
+        )
+        return door
+
+
+    @staticmethod
+    def create_patio_door(parent, name_prefix, width, height, thickness, frame_material, glass_material):
+        """Creates a two-panel sliding patio door with overlapping sliding panels on rails."""
+        panel_width = width / 2
+        frame_thickness = 0.05
+        glass_thickness = 0.01
+        rail_offset = 0.02  # Offset to simulate sliding mechanism
+        def create_frame_and_glass(offset_x, side, z_offset):
+            top_frame = BoardFactory.add_board(
+                parent=parent,
+                board_name=f"{name_prefix}_Patio{side}TopFrame",
+                length=panel_width,
+                height=frame_thickness,
+                depth=thickness,
+                location=(offset_x, z_offset, height - (frame_thickness / 2)),
+                material=frame_material
+            )
+            bottom_frame = BoardFactory.add_board(
+                parent=parent,
+                board_name=f"{name_prefix}_Patio{side}BottomFrame",
+                length=panel_width,
+                height=frame_thickness,
+                depth=thickness,
+                location=(offset_x, z_offset, frame_thickness / 2),
+                material=frame_material
+            )
+            left_frame = BoardFactory.add_board(
+                parent=parent,
+                board_name=f"{name_prefix}_Patio{side}LeftFrame",
+                length=frame_thickness,
+                height=height,
+                depth=thickness,
+                location=(offset_x - (panel_width / 2), z_offset, height / 2),
+                material=frame_material
+            )
+            right_frame = BoardFactory.add_board(
+                parent=parent,
+                board_name=f"{name_prefix}_Patio{side}RightFrame",
+                length=frame_thickness,
+                height=height,
+                depth=thickness,
+                location=(offset_x + (panel_width / 2), z_offset, height / 2),
+                material=frame_material
+            )
+            glass_panel = BoardFactory.add_board(
+                parent=parent,
+                board_name=f"{name_prefix}_Patio{side}Glass",
+                length=panel_width - 0.1,
+                height=height - 0.1,
+                depth=glass_thickness,
+                location=(offset_x, z_offset, height / 2),
+                material=glass_material
+            )
+            return top_frame, bottom_frame, left_frame, right_frame, glass_panel
+
+        left_door = create_frame_and_glass(-panel_width / 2, "Left", -rail_offset)
+        right_door = create_frame_and_glass(panel_width / 2, "Right", rail_offset)
+
+    @staticmethod
+    def create_double_door(parent, name_prefix, width, height, thickness, material):
+        """Creates a double swinging door."""
+        panel_width = width / 2
+        left_door = BoardFactory.add_board(
+            parent=parent,
+            board_name=f"{name_prefix}_DoubleLeft",
+            length=panel_width,
+            height=height,
+            depth=thickness,
+            location=(-panel_width / 2, 0, 0),
+            material=material
+        )
+        right_door = BoardFactory.add_board(
+            parent=parent,
+            board_name=f"{name_prefix}_DoubleRight",
+            length=panel_width,
+            height=height,
+            depth=thickness,
+            location=(panel_width / 2, 0, 0),
+            material=material
+        )
+        return left_door, right_door
+
     @staticmethod
     def create_door_opening(
         wall,
@@ -23,7 +121,8 @@ class DoorFactory:
         wall_height,
         second_top_plate_height=0.0381,
         material=None,
-        is_load_bearing=False
+        is_load_bearing=False,
+        door_type="single"
     ):
         """
         High-level method for creating a door opening with minimal door framing:
@@ -118,4 +217,15 @@ class DoorFactory:
             print(f"✅ Created door threshold: {threshold_obj.name}")
 
         print("✅ Door framing creation complete.")
+
+        if door_type == "single":
+            DoorFactory.create_single_door(door_parent, name_prefix, door_width, door_height-.1, thickness, material)
+        elif door_type == "patio":
+            DoorFactory.create_patio_door(door_parent, name_prefix, door_width, door_height, thickness, material)
+        elif door_type == "double":
+            DoorFactory.create_double_door(door_parent, name_prefix, door_width, door_height, thickness, material)
+        else:
+            print(f"❌ Unsupported door type: {door_type}")
+            return None
+
         return door_parent

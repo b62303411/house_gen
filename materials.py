@@ -20,6 +20,40 @@ class MaterialFactory:
             if mat_name.startswith(name):  # Avoids infinite numbered duplicates
                 print(f"Material '{mat_name}' already exists. Returning existing material.")
                 return bpy.data.materials[mat_name]  # Return the existing material
+
+    @staticmethod
+    def get_granite_material():
+        granite_material = MaterialFactory.get_material("Granite")
+        if granite_material is None:
+            """Generates a procedural granite material."""
+            granite_material = bpy.data.materials.new(name="Granite")
+            granite_material.use_nodes = True
+            nodes = granite_material.node_tree.nodes
+            nodes.clear()
+
+            output_node = nodes.new(type='ShaderNodeOutputMaterial')
+            principled_node = nodes.new(type='ShaderNodeBsdfPrincipled')
+            noise_node = nodes.new(type='ShaderNodeTexNoise')
+            color_ramp = nodes.new(type='ShaderNodeValToRGB')
+
+            principled_node.location = (-200, 0)
+            noise_node.location = (-400, 0)
+            color_ramp.location = (-300, 0)
+
+            granite_material.node_tree.links.new(principled_node.outputs['BSDF'], output_node.inputs['Surface'])
+            granite_material.node_tree.links.new(noise_node.outputs['Fac'], color_ramp.inputs['Fac'])
+            granite_material.node_tree.links.new(color_ramp.outputs['Color'], principled_node.inputs['Base Color'])
+
+            noise_node.inputs['Scale'].default_value = 75.0
+            noise_node.inputs['Detail'].default_value = 8.0
+            noise_node.inputs['Roughness'].default_value = 0.5
+
+            color_ramp.color_ramp.interpolation = 'B-SPLINE'
+            color_ramp.color_ramp.elements[0].position = 0.2
+            color_ramp.color_ramp.elements[1].position = 0.8
+
+        return granite_material
+
     @staticmethod
     def create_acajou_wood_material(name="AcajouWood"):
         """

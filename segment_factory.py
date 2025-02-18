@@ -110,20 +110,8 @@ class SegmentFactory:
         builder.depth = plate_depth
         builder.height = plate_thickness
         builder.length = seg_length
-
+        builder.parent = segment_parent
         bottom_plate = builder.add_board(f"{segment_name}_BottomPlate", (-x_shift, 0, plate_thickness * 0.5))
-
-        # === Bottom Plate (flush) ===
-        # bpy.ops.object.select_all(action='DESELECT')
-        # bottom_plate = BoardFactory.add_board(
-        #    parent=segment_parent,
-        #    board_name=f"{segment_name}_BottomPlate",
-        #    length=seg_length,
-        #    height=plate_thickness,
-        #    depth=plate_depth,
-        #    location=(-x_shift, 0, plate_thickness * 0.5),
-        #    material=mat_framing
-        # )
 
         # === First Top Plate (flush) ===
         # Placed just below the second top plate
@@ -263,15 +251,19 @@ class SegmentFactory:
         # 4) WINDOW FRAMING (optional)
         if openings:
             for opening in openings:
-                opening_type = opening["window"]
-                if opening_type == "":
+                opening_type = opening["type"]
+                center_x = opening["center_x"]
+                bottom_z = opening["bottom_z"]
+                width = opening["width"]
+                height = opening["height"]
+                if opening_type == "window":
                     WindowFactory.create_window_opening(
                         wall=segment_parent,
                         name_prefix=f"{segment_name}_Window",
-                        window_center_x=opening["center_x"],
-                        window_bottom_z=opening["bottom_z"],
-                        window_width=opening["width"],
-                        window_height=opening["height"],
+                        window_center_x=center_x,
+                        window_bottom_z=bottom_z,
+                        window_width=width,
+                        window_height=height,
                         bottom_plate_height=0,
                         top_plate_height=plate_thickness,
                         stud_spec=spec,
@@ -285,16 +277,16 @@ class SegmentFactory:
                     DoorFactory.create_door_opening(
                         wall=segment_parent,
                         name_prefix="MyDoor",
-                        door_center_x=0,
-                        door_bottom_z=0.0,
-                        door_width=0.91,
-                        door_height=2.0,
+                        door_center_x=center_x,
+                        door_bottom_z=bottom_z,
+                        door_width=width,
+                        door_height=height,
                         bottom_plate_height=0.0381,
                         top_plate_height=0.0381,
                         stud_spec=spec,
-                        wall_height=2.7432,
+                        wall_height=wall_height,
                         second_top_plate_height=0.0381,
-                        material=None,
+                        material=mat_framing,
                         is_load_bearing=True
                     )
         return segment_parent

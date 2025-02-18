@@ -5,7 +5,7 @@ from furniture_factory import FurnitureFactory
 from house_factory import HouseFactory
 from materials import MaterialFactory
 from node_render import NodeRender
-
+from textured_plane_factory import TexturedPlaneFactory
 
 class SceneFactory:
     @staticmethod
@@ -59,17 +59,39 @@ class SceneFactory:
 
     @staticmethod
     def create_furniture():
-        FurnitureFactory.create_furniture_prototypes()
+        #FurnitureFactory.create_furniture_prototypes()
         FurnitureFactory.place_furniture()
     @staticmethod
     def create_from_json():
+        FurnitureFactory.create_furniture_prototypes()
         NodeRender.build_from_data()
+
+
+
+    # Function to create a marker (empty object) at a given position
+    @staticmethod
+    def create_marker(location, name):
+        bpy.ops.object.empty_add(type='SPHERE', radius=0.2, location=location)
+        marker = bpy.context.object
+        marker.name = name
+    @staticmethod
+    def create_plane_plan():
+        bpy.ops.mesh.primitive_plane_add(size=1)
+        obj = TexturedPlaneFactory.create_textured_plane("E:\\workspace\\blender_house\\house_gen\\w1024.jpg", "architecture plan")
+        obj.name = "architecture plan"
+
+        # Correct scaling
+        obj.scale = (15.89, 7.59, 1 )# Ensure full size scaling
+
+        # Apply scale
+        bpy.ops.object.transform_apply(scale=True, location=False)
     @staticmethod
     def build_scene():
         # demo_wall_test()
         #SceneFactory.build_entire_perimeter_example()
+        SceneFactory.create_plane_plan()
         SceneFactory.create_from_json()
-        SceneFactory.create_furniture()
+        #SceneFactory.create_furniture()
         # Camera
         bpy.ops.object.camera_add(location=(5, -5, 2.5))
         cam = bpy.context.object

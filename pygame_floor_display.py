@@ -11,7 +11,30 @@ pygame.display.set_caption("Interactive Floor Plan Viewer")
 font = pygame.font.Font(None, 24)
 info_font = pygame.font.Font(None, 18)
 
+class GameObject:
+    """Base class for all objects (Walls, Doors, Windows)."""
+    def __init__(self, x, y, width, height, obj_id, color=BLACK):
+        self.id = obj_id
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.selected = False
+        self.rotation = 0  # 0, 90, 180, 270
 
+    def draw(self, screen):
+        color = YELLOW if self.selected else self.color
+        pygame.draw.rect(screen, color, self.rect)
+
+    def is_hovered(self, mx, my):
+        return self.rect.collidepoint(mx, my)
+
+    def snap_to_grid(self):
+        self.rect.x = round(self.rect.x / GRID_SIZE) * GRID_SIZE
+        self.rect.y = round(self.rect.y / GRID_SIZE) * GRID_SIZE
+
+    def rotate(self):
+        """Rotates the object 90 degrees around its center."""
+        self.rect.width, self.rect.height = self.rect.height, self.rect.width
+        self.rotation = (self.rotation + 90) % 360
 class Wall:
 
     def __init__(self, x, y, width, height, wall_id):

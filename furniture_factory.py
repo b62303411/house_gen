@@ -42,7 +42,7 @@ class FurnitureFactory:
         FurnitureFactory.prototypes[name] = obj
 
     @staticmethod
-    def clone_prototype(name, location, rotation=(0, 0, 0)):
+    def clone_prototype(parent=None,name="", location=(0,0,0), rotation=(0, 0, 0)):
         """Clones an existing prototype and places it at a new location."""
         if name not in FurnitureFactory.prototypes:
             raise ValueError(f"Prototype {name} not found!")
@@ -66,7 +66,8 @@ class FurnitureFactory:
             math.radians(rotation[2])
         )
         bpy.context.collection.objects.link(new_obj)
-
+        if parent is not None:
+            new_obj.parent = parent
         return new_obj
 
 
@@ -88,13 +89,30 @@ class FurnitureFactory:
         print("✅ Furniture prototypes created.")
 
     @staticmethod
+    def place_bed(location, rotation):
+        FurnitureFactory.clone_prototype(name="Bed", location=location, rotation=rotation)
+
+    @staticmethod
+    def place_dinner_set(location, rotation):
+        bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+        table_set = bpy.context.object
+        table_set.name = "table_set"
+        table_set.location = location
+        table_set.rotation_euler = rotation
+        FurnitureFactory.clone_prototype(parent=table_set, name="Table", location=(0, 0, 0))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.5, -1.4, 0))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(1.5, -1.4, 0))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.5, 1.7, 0), rotation=(0, 0, 180))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(1.5, 1.7, 0), rotation=(0, 0, 180))
+
+    @staticmethod
     def place_furniture():
         """Places multiple furniture instances in the scene."""
-        FurnitureFactory.clone_prototype("Table", (3, 3, 0))
-        FurnitureFactory.clone_prototype("Chair", (3.5, 2.4, 0))
-        FurnitureFactory.clone_prototype("Chair", (2.5, 2.4, 0))
-        FurnitureFactory.clone_prototype("Chair", (3.5, 3.7, 0),(0,0,180))
-        FurnitureFactory.clone_prototype("Chair", (2.5, 3.7, 0),(0,0,180))
+        FurnitureFactory.clone_prototype(name="Table", location=(3, 3, 0))
+        FurnitureFactory.clone_prototype(name="Chair", location=(3.5, 2.4, 0))
+        FurnitureFactory.clone_prototype(name="Chair", location=(2.5, 2.4, 0))
+        FurnitureFactory.clone_prototype(name="Chair", location=(3.5, 3.7, 0),rotation=(0,0,180))
+        FurnitureFactory.clone_prototype(name="Chair", location=(2.5, 3.7, 0),rotation=(0,0,180))
 
-        FurnitureFactory.clone_prototype("Bed", (13, 7, 0))
+        FurnitureFactory.clone_prototype(name="Bed", location=(13, 7, 0))
 

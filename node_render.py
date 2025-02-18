@@ -3,12 +3,13 @@ import math
 
 import bpy
 
+from furniture_factory import FurnitureFactory
 from materials import MaterialFactory
 from segment_factory import SegmentFactory
 
 
 class NodeRender:
-
+    @staticmethod
     def build_house_from_data(data):
         # Create an Empty to hold all walls
         bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
@@ -21,7 +22,7 @@ class NodeRender:
             x = node_dict["x"]
             y = node_dict["y"]
             nodes_lookup[node_id] = (x, y)
-
+            NodeRender.create_marker((x,y,0),node_id)
         # Create each wall from edges
         for edge in data["edges"]:
             NodeRender.create_wall_segment(
@@ -29,13 +30,33 @@ class NodeRender:
                 nodes_lookup=nodes_lookup,
                 parent_obj=house_parent
             )
+        for furniture in data["furnitures"]:
+            NodeRender.create_furniture(furniture,house_parent)
 
+    @staticmethod
+    def create_furniture(furniture, house_parent):
+        furniture_type = furniture["type"]
+        location = furniture["location"]
+        orientation = furniture["orientation"]
+
+        if furniture_type == "bed":
+            FurnitureFactory.place_bed(location,orientation)
+        if furniture_type == "table_set":
+            FurnitureFactory.place_dinner_set(location,orientation)
+
+
+    @staticmethod
     def load_floorplan_json(filepath):
         """Load the floor plan data (nodes, edges) from a JSON file."""
         with open(filepath, 'r') as f:
             data = json.load(f)
         return data
 
+    @staticmethod
+    def create_marker(location, name):
+        bpy.ops.object.empty_add(type='SPHERE', radius=0.2, location=location)
+        marker = bpy.context.object
+        marker.name = name
     @staticmethod
     def build_from_data():
         # Example usage:
