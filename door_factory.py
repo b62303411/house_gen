@@ -11,7 +11,9 @@ from frame_factory import FramingFactory
 class DoorFactory:
 
     @staticmethod
-    def create_single_door(parent, name_prefix, width, height, thickness, material):
+    def create_single_door(parent, name_prefix, width, height, thickness, materials):
+        frame_material = materials['framing']
+        glass_material = materials['glass']
         """Creates a single door."""
         door = BoardFactory.add_board(
             parent=parent,
@@ -20,18 +22,22 @@ class DoorFactory:
             height=height,
             depth=thickness,
             location=(0, 0, height/2),
-            material=material
+            material=frame_material
         )
         return door
 
 
     @staticmethod
-    def create_patio_door(parent, name_prefix, width, height, thickness, frame_material, glass_material):
+    def create_patio_door(parent, name_prefix, width, height, thickness, materials):
         """Creates a two-panel sliding patio door with overlapping sliding panels on rails."""
         panel_width = width / 2
         frame_thickness = 0.05
         glass_thickness = 0.01
         rail_offset = 0.02  # Offset to simulate sliding mechanism
+
+        frame_material = materials['framing']
+        glass_material = materials['glass']
+
         def create_frame_and_glass(offset_x, side, z_offset):
             top_frame = BoardFactory.add_board(
                 parent=parent,
@@ -84,8 +90,10 @@ class DoorFactory:
         right_door = create_frame_and_glass(panel_width / 2, "Right", rail_offset)
 
     @staticmethod
-    def create_double_door(parent, name_prefix, width, height, thickness, material):
+    def create_double_door(parent, name_prefix, width, height, thickness, materials):
         """Creates a double swinging door."""
+        frame_material = materials['framing']
+        glass_material = materials['glass']
         panel_width = width / 2
         left_door = BoardFactory.add_board(
             parent=parent,
@@ -94,7 +102,7 @@ class DoorFactory:
             height=height,
             depth=thickness,
             location=(-panel_width / 2, 0, 0),
-            material=material
+            material=frame_material
         )
         right_door = BoardFactory.add_board(
             parent=parent,
@@ -103,7 +111,7 @@ class DoorFactory:
             height=height,
             depth=thickness,
             location=(panel_width / 2, 0, 0),
-            material=material
+            material=frame_material
         )
         return left_door, right_door
 
@@ -120,7 +128,7 @@ class DoorFactory:
         stud_spec,
         wall_height,
         second_top_plate_height=0.0381,
-        material=None,
+        materials=None,
         is_load_bearing=False,
         door_type="single"
     ):
@@ -134,7 +142,8 @@ class DoorFactory:
         """
         thickness = stud_spec["thickness"]
         depth = stud_spec["width"]
-
+        frame_mat = materials["framing"]
+        glass_mat = materials["glass"]
         # 1) Create an Empty to parent all door parts
         bpy.ops.object.empty_add(type='PLAIN_AXES')
         door_parent = bpy.context.object
@@ -177,7 +186,7 @@ class DoorFactory:
             second_top_plate_height=second_top_plate_height,
             stud_spec=stud_spec,
             wall_height=wall_height,
-            material=material,
+            material=frame_mat,
             parent=door_parent
         )
 
@@ -186,7 +195,7 @@ class DoorFactory:
             FramingFactory.create_header(
                 name_prefix=name_prefix,
                 header_spec=header_spec,
-                material=material,
+                material=frame_mat,
                 parent=door_parent
             )
             FramingFactory.create_jack_studs(
@@ -197,7 +206,7 @@ class DoorFactory:
                 opening_height=door_height,
                 stud_spec=stud_spec,
                 parent=door_parent,
-                material=material
+                material=frame_mat
             )
 
         # 5) Add threshold (optional)
@@ -212,18 +221,18 @@ class DoorFactory:
                 height=threshold_height,
                 depth=depth,
                 location=(0, 0, threshold_z + threshold_height / 2.0),
-                material=material
+                material=frame_mat
             )
             print(f"✅ Created door threshold: {threshold_obj.name}")
 
         print("✅ Door framing creation complete.")
 
         if door_type == "single":
-            DoorFactory.create_single_door(door_parent, name_prefix, door_width, door_height-.1, thickness, material)
+            DoorFactory.create_single_door(door_parent, name_prefix, door_width, door_height-.1, thickness, materials)
         elif door_type == "patio":
-            DoorFactory.create_patio_door(door_parent, name_prefix, door_width, door_height, thickness, material)
+            DoorFactory.create_patio_door(door_parent, name_prefix, door_width, door_height, thickness, materials)
         elif door_type == "double":
-            DoorFactory.create_double_door(door_parent, name_prefix, door_width, door_height, thickness, material)
+            DoorFactory.create_double_door(door_parent, name_prefix, door_width, door_height, thickness, materials)
         else:
             print(f"❌ Unsupported door type: {door_type}")
             return None

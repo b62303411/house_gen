@@ -7,6 +7,7 @@ from mathutils import Vector
 import bed_factory
 import chair_factory
 import table_factory
+from bath_thub_factory import BathThubFactory
 from bed_factory import BedFactory
 from chair_factory import ChairFactory
 from table_factory import TableFactory
@@ -86,11 +87,17 @@ class FurnitureFactory:
         bed = BedFactory.create_bed("Prototype_Bed")
         FurnitureFactory.register_prototype("Bed", bed)
 
+        bath = BathThubFactory.create_thub("Prototype_bath")
+        FurnitureFactory.register_prototype("Bath", bath)
+
         print("✅ Furniture prototypes created.")
 
     @staticmethod
     def place_bed(location, rotation):
         FurnitureFactory.clone_prototype(name="Bed", location=location, rotation=rotation)
+    @staticmethod
+    def place_bath(location,rotation):
+        FurnitureFactory.clone_prototype(name="bath",location=location,rotation=rotation)
 
     @staticmethod
     def place_dinner_set(location, rotation):
@@ -100,10 +107,10 @@ class FurnitureFactory:
         table_set.location = location
         table_set.rotation_euler = rotation
         FurnitureFactory.clone_prototype(parent=table_set, name="Table", location=(0, 0, 0))
-        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.5, -1.4, 0))
-        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(1.5, -1.4, 0))
-        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.5, 1.7, 0), rotation=(0, 0, 180))
-        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(1.5, 1.7, 0), rotation=(0, 0, 180))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(-0.34, -0.53, 0))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.34, -0.53, 0))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(-0.34, 0.53, 0), rotation=(0, 0, 180))
+        FurnitureFactory.clone_prototype(parent=table_set, name="Chair", location=(0.34, 0.53, 0), rotation=(0, 0, 180))
 
     @staticmethod
     def place_furniture():

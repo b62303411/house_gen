@@ -273,6 +273,7 @@ class SegmentFactory:
                         glass_material=mat_glass
                     )
                 elif opening_type == "door":
+                    door_type = opening["sub_type"]
                     # Create a door
                     DoorFactory.create_door_opening(
                         wall=segment_parent,
@@ -286,8 +287,10 @@ class SegmentFactory:
                         stud_spec=spec,
                         wall_height=wall_height,
                         second_top_plate_height=0.0381,
-                        material=mat_framing,
-                        is_load_bearing=True
+                        materials=materials,
+                        is_load_bearing=True,
+                        door_type = door_type
+
                     )
         return segment_parent
 
