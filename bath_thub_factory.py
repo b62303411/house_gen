@@ -4,7 +4,7 @@ import math
 class BathThubFactory:
 
     @staticmethod
-    def create_thub(name="Bathtub", size=(2, 1, .6),  wall_thickness=0.2, bevel_width=0.3, subsurf_levels=2):
+    def create_thub(name="Bathtub", size=(1.524, 1, .6),  wall_thickness=0.9, bevel_width=0.3, subsurf_levels=2):
         """
         Prototype Factory Method to create a bathtub in Blender.
 
@@ -24,21 +24,28 @@ class BathThubFactory:
         bpy.ops.mesh.primitive_cube_add(size=1)
         bathtub = bpy.context.object
         bathtub.name = name
-        bpy.ops.transform.resize(value=(size[0] / 2, size[1] / 2, size[2] / 2))
+        bathtub.location = (0,0,size[2]/2)
+        bathtub.scale = size
+        bpy.ops.object.transform_apply(scale=True, location=True)
+
+        #bpy.ops.transform.resize(value=size)
 
         # Subdivide the bathtub mesh for better smoothing
         bpy.ops.object.select_all(action='DESELECT')
         bathtub.select_set(True)
         bpy.context.view_layer.objects.active = bathtub
         bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.subdivide(number_cuts=3)
+        bpy.ops.mesh.subdivide(number_cuts=8)
         bpy.ops.object.mode_set(mode='OBJECT')
 
         # Create the inner cube for the cutout
-        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, inner_size[2] / 2))
+        bpy.ops.mesh.primitive_cube_add(size=1)
         inner_cube = bpy.context.object
         inner_cube.name = f"{name}_InnerCube"
-        bpy.ops.transform.resize(value=((size[0] - wall_thickness) / 2, (size[1] - wall_thickness) / 2, inner_size[2] / 2))
+        inner_cube.location = (0, 0, inner_size[2]/2)
+        inner_cube.scale = size
+        bpy.ops.object.transform_apply(scale=True, location=True)
+
 
         # Add a bevel modifier to the inner cube to round its edges
         bevel_mod = inner_cube.modifiers.new(name="Bevel", type='BEVEL')
@@ -48,7 +55,7 @@ class BathThubFactory:
         # Apply the bevel modifier
         bpy.ops.object.select_all(action='DESELECT')
         inner_cube.select_set(True)
-        inner_cube.location=(0,0,.1)
+        inner_cube.location=(0,0,.5)
         bpy.context.view_layer.objects.active = inner_cube
         bpy.ops.object.modifier_apply(modifier=bevel_mod.name)
 
@@ -91,11 +98,14 @@ class BathThubFactory:
         bpy.ops.object.shade_smooth()
 
         # Move the bathtub to the origin
-        bpy.ops.object.select_all(action='DESELECT')
-        bathtub.select_set(True)
-        bpy.context.view_layer.objects.active = bathtub
-        bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
-        bpy.ops.object.location_clear()
+        #bpy.ops.object.select_all(action='DESELECT')
+        #bathtub.select_set(True)
+        #bpy.context.view_layer.objects.active = bathtub
+        #bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
+        #bpy.ops.object.location_clear()
 
         print(f"{name} created successfully!")
         return bathtub
+
+if __name__ == "__main__":
+    BathThubFactory.create_thub()
