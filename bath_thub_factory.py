@@ -179,7 +179,7 @@ class BathThubFactory:
         # bpy.context.view_layer.objects.active = bathtub
         # bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
         # bpy.ops.object.location_clear()
-        BathThubFactory.create_faucet(name=f"{name}_Faucet", position=(0, size[1] / 2 + 0.05, size[2] + 0.1))
+        #BathThubFactory.create_faucet(name=f"{name}_Faucet", position=(0, size[1] / 2 + 0.05, size[2] + 0.1))
         print(f"{name} created successfully!")
         return bathtub
 

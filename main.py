@@ -55,6 +55,7 @@ import board_factory
 import windows
 import segment_factory
 import house_factory
+import bath_thub_factory
 importlib.reload(materials)  # Force refresh
 importlib.reload(board_factory)
 importlib.reload(windows)
@@ -62,6 +63,7 @@ importlib.reload(segment_factory)
 importlib.reload(house_factory)
 importlib.reload(frame_factory)
 importlib.reload(frame_factory)
+importlib.reload(bath_thub_factory)
 from scene_factory import SceneFactory
 
 
