@@ -22,7 +22,7 @@
     { "id": "I3",  "x": -4.67457,  "y": -5.22014 },
     { "id": "I4",  "x": -4.67457,  "y": -7.25326  },
     { "id": "I5",  "x": -3.5408 ,  "y": -2.62969  },
-    { "id": "I6",  "x": -1.67734,  "y": -2.62969  },
+    { "id": "I6",  "x": -1.71892,  "y": -2.62969  },
     { "id": "I7",  "x": 1.45275,  "y": -2.69203 },
     { "id": "I8",  "x": 3.67301 ,  "y": -2.69203  },
     { "id": "I9",  "x": 4.84277 ,  "y": -2.69203  },
@@ -50,10 +50,10 @@
     { "id": "I31",  "x": 2.23096,  "y": 4.83  },
     { "id": "I32",  "x": 0.770236,  "y": 2.24108   },
     { "id": "I33",  "x": 0.770236,  "y": 4.83   },
-    { "id": "I34",  "x": -3.56464 ,  "y": -3.17084   },
+    { "id": "I34",  "x": -3.5408 ,  "y": -3.17084   },
     { "id": "I35",  "x": -1.71892 ,  "y": -3.17084   },
     { "id": "I36",  "x": -1.71892,  "y": -4.03644    },
-    { "id": "I37",  "x": -3.56464,  "y": -4.03644   },
+    { "id": "I37",  "x": -3.5408,  "y": -4.03644   },
     { "id": "I38",  "x": -1.40813,  "y": -5.20773   },
     { "id": "I39",  "x": -1.40813,  "y": -5.20773   },
     { "id": "I40",  "x": -1.40813,  "y": -5.20773   },
@@ -188,7 +188,37 @@
       "wall_type": "exterior",
           "stud_type":"2x6",
       "height": 2.0,
-      "openings": []
+      "openings": [{
+          "type": "window",
+          "center_x": -4.2,
+          "bottom_z": 0.5,
+          "width": 0.6,
+          "height": 0.8
+        },{
+          "type": "window",
+          "center_x": -2.2,
+          "bottom_z": 0.5,
+          "width": 2.5,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 2,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 3.6,
+          "bottom_z": 0.5,
+          "width": 0.9,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 5.4,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        }]
     },
     {
       "id": "Workshop_1",
@@ -339,6 +369,38 @@
     {
       "id": "Int_Office_2",
       "start_node": "I20", "end_node": "I12",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.0,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I2", "end_node": "I36",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.0,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I3", "end_node": "I38",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.0,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I5", "end_node": "I37",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.0,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I6", "end_node": "I36",
       "wall_type": "interior",
       "stud_type":"2x4",
       "height": 2.0,
