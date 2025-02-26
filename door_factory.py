@@ -169,7 +169,7 @@ class DoorFactory:
             name_prefix=name_prefix,
             bottom_z=door_bottom_z,
             opening_width=door_width,
-            opening_height=door_height+header_spec["header_height"],
+            opening_height=door_height-header_spec["header_height"],
             bottom_plate_height=bottom_plate_height,
             stud_spec=stud_spec
         )
@@ -192,7 +192,7 @@ class DoorFactory:
 
         # 4) If load-bearing, create header & jack studs
         if is_load_bearing:
-            FramingFactory.create_header(
+            header,header_z_center,header_height= FramingFactory.create_header(
                 name_prefix=name_prefix,
                 header_spec=header_spec,
                 material=frame_mat,
@@ -230,7 +230,7 @@ class DoorFactory:
         if door_type == "single":
             DoorFactory.create_single_door(door_parent, name_prefix, door_width, door_height-.1, thickness, materials)
         elif door_type == "patio":
-            DoorFactory.create_patio_door(door_parent, name_prefix, door_width, door_height, thickness, materials)
+            DoorFactory.create_patio_door(door_parent, name_prefix, door_width, header_z_center-header_height/2, thickness, materials)
         elif door_type == "double":
             DoorFactory.create_double_door(door_parent, name_prefix, door_width, door_height, thickness, materials)
         else:

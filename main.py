@@ -47,7 +47,7 @@ import os
 script_dir = "E:\\workspace\\blender_house\\house_gen"
 print("Files in script directory:", os.listdir(script_dir))
 
-
+import bed_factory
 import frame_factory
 import importlib
 import materials
@@ -62,7 +62,7 @@ importlib.reload(windows)
 importlib.reload(segment_factory)
 importlib.reload(house_factory)
 importlib.reload(frame_factory)
-importlib.reload(frame_factory)
+importlib.reload(bed_factory)
 importlib.reload(bath_thub_factory)
 from scene_factory import SceneFactory
 

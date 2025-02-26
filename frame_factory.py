@@ -164,7 +164,7 @@ class FramingFactory:
             material=material
         )
         print(f"✅ Created header: {header_obj.name} (Height={header_height:.3f}m)")
-        return header_obj
+        return header_obj, header_z_center ,header_height
 
     @staticmethod
     def create_king_studs(
