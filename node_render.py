@@ -10,6 +10,23 @@ from segment_factory import SegmentFactory
 
 class NodeRender:
     @staticmethod
+    def render_nodes(data,nodes_lookup):
+        for node_dict in data["nodes"]:
+            node_id = node_dict["id"]
+            x = node_dict["x"]
+            y = node_dict["y"]
+            nodes_lookup[node_id] = (x, y)
+            NodeRender.create_marker((x,y,0),node_id)
+
+    @staticmethod
+    def render_edges(data,nodes_lookup,house_parent):
+        for edge in data["edges"]:
+            NodeRender.create_wall_segment(
+                edge_data=edge,
+                nodes_lookup=nodes_lookup,
+                parent_obj=house_parent
+            )
+    @staticmethod
     def build_house_from_data(data):
         # Create an Empty to hold all walls
         bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
@@ -17,19 +34,10 @@ class NodeRender:
         house_parent.name = "HouseRoot"
         # Parse nodes into a dictionary for quick lookup
         nodes_lookup = {}
-        for node_dict in data["nodes"]:
-            node_id = node_dict["id"]
-            x = node_dict["x"]
-            y = node_dict["y"]
-            nodes_lookup[node_id] = (x, y)
-            NodeRender.create_marker((x,y,0),node_id)
+        NodeRender.render_nodes(data,nodes_lookup)
+
         # Create each wall from edges
-        for edge in data["edges"]:
-            NodeRender.create_wall_segment(
-                edge_data=edge,
-                nodes_lookup=nodes_lookup,
-                parent_obj=house_parent
-            )
+        NodeRender.render_edges(data,nodes_lookup,house_parent)
         for furniture in data["furnitures"]:
             NodeRender.create_furniture(furniture,house_parent)
 
@@ -43,6 +51,12 @@ class NodeRender:
             FurnitureFactory.place_bed(location,orientation)
         if furniture_type == "table_set":
             FurnitureFactory.place_dinner_set(location,orientation)
+        if furniture_type == "Bath":
+            print("✅ Bath placement")
+            FurnitureFactory.place_bath(location,orientation)
+        if furniture_type == "Shower":
+            print("✅ Shower placement")
+            FurnitureFactory.place_shower(location, orientation)
 
 
     @staticmethod

@@ -185,9 +185,9 @@ class BedFactory:
         drape.name = f"{name}_Drape"
 
         # Scale, apply transforms, then position
-        drape.scale = (length + 0.2, width + 0.2, 1)
+        drape.scale = (length + 0.2, width + 0.35, 1)
         bpy.ops.object.transform_apply(scale=True)
-        drape.location = (0, 0, height / 2 + 0.15)
+        drape.location = (-0.1, 0, height / 2 + 0.15)
 
         # Apply material, parent
         if drape_mat:
@@ -236,7 +236,8 @@ class BedFactory:
         # Bake the cloth simulation
         print("Baking cloth simulation...")
         bpy.ops.ptcache.bake_all(bake=True)  # Bake all physics caches
-
+        # Enable Shade Smooth
+        bpy.ops.object.shade_smooth()
         # Wait for the bake to complete
         print("Waiting for bake to complete...")
         while bpy.context.scene.frame_current < bpy.context.scene.frame_end:
@@ -256,6 +257,12 @@ class BedFactory:
 
         # Schedule the apply_cloth_modifier function to run after 30 seconds
         bpy.app.timers.register(apply_cloth_modifier, first_interval=60)
+
+        # Add a Solidify Modifier
+        solidify = drape.modifiers.new(name="Solidify", type='SOLIDIFY')
+
+        # Set thickness to 0.02
+        solidify.thickness = 0.02
 
         return bed_parent
 

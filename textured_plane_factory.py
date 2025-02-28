@@ -7,6 +7,11 @@ class TexturedPlaneFactory:
         bpy.ops.mesh.primitive_plane_add(size=plane_size)
         plane = bpy.context.object
         plane.name = plane_name
+        # Correct scaling
+        plane.scale = (31.8, 15.15, 1)  # Ensure full size scaling
+
+        # Apply scale
+        #bpy.ops.object.transform_apply(scale=True, location=False)
 
         # Create a new material
         mat = bpy.data.materials.new(name="ImageMaterial")

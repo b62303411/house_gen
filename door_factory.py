@@ -169,7 +169,7 @@ class DoorFactory:
             name_prefix=name_prefix,
             bottom_z=door_bottom_z,
             opening_width=door_width,
-            opening_height=door_height-header_spec["header_height"],
+            opening_height=door_height, #-header_spec["header_height"]
             bottom_plate_height=bottom_plate_height,
             stud_spec=stud_spec
         )

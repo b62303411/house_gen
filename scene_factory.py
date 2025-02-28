@@ -76,15 +76,15 @@ class SceneFactory:
         marker.name = name
     @staticmethod
     def create_plane_plan():
-        bpy.ops.mesh.primitive_plane_add(size=1)
+        #bpy.ops.mesh.primitive_plane_add(size=1)
         obj = TexturedPlaneFactory.create_textured_plane("E:\\workspace\\blender_house\\house_gen\\w1024.jpg", "architecture plan")
         obj.name = "architecture plan"
-
+        obj.location = (0.375159,-0.842076 ,0)
         # Correct scaling
-        obj.scale = (15.89, 7.59, 1 )# Ensure full size scaling
+        #obj.scale = (20, 12, 1 )# Ensure full size scaling
 
         # Apply scale
-        bpy.ops.object.transform_apply(scale=True, location=False)
+        #bpy.ops.object.transform_apply(scale=True, location=False)
     @staticmethod
     def build_scene():
         # demo_wall_test()

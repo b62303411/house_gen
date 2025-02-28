@@ -10,6 +10,7 @@ import table_factory
 from bath_thub_factory import BathThubFactory
 from bed_factory import BedFactory
 from chair_factory import ChairFactory
+from shower_factory import ShowerFactory
 from table_factory import TableFactory
 
 importlib.reload(table_factory)  # Force refresh
@@ -19,7 +20,16 @@ importlib.reload(bed_factory)
 class FurnitureFactory:
     prototypes = {}
     prototype_collection = None
+    furniture_collection = None
 
+    @staticmethod
+    def create_furniture_collection():
+        """Creates a dedicated collection for prototypes if it doesn't exist."""
+        if "Furnitures" not in bpy.data.collections:
+            FurnitureFactory.furniture_collection = bpy.data.collections.new("Furnitures")
+            bpy.context.scene.collection.children.link(FurnitureFactory.furniture_collection)
+        else:
+            FurnitureFactory.furniture_collection = bpy.data.collections["Furnitures"]
     @staticmethod
     def create_prototype_collection():
         """Creates a dedicated collection for prototypes if it doesn't exist."""
@@ -28,6 +38,20 @@ class FurnitureFactory:
             bpy.context.scene.collection.children.link(FurnitureFactory.prototype_collection)
         else:
             FurnitureFactory.prototype_collection = bpy.data.collections["Prototypes"]
+    @staticmethod
+    def register_furniture(name,obj):
+        if FurnitureFactory.furniture_collection is None:
+            FurnitureFactory.create_furniture_collection()
+
+        FurnitureFactory.furniture_collection.objects.link(obj)
+        bpy.context.collection.objects.unlink(obj)  # Remove from default scene collection
+        for child in obj.children:
+            FurnitureFactory.furniture_collection.objects.link(child)
+            bpy.context.collection.objects.unlink(child)
+
+        """Stores a prototype furniture object."""
+
+
     @staticmethod
     def register_prototype(name, obj):
         if FurnitureFactory.prototype_collection is None:
@@ -69,6 +93,8 @@ class FurnitureFactory:
         bpy.context.collection.objects.link(new_obj)
         if parent is not None:
             new_obj.parent = parent
+
+        FurnitureFactory.register_furniture(name, new_obj)
         return new_obj
 
 
@@ -90,6 +116,9 @@ class FurnitureFactory:
         bath = BathThubFactory.create_thub("Prototype_bath")
         FurnitureFactory.register_prototype("Bath", bath)
 
+        shower = ShowerFactory.create_corner_shower("Prototype_Shower")
+        FurnitureFactory.register_prototype("Shower", shower)
+
         print("✅ Furniture prototypes created.")
 
     @staticmethod
@@ -97,7 +126,10 @@ class FurnitureFactory:
         FurnitureFactory.clone_prototype(name="Bed", location=location, rotation=rotation)
     @staticmethod
     def place_bath(location,rotation):
-        FurnitureFactory.clone_prototype(name="bath",location=location,rotation=rotation)
+        FurnitureFactory.clone_prototype(name="Bath",location=location,rotation=rotation)
+    @staticmethod
+    def place_shower(location, rotation):
+        FurnitureFactory.clone_prototype(name="Shower", location=location, rotation=rotation)
 
     @staticmethod
     def place_dinner_set(location, rotation):

@@ -1,8 +1,20 @@
 import bpy
+
+from ceramic_material_factory import CeramicMaterialFactory
+from material_repo import MaterialRepo
+
+
 # -------------------------------------------------------------------
 # MATERIALS (simple placeholders)
 # -------------------------------------------------------------------
 class MaterialFactory:
+
+    @staticmethod
+    def create_procedural_ceramic_material():
+        return CeramicMaterialFactory.create_bath_ceramic()
+
+
+
 
     @staticmethod
     def apply_material(obj, material):
@@ -12,18 +24,11 @@ class MaterialFactory:
                 obj.data.materials.append(material)
             else:
                 obj.data.materials[0] = material
-    @staticmethod
-    def get_material(name=None):
-        # Check if a material with the same or a similar name exists
-        existing_materials = bpy.data.materials.keys()
-        for mat_name in existing_materials:
-            if mat_name.startswith(name):  # Avoids infinite numbered duplicates
-                print(f"Material '{mat_name}' already exists. Returning existing material.")
-                return bpy.data.materials[mat_name]  # Return the existing material
+
 
     @staticmethod
     def get_granite_material():
-        granite_material = MaterialFactory.get_material("Granite")
+        granite_material = MaterialRepo.get_material("Granite")
         if granite_material is None:
             """Generates a procedural granite material."""
             granite_material = bpy.data.materials.new(name="Granite")
@@ -59,7 +64,7 @@ class MaterialFactory:
         """
         Creates a procedural Acajou (mahogany) wood material compatible with Blender 4.0.
         """
-        material = MaterialFactory.get_material(name)
+        material = MaterialRepo.get_material(name)
         if material is None:
             material = bpy.data.materials.new(name)
 
@@ -113,7 +118,7 @@ class MaterialFactory:
         """
         Creates a simple, smooth material for the matrice (bed base).
         """
-        material = MaterialFactory.get_material(name)
+        material = MaterialRepo.get_material(name)
         if material is None:
             material = bpy.data.materials.new(name)
 
@@ -131,7 +136,7 @@ class MaterialFactory:
         """
         Creates a fabric-like material for the drape.
         """
-        material = MaterialFactory.get_material(name)
+        material = MaterialRepo.get_material(name)
         if material is None:
             material = bpy.data.materials.new(name)
 
@@ -180,7 +185,7 @@ class MaterialFactory:
         return material
     @staticmethod
     def create_wood_material(name="FramingWood"):
-        mat = MaterialFactory.get_material(name)
+        mat = MaterialRepo.get_material(name)
         if mat is None:
             mat = bpy.data.materials.new(name)
 
@@ -193,7 +198,7 @@ class MaterialFactory:
 
     @staticmethod
     def create_sheathing_material(name="SheathingOSB"):
-        mat = MaterialFactory.get_material(name)
+        mat = MaterialRepo.get_material(name)
         if mat is None:
             mat = bpy.data.materials.new(name)
 
@@ -206,7 +211,7 @@ class MaterialFactory:
 
     @staticmethod
     def create_drywall_material(name="Drywall"):
-        mat = MaterialFactory.get_material(name)
+        mat = MaterialRepo.get_material(name)
         if mat is None:
             mat = bpy.data.materials.new(name)
         mat.use_nodes = True
@@ -221,7 +226,7 @@ class MaterialFactory:
         """
         Creates a simple brownish 'wood' material (non-procedural).
         """
-        mat = MaterialFactory.get_material(name)
+        mat = MaterialRepo.get_material(name)
         if mat is None:
             mat = bpy.data.materials.new(name)
         mat.use_nodes = True
@@ -235,7 +240,7 @@ class MaterialFactory:
         """
         Creates a procedural material ('wood', 'earth', or 'glass') for demonstration.
         """
-        material = MaterialFactory.get_material(name)
+        material = MaterialRepo.get_material(name)
         if material is None:
             material = bpy.data.materials.new(name)
         material.use_nodes = True
@@ -301,10 +306,12 @@ class MaterialFactory:
         mat_sheathing = MaterialFactory.create_sheathing_material("SheathingOSB")
         mat_drywall = MaterialFactory.create_drywall_material("Drywall")
         mat_glass = MaterialFactory.create_procedural_material("glass", "glass")
+        mat_ceramic = MaterialFactory.create_procedural_ceramic_material()
 
         materials = {}
         materials['framing'] = mat_framing
         materials['sheathing'] = mat_sheathing
         materials['drywall'] = mat_drywall
         materials['glass'] = mat_glass
+        materials['ceramic'] = mat_ceramic
         return materials
