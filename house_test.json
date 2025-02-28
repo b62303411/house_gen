@@ -69,20 +69,20 @@
       "start_node": "N1", "end_node": "N2",
       "wall_type": "exterior",
          "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "door",
           "sub_type": "patio",
           "center_x": 2.0,
           "bottom_z": 0.0,
           "width": 2,
-          "height": 2.0
+          "height": 2.032
         },{
           "type": "window",
           "center_x": -2.0,
-          "bottom_z": 0.5,
+          "bottom_z": 1,
           "width": 0.9,
-          "height": 1.5
+          "height": 1.3
         }]
     },
     {
@@ -90,7 +90,7 @@
       "start_node": "N2", "end_node": "N3",
       "wall_type": "exterior",
          "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [
       ]
     },
@@ -99,7 +99,7 @@
       "start_node": "N3", "end_node": "N4",
       "wall_type": "exterior",
          "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "window",
           "center_x": 0.0,
@@ -125,7 +125,7 @@
       "start_node": "N4", "end_node": "N5",
       "wall_type": "exterior",
           "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "window",
           "center_x": -4.2,
@@ -163,7 +163,7 @@
       "start_node": "N5", "end_node": "N6",
       "wall_type": "exterior",
           "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -171,7 +171,7 @@
       "start_node": "N6", "end_node": "N7",
       "wall_type": "exterior",
          "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -179,7 +179,7 @@
       "start_node": "N7", "end_node": "N8",
       "wall_type": "exterior",
           "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -187,7 +187,7 @@
       "start_node": "N8", "end_node": "N1",
       "wall_type": "exterior",
           "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "window",
           "center_x": -4.2,
@@ -225,7 +225,7 @@
       "start_node": "W1", "end_node": "W2",
       "wall_type": "exterior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.1,
       "openings": [{
           "type": "door",
           "sub_type": "single",
@@ -240,7 +240,7 @@
       "start_node": "W2", "end_node": "W3",
       "wall_type": "exterior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.1,
       "openings": []
     },
     {
@@ -248,7 +248,7 @@
       "start_node": "W3", "end_node": "W4",
       "wall_type": "exterior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.1,
       "openings": []
     },
     {
@@ -256,7 +256,7 @@
       "start_node": "W4", "end_node": "W1",
       "wall_type": "exterior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.1,
       "openings": [
 
       ]
@@ -266,14 +266,14 @@
       "start_node": "N2", "end_node": "I1",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0
+      "height": 2.7432
     },
     {
       "id": "Int_MBed_Fam_2",
       "start_node": "I1", "end_node": "I2",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [
         {
           "type": "door",
@@ -281,7 +281,7 @@
           "center_x": 0.0,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         }
       ]
     },{
@@ -289,35 +289,35 @@
       "start_node": "I3", "end_node": "I4",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0
+      "height": 2.7432
     },
     {
       "id": "Int_Foyer_Dining",
       "start_node": "I6", "end_node": "I14",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [ {
           "type": "door",
           "sub_type": "single",
           "center_x": 0.0,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         },{
           "type": "door",
           "sub_type": "single",
           "center_x": 5.0,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         },{
           "type": "door",
           "sub_type": "single",
           "center_x": 6.5,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         }]
     },
     {
@@ -325,7 +325,7 @@
       "start_node": "I3", "end_node": "I4",
       "wall_type": "interior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -333,7 +333,7 @@
       "start_node": "I17", "end_node": "I7",
       "wall_type": "interior",
       "stud_type":"2x6",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -341,14 +341,14 @@
       "start_node": "I18", "end_node": "I9",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "door",
           "sub_type": "single",
           "center_x": 0.0,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         }]
     },
     {
@@ -356,14 +356,14 @@
       "start_node": "I19", "end_node": "I10",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": [{
           "type": "door",
           "sub_type": "single",
           "center_x": 0.0,
           "bottom_z": 0.0,
           "width": 0.9,
-          "height": 2.0
+          "height": 2.1
         }]
     },
     {
@@ -371,7 +371,7 @@
       "start_node": "I20", "end_node": "I12",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -379,7 +379,7 @@
       "start_node": "I2", "end_node": "I36",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -387,7 +387,7 @@
       "start_node": "I3", "end_node": "I38",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -395,7 +395,7 @@
       "start_node": "I5", "end_node": "I37",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     },
     {
@@ -403,11 +403,17 @@
       "start_node": "I6", "end_node": "I36",
       "wall_type": "interior",
       "stud_type":"2x4",
-      "height": 2.0,
+      "height": 2.7432,
       "openings": []
     }
   ],
   "furnitures":[
+    {
+       "id": "Shower_Master2",
+       "type": "Shower",
+      "location": [5.84532,-6.58799,0],
+       "orientation":[0,0,0]
+    },
      {
        "id": "Bed_1",
        "type": "bed",
@@ -431,11 +437,16 @@
        "type": "table_set",
       "location": [4.11754  ,0,0],
        "orientation":[0,0,0]
-    }, {
-       "id": "bath",
-       "type": "bath",
-      "location": [4.11754  ,0,0],
+    },{
+       "id": "Bath_Master",
+       "type": "Bath",
+      "location": [0.581463   ,-3.24077 ,0],
        "orientation":[0,0,0]
+    },{
+       "id": "Shower_Master",
+       "type": "Shower",
+      "location": [-1.06656 ,-3.33264 ,0],
+       "orientation":[0,0,180]
     }
   ]
 }
