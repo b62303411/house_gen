@@ -1,12 +1,66 @@
 import bpy
+import math
+import os
+import sys
+
+
+def get_script_dir():
+    """Get only the directory of the current script without the file name."""
+    script_dir = None
+
+    try:
+        # Try getting the directory from Blender text editor
+        script_path = bpy.context.space_data.text.filepath
+        if script_path:
+            script_dir = os.path.dirname(os.path.abspath(script_path))  # Ensure only the folder
+    except (AttributeError, TypeError):
+        pass
+
+    if not script_dir:
+        try:
+            # Fall back to __file__ attribute
+            script_path = os.path.abspath(__file__)
+            script_dir = os.path.dirname(script_path)  # Extract only the directory
+        except NameError:
+            # If all else fails, use Blender's executable directory
+            script_dir = os.path.dirname(bpy.app.binary_path)
+
+    return script_dir
+
+script_dir = get_script_dir()
+if script_dir not in sys.path:
+    sys.path.append(script_dir)
+    sys.path.append("E:\workspace\blender_house\house_gen")
+
+print("Updated script_dir:", script_dir)
+# Debugging: Print sys.path to check if it's added
+#print("Updated sys.path:", sys.path)
+
+
+
+print("Python Executable:", sys.executable)
+print("Python Version:", sys.version)
+print("Current Working Directory:", os.getcwd())
+#print("Sys Path:", sys.path)
+import os
+
+script_dir = "E:\\workspace\\blender_house\\house_gen"
+print("Files in script directory:", os.listdir(script_dir))
+
+import importlib
+
+import bpy
 
 import math
 
 import mathutils
 from mathutils import Vector
-from board_factory import BoardFactory
-from materials import MaterialFactory
 
+import basin_factory
+import board_factory
+from basin_factory import BassinFactory
+
+importlib.reload(basin_factory)
 
 class KitchenCounterFactory:
     @staticmethod
@@ -144,6 +198,8 @@ class KitchenCounterFactory:
             countertop.parent = parent_obj
             if material_counter:
                 countertop.data.materials.append(bpy.data.materials.get(material_counter))
+            #parent,name="Bathtub", size=(1.524, 1, .6),location=(0,0,0), wall_thickness=0.9, bevel_width=0.3, subsurf_levels=2
+            BassinFactory.create_bassin(parent_obj,"sink",(.8,.5,.35),(0,0,.78),.9,.3,2)
 
         # **Cabinet Doors**
         door_count = max(1, int(cabinet_width / 0.6))  # One door per ~60cm
