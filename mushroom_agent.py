@@ -7,6 +7,24 @@ import pygame
 from agent import Agent
 from cell import Cell
 from collision_box import CollisionBox
+class Vector:
+    def __init__(self):
+        self.direction = (0,0)
+        self.position = (0,0)
+        self.lenght = 1
+
+class MinMax:
+    def __init__(self,
+                 min_x=9999, max_x=0, min_y=9999, max_y=0):
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+    def evaluate(self,min_x=9999, max_x=9999, min_y=9999, max_y=9999):
+        self.min_x = min(self.min_x,min_x)
+        self.min_y = min(self.min_y,min_y)
+        self.max_y = min(self.max_y,max_y)
+        self.max_x = min(self.max_x,max_x)
 
 
 class Mushroom(Agent):
@@ -20,6 +38,7 @@ class Mushroom(Agent):
         self.state = "ray_trace"
         self.growth_cells = set()
         self.max_width = 1
+        self.overlapping = []
 
     def get_center(self):
         return self.collision_box.get_center()
@@ -37,12 +56,15 @@ class Mushroom(Agent):
             self.state = "width_assessment"
         elif self.state == "width_assessment":
             self.width_assessment_phase()
-            self.state = "width_expansion"
+            self.state = "pruning"
         elif self.state == "width_expansion":
             self.width_ray_trace()
             self.state = "pruning"
         elif self.state == "pruning":
             self.prunning_phase()
+            self.state = "overlap"
+        elif self.state == "overlap":
+            self.overlap_phase()
         elif self.state == "perimeter_reaction":
             self.perimeter_reaction_phase()
             self.state = "growth" if self.has_growth_cells() else "done"
@@ -64,14 +86,27 @@ class Mushroom(Agent):
             pass
         else:
             self.alive = False
+    def overlap_phase(self):
+        mushrooms = self.world.find_all(Mushroom)
+        for m in mushrooms:
+            if m != self:
+                if self.collision_box.is_parallel_to(m.collision_box):
+                    if self.collision_box.is_overlapping(m.collision_box):
+                        self.overlapping.append(m)
 
+        pass
     def ray_trace_phase(self):
         """Determine the longest axis."""
-        dx, dy, cx, cy = self.ray_trace()
+        dx, dy, cx, cy = self.ray_trace_from_center()
+        x, y = self.collision_box.get_center()
+        is_on_food = False
+        if self.world.is_food(x, y):
+            is_on_food = True
 
         self.stem_length = int(max(abs(dx), abs(dy)))
         self.collision_box.length = self.stem_length
         self.collision_box.width = int(min(abs(dx), abs(dy)))
+
         self.collision_box.center_y = cy
         self.collision_box.center_x = cx
         angle = self.calculate_rotation_from_direction(dx, dy)
@@ -79,7 +114,8 @@ class Mushroom(Agent):
         direction = (1, 0) if abs(dx) > abs(dy) and dx > 0 else (-1, 0) if abs(dx) > abs(dy) else (
             0, 1) if dy > 0 else (0, -1)
         x, y = self.collision_box.get_center()
-
+        if is_on_food and not self.world.is_food(x, y):
+            print("center out ?")
         print(
             f"Mushroom {self.id}: Ray trace - length={self.stem_length}, direction={direction}, center=({x}, {y})")
 
@@ -116,48 +152,17 @@ class Mushroom(Agent):
             self.widths[point] = width
         print(f"Mushroom {self.id}: Width assessed - {len(self.widths)} points")
 
+
     def width_ray_trace(self):
-        # Compute normalized direction and normal vector
-        dx, dy = self.collision_box.default_direction
-        magnitude = (dx ** 2 + dy ** 2) ** 0.5
-        norm_dir = (dx / magnitude, dy / magnitude)
-        normal = (-norm_dir[1], norm_dir[0])  # Unit normal vector
+        points = self.collision_box.get_ray_trace_points()
 
-        # Track min/max points along the normal direction
-        min_parallel = float('inf')
-        max_parallel = float('-inf')
-        min_thikness = float('inf')
-        for cell in self.root_cells:
-            # Left direction: opposite of the normal vector
-            left_dx, left_dy = -normal[0], -normal[1]
-            left_steps = self.trace_food_boundary(cell.x, cell.y, left_dx, left_dy)
+        min_candidate = MinMax()
+        for p in points:
+            min_x, max_x, min_y, max_y = self.ray_trace(p[0],p[1])
+            min_candidate.evaluate(min_x,max_x,min_y,max_y)
 
-            # Right direction: along the normal vector
-            right_dx, right_dy = normal[0], normal[1]
-            right_steps = self.trace_food_boundary(cell.x, cell.y, right_dx, right_dy)
 
-            thickness = left_steps + right_steps
-            min_thikness = min(min_thikness, thickness)
-            # Calculate boundary points using displacement vectors
-            left_point = (
-                cell.x + left_dx * left_steps,
-                cell.y + left_dy * left_steps
-            )
-            right_point = (
-                cell.x + right_dx * right_steps,
-                cell.y + right_dy * right_steps
-            )
 
-            # Project points onto the normal vector to find width
-            # (dot product with normal gives signed distance)
-            left_projection = left_point[0] * normal[0] + left_point[1] * normal[1]
-            right_projection = right_point[0] * normal[0] + right_point[1] * normal[1]
-
-            min_parallel = min(min_parallel, left_projection, right_projection)
-            max_parallel = max(max_parallel, left_projection, right_projection)
-
-        # Stem width is the difference between max and min projections
-        stem_width = max_parallel - min_parallel
 
     def trace_food_boundary(self, x, y, dx, dy):
         """Trace in a direction while food is present, return steps taken."""
@@ -237,7 +242,11 @@ class Mushroom(Agent):
                 not self.world.is_occupied(x, y) and
                 not self.world.collide_with_any(self, x, y))
 
-    def ray_trace(self):
+    def ray_trace_from_center(self):
+        center_x, center_y = self.get_center()
+        values = self.ray_trace(center_x,center_y)
+        return values
+    def ray_trace(self,x,y):
         center_x, center_y = self.get_center()
         values = self.scan_for_walls(center_x, center_y, self.collision_box.get_direction())
         return values
@@ -248,8 +257,16 @@ class Mushroom(Agent):
        - Then, count forward to find the total steps.
         """
         height, width = self.world.grid.shape
-
+        min_x = None
+        min_y = None
+        max_x = None
+        max_y = None
         # Step 1: Crawl backward until hitting a boundary
+        if self.world.is_food(int(x), int(y)):
+            min_x = x
+            min_y = y
+        else:
+            pass
         while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)):
             x -= dx
             y -= dy
@@ -268,17 +285,23 @@ class Mushroom(Agent):
             steps += 1  # Count steps only in the forward direction
             max_x = x
             max_y = y
-
+        if min_x is None or min_y is None:
+            pass
         return (steps, min_x, min_y, max_x, max_y)  # The total step count along this direction
 
     def scan_for_walls(self, x, y, direction):
         lengths = []
-        directions = [(1, 0), (0, 1)]
+        directions = [(1, 0), (0, 1), (.5, .5), (-.5, -.5)]
+        vectors = []
         min_x = 900
         min_y = 900
         max_x = 0
         max_y = 0
         for d in directions:
+            v = Vector()
+            v.direction = d
+            v.position = (x, y)
+            vectors.append(v)
             data = self.measure_extent(x, y, d[0], d[1])
             min_x = min(data[1] + 1, min_x)
             min_y = min(data[2] + 1, min_y)
@@ -290,6 +313,7 @@ class Mushroom(Agent):
         center_y = (min_y + max_y) / 2.0
         lenght_x = lengths[0][0]
         lenght_y = lengths[1][0]
+
 
         return (lenght_x, lenght_y, center_x, center_y)
 
@@ -355,7 +379,7 @@ class Mushroom(Agent):
         self.branches.extend(other.branches)
         for cell in other.root_cells | other.core_cells:
             self.world.occupied[cell.y, cell.x] = self.id
-        min_x, max_x, min_y, max_y = self.ray_trace()
+        min_x, max_x, min_y, max_y = self.ray_trace_from_center()
         self.update_bounding_box_and_center(min_x, max_x, min_y, max_y)
         other.alive = False
 

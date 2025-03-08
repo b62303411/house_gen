@@ -50,6 +50,13 @@ class World:
                     return True
         return False
 
+    def find_all(self, type):
+        results = []
+        for a in self.agents:
+            if isinstance(a, type):
+                results.append(a)
+        return results
+
     def create_mushroom(self, x, y):
         mush = self.af.create_mushroom(self, x, y)
         self.agents.append(mush)

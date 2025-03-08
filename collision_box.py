@@ -13,34 +13,27 @@ class CollisionBox:
 
     def get_area(self):
         return self.width*self.length
+
     def get_direction(self):
-        """
-        Convert a rotation angle to a direction vector, assuming default direction is (1,0).
+        angle_deg = round(self.rotation / 45.0) * 45 % 360
+        directions = {
+            0: (1, 0),
+            45: (math.sqrt(2)/2, math.sqrt(2)/2),
+            90: (0, 1),
+            135: (-math.sqrt(2)/2, math.sqrt(2)/2),
+            180: (-1, 0),
+            225: (-math.sqrt(2)/2, -math.sqrt(2)/2),
+            270: (0, -1),
+            315: (math.sqrt(2)/2, -math.sqrt(2)/2)
+        }
+        return directions.get(angle_deg, (0, 0))
 
-        Args:
-            rotation_angle (float): Angle in degrees
-
-        Returns:
-            tuple: Normalized direction vector as (dx, dy)
-        """
-        # Convert angle to radians
-        angle_rad = math.radians(self.rotation)
-
-        # Calculate direction vector components
-        dx = math.cos(angle_rad)
-        dy = math.sin(angle_rad)
-
-        # For grid movement, we need integer directions
-        # Round to nearest integer: 0, 1, or -1
-        if abs(dx) > abs(dy):
-            # Horizontal movement dominates
-            return (int(round(dx)), 0)
-        else:
-            # Vertical movement dominates
-            return (0, int(round(dy)))
-
+    def get_vector(self):
+        dir = self.get_direction()
+        vector = dir * self.length
+        return vector
     def get_center(self):
-        return self.center_x, self.center_y
+            return self.center_x, self.center_y
 
 
     def area_of_triangle(self, A, B, C):
@@ -71,6 +64,24 @@ class CollisionBox:
         normal = (-direction[1], direction[0])
 
         return direction, normal
+
+    def is_parallel_to(self, other, tolerance=1e-5):
+        angle_diff = abs(self.rotation - other.rotation) % 180
+        return angle_diff < tolerance or abs(angle_diff - 180) < tolerance
+
+    def is_overlapping(self, other):
+        return other.is_point_inside(self.center_x,self.center_y)
+
+    def get_ray_trace_points(self):
+        direction = self.get_direction()
+        half_length = self.length / 2.0
+        points = []
+        for factor in [0.25, 0.5, 0.75]:
+            point_x = self.center_x + direction[0] * half_length * factor
+            point_y = self.center_y + direction[1] * half_length * factor
+            points.append((point_x, point_y))
+        return points
+
     def calculate_corners(self):
         if self.corners is not None:
             return self.corners
