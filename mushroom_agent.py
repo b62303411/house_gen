@@ -40,37 +40,45 @@ class Mushroom(Agent):
             self.state = "width_expansion"
         elif self.state == "width_expansion":
             self.width_ray_trace()
-            self.state = "perimeter_reaction"
+            self.state = "pruning"
+        elif self.state == "pruning":
+            self.prunning_phase()
         elif self.state == "perimeter_reaction":
             self.perimeter_reaction_phase()
             self.state = "growth" if self.has_growth_cells() else "done"
         elif self.state == "growth":
             self.growth_phase()
             self.state = "ray_trace" if self.has_growth_cells() else "done"
-        #min_x, max_x, min_y, max_y = self.ray_trace()
-        #self.update_bounding_box_and_center(min_x, max_x, min_y, max_y)
+        # min_x, max_x, min_y, max_y = self.ray_trace()
+        # self.update_bounding_box_and_center(min_x, max_x, min_y, max_y)
 
-    def calculate_rotation_from_direction(self,dx, dy):
+    def calculate_rotation_from_direction(self, dx, dy):
         angle_rad = math.atan2(dy, dx)
         angle_deg = math.degrees(angle_rad)
         # Normalize angle to nearest 45 degrees
         angle_deg = round(angle_deg / 45) * 45
         return angle_deg % 360
 
+    def prunning_phase(self):
+        if self.center_on_food():
+            pass
+        else:
+            self.alive = False
+
     def ray_trace_phase(self):
         """Determine the longest axis."""
-        dx,dy,cx,cy = self.ray_trace()
+        dx, dy, cx, cy = self.ray_trace()
 
         self.stem_length = int(max(abs(dx), abs(dy)))
-        self.collision_box.length=self.stem_length
-        self.collision_box.width =int(min(abs(dx),abs(dy)))
-        self.collision_box.center_y=cy
-        self.collision_box.center_x=cx
-        angle = self.calculate_rotation_from_direction(dx,dy)
-        self.collision_box.rotation=angle
+        self.collision_box.length = self.stem_length
+        self.collision_box.width = int(min(abs(dx), abs(dy)))
+        self.collision_box.center_y = cy
+        self.collision_box.center_x = cx
+        angle = self.calculate_rotation_from_direction(dx, dy)
+        self.collision_box.rotation = angle
         direction = (1, 0) if abs(dx) > abs(dy) and dx > 0 else (-1, 0) if abs(dx) > abs(dy) else (
             0, 1) if dy > 0 else (0, -1)
-        x,y = self.collision_box.get_center()
+        x, y = self.collision_box.get_center()
 
         print(
             f"Mushroom {self.id}: Ray trace - length={self.stem_length}, direction={direction}, center=({x}, {y})")
@@ -148,21 +156,8 @@ class Mushroom(Agent):
             min_parallel = min(min_parallel, left_projection, right_projection)
             max_parallel = max(max_parallel, left_projection, right_projection)
 
-            #self.min_x = self.center_x - min_parallel / 2
-            #self.max_x = self.center_x + min_parallel / 2
-
         # Stem width is the difference between max and min projections
         stem_width = max_parallel - min_parallel
-
-        # Update bounding box (if needed)
-        #self.min_x = self.center_x - min_thikness / 2
-        #self.max_x = self.center_x + min_thikness / 2
-        #self.min_y = min_parallel * normal[1]
-        #self.max_y = max_parallel * normal[1]
-
-        # Calculate center point of the bounding box
-        #self.center_x = (self.min_x + self.max_x) / 2.0
-        #self.center_y = (self.min_y + self.max_y) / 2.0
 
     def trace_food_boundary(self, x, y, dx, dy):
         """Trace in a direction while food is present, return steps taken."""
@@ -244,7 +239,7 @@ class Mushroom(Agent):
 
     def ray_trace(self):
         center_x, center_y = self.get_center()
-        values = self.scan_for_walls(center_x,center_y,self.collision_box.get_direction())
+        values = self.scan_for_walls(center_x, center_y, self.collision_box.get_direction())
         return values
 
     def measure_extent(self, x, y, dx, dy):
@@ -258,8 +253,8 @@ class Mushroom(Agent):
         while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)):
             x -= dx
             y -= dy
-            min_x=x
-            min_y=y
+            min_x = x
+            min_y = y
 
         # Step 2: Move one step forward to set the actual starting point
         x += dx
@@ -274,21 +269,21 @@ class Mushroom(Agent):
             max_x = x
             max_y = y
 
-        return (steps,min_x,min_y,max_x,max_y)  # The total step count along this direction
+        return (steps, min_x, min_y, max_x, max_y)  # The total step count along this direction
 
     def scan_for_walls(self, x, y, direction):
         lengths = []
-        directions = [(1,0),(0,1)]
-        min_x =900
-        min_y =900
-        max_x =0
+        directions = [(1, 0), (0, 1)]
+        min_x = 900
+        min_y = 900
+        max_x = 0
         max_y = 0
         for d in directions:
-            data = self.measure_extent(x,y,d[0],d[1])
-            min_x = min(data[1]+1,min_x)
-            min_y = min(data[2]+1, min_y)
-            max_x = max(data[3]-1,max_x)
-            max_y = max(data[4]-1,max_y)
+            data = self.measure_extent(x, y, d[0], d[1])
+            min_x = min(data[1] + 1, min_x)
+            min_y = min(data[2] + 1, min_y)
+            max_x = max(data[3] - 1, max_x)
+            max_y = max(data[4] - 1, max_y)
             lengths.append(data)
         # Step 3: Compute floating-point center
         center_x = (min_x + max_x) / 2.0
@@ -296,7 +291,7 @@ class Mushroom(Agent):
         lenght_x = lengths[0][0]
         lenght_y = lengths[1][0]
 
-        return (lenght_x,lenght_y,center_x,center_y)
+        return (lenght_x, lenght_y, center_x, center_y)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0
@@ -319,9 +314,9 @@ class Mushroom(Agent):
         self.collision_box.center_x = (min_x + max_x) / 2.0
         self.collision_box.center_y = (min_y + max_y) / 2.0
 
-    def draw(self, screen,vp):
+    def draw(self, screen, vp):
         for cell in self.root_cells:
-            sx,sy  = vp.convert(cell.x,cell.y)
+            sx, sy = vp.convert(cell.x, cell.y)
             if cell.is_root:
                 colour = (100, 200, 160)
             elif cell.is_stem:
@@ -335,9 +330,14 @@ class Mushroom(Agent):
         corners = self.collision_box.calculate_corners()
         corners_ = []
         for c in corners:
-            cp =vp.convert(c[0],c[1])
+            cp = vp.convert(c[0], c[1])
             corners_.append(cp)
         pygame.draw.polygon(screen, (255, 200, 0), corners_, 1)
+
+    def center_on_food(self):
+        x, y = self.collision_box.get_center()
+        return self.world.is_food(x, y)
+
     def can_merge_with(self, other):
         if not isinstance(other, Mushroom) or self is other:
             return False
@@ -370,8 +370,7 @@ class Mushroom(Agent):
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
-        return rect.collidepoint(x, y)
+        return rect.is_point_inside(x, y)
 
     def get_world_rect(self):
         return self.collision_box
-

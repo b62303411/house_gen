@@ -131,7 +131,8 @@ class Simulation:
 
             # Draw ants (scaled)
             for ant in world.agents:
-                ant.draw(screen, vp)
+                if ant.alive:
+                    ant.draw(screen, vp)
             # Render the number of agents in the top-left corner
             text_surface = f.render(f"Agents: {len(world.agents)}", True, (255, 255, 0))
             screen.blit(text_surface, (10, 10))  # Position (x=10, y=10)

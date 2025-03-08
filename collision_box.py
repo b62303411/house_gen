@@ -9,7 +9,10 @@ class CollisionBox:
         self.length = length
         self.rotation = rotation
         self.default_direction = (1,0)
+        self.corners = None
 
+    def get_area(self):
+        return self.width*self.length
     def get_direction(self):
         """
         Convert a rotation angle to a direction vector, assuming default direction is (1,0).
@@ -40,25 +43,23 @@ class CollisionBox:
         return self.center_x, self.center_y
 
 
-    def collidepoint(self, x, y):
-            """Check if a given point (x,y) is inside the rotated rectangle."""
-            corners = self.calculate_corners()
+    def area_of_triangle(self, A, B, C):
+        return abs((A[0]*(B[1]-C[1]) + B[0]*(C[1]-A[1]) + C[0]*(A[1]-B[1])) / 2.0)
 
-            def cross(ax, ay, bx, by):
-                return ax * by - ay * bx
+    def is_point_inside(self, x, y):
+        corners = self.calculate_corners()
+        A, B, C, D = corners
+        P = (x, y)
 
-            inside = True
-            for i in range(4):
-                corner_a = corners[i]
-                corner_b = corners[(i + 1) % 4]
-                edge_x, edge_y = corner_b[0] - corner_a[0], corner_b[1] - corner_a[1]
-                point_x, point_y = x - corner_a[0], y - corner_a[1]
+        rect_area = self.area_of_triangle(A, B, C) + self.area_of_triangle(A, C, D)
+        area_sum = (
+            self.area_of_triangle(P, A, B) +
+            self.area_of_triangle(P, B, C) +
+            self.area_of_triangle(P, C, D) +
+            self.area_of_triangle(P, D, A)
+        )
 
-                if edge_x * point_y - edge_y * point_x < 0:
-                    inside = False
-                    break
-
-            return inside
+        return abs(rect_area - area_sum) < 1e-5
 
     def derive_direction_and_normal(self):
         angle_rad = math.radians(self.rotation)
@@ -71,9 +72,11 @@ class CollisionBox:
 
         return direction, normal
     def calculate_corners(self):
+        if self.corners is not None:
+            return self.corners
         """Get OBB corner points in world coordinates"""
-        half_length = self.length / 2
-        half_width = self.width / 2
+        half_length = (self.length) / 2 -.5
+        half_width = (self.width) / 2 -.5
         direction,normal= self.derive_direction_and_normal()
 
         dir_vec = (direction[0] * half_length, direction[1] * half_length)
@@ -103,6 +106,6 @@ class CollisionBox:
         corners = [top_left, top_right, bottom_right, bottom_left]
 
         # Apply pixel alignment (rounding) once at the end
-        c =[(int(round(x)), int(round(y))) for x, y in corners]
+        self.corners =[(int(round(x)), int(round(y))) for x, y in corners]
 
-        return c
+        return self.corners
