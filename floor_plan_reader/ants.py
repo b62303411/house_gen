@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
 import random
-from agent import Agent
+from floor_plan_reader.agent import Agent
 class Ant(Agent):
     def __init__(self, x, y, ant_id, world):
         super().__init__(ant_id)

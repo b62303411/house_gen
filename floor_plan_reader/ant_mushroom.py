@@ -143,7 +143,7 @@ def run_ant_simulation(
 
 if __name__ == "__main__":
     run_ant_simulation(
-        image_path="dark_tones_only.png",
+        image_path="../dark_tones_only.png",
         threshold=200,
         num_ants=2000,
         allow_revisit=True

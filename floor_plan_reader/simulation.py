@@ -34,18 +34,23 @@ class ViewPoint:
     def get_center(self):
         return self.offset_x * self.zoom_factor, self.offset_y * self.zoom_factor
 class Simulation:
+    @staticmethod
     def run_ant_simulation(
             image_path,
+            image_path_filtered,
             threshold=200,  # if pixel >= threshold => empty, else wall
             num_ants=20,
             allow_revisit=False
     ):
         # 1) Load grayscale
-        img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
+        img_colour = cv2.imread(image_path)
+
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path}")
         wf = WorldFactory()
-
+        #img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
+        img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         # 2) Create grid: 1=empty, 0=wall
         g = (img_gray >= threshold).astype(np.uint8)
         wf.set_grid(g)
@@ -108,10 +113,15 @@ class Simulation:
                         vp.zoom_out()
 
             # --- Update ants (simple example) ---
-
-            for ant in world.agents:
-                if ant.alive:
-                    ant.run()
+            zombie_candidates = []
+            for agent in world.agents:
+                if agent.alive:
+                    agent.run()
+                else:
+                    zombie_candidates.append(agent)
+            for zombie in zombie_candidates:
+                if zombie in world.agents:
+                    world.agents.remove(zombie)
 
                 # else: no moves => ant stays put
             if not len(world.candidates) == 0:
@@ -125,14 +135,15 @@ class Simulation:
             new_w = int(width * vp.zoom_factor)
             new_h = int(height * vp.zoom_factor)
             floorplan_scaled = pygame.transform.smoothscale(floorplan_surf, (new_w, new_h))
+            img = pygame.transform.smoothscale(img_gray_surface, (new_w, new_h))
 
             # Blit the scaled floorplan at (0,0)
-            screen.blit(floorplan_scaled, vp.get_center())
-
+            #screen.blit(floorplan_scaled, vp.get_center())
+            screen.blit(img, vp.get_center())
             # Draw ants (scaled)
-            for ant in world.agents:
-                if ant.alive:
-                    ant.draw(screen, vp)
+            for agent in world.agents:
+                if agent.alive:
+                    agent.draw(screen, vp)
             # Render the number of agents in the top-left corner
             text_surface = f.render(f"Agents: {len(world.agents)}", True, (255, 255, 0))
             screen.blit(text_surface, (10, 10))  # Position (x=10, y=10)
@@ -147,8 +158,9 @@ class Simulation:
     if __name__ == "__main__":
         # Provide a path to your image
         run_ant_simulation(
-            image_path="dark_tones_only.png",
+            image_path="../floor_plans/fp2.png",
+            image_path_filtered="../dark_tones_only.png",
             threshold=200,
-            num_ants=100,
+            num_ants=200,
             allow_revisit=True
         )

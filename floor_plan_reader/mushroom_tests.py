@@ -2,7 +2,8 @@ import unittest
 
 import numpy as np
 
-from cell import Cell
+from floor_plan_reader.cell import Cell
+from floor_plan_reader.collision_box import CollisionBox
 from mushroom_agent import Mushroom
 from world_factory import WorldFactory
 
@@ -111,7 +112,51 @@ class TestMushroomGrowth(unittest.TestCase):
     def test_wall_detection(self):
         pass
 
+    def test_collisions(self):
+        c = CollisionBox(10,10,4,25,45)
+        c.length=25
+        c.width = 30
+        c.center_y=453.5
+        c.center_x=109.5
+        c.rotation =45
+        corners = c.calculate_corners()
+        self.assertEqual(1,corners[0][1])
 
+    def test_merge_horizontal_aligned(self):
+        # Two boxes, same y, horizontal orientation
+        boxA = CollisionBox(center_x=10, center_y=10, width=4, length=6, rotation=0)
+        boxB = CollisionBox(center_x=20, center_y=10, width=4, length=6, rotation=0)
 
+        merged = boxA.merge_aligned(boxB)
+
+        # Both boxes have the same orientation and the same width => merged should have the same width
+        self.assertAlmostEqual(merged.width, 4, msg="Width should remain the same for horizontally merged boxes.")
+        # The length should be the sum of both plus the gap between them
+        # Original box centers are at x=10 and x=20 with length=6 each => half-length=3
+        # So the left edge is at x=10-3=7, right edge is at x=20+3=23 => total length=16
+        self.assertAlmostEqual(merged.length, 16, msg="Merged length should encompass both boxes fully.")
+        # Rotation remains 0
+        self.assertEqual(merged.rotation, 0)
+        # Check center is midpoint between x=7 (left) and x=23 (right) => (7+23)/2 = 15
+        self.assertAlmostEqual(merged.center_x, 15)
+        self.assertAlmostEqual(merged.center_y, 10)
+
+    def test_merge_vertical_aligned(self):
+        # Two boxes, same x, vertical orientation
+        boxA = CollisionBox(center_x=10, center_y=10, width=4, length=6, rotation=90)
+        boxB = CollisionBox(center_x=10, center_y=20, width=4, length=6, rotation=90)
+
+        merged = boxA.merge_aligned(boxB)
+
+        # Both boxes share rotation=90 => the length axis is vertical, so 'width' remains the same
+        self.assertAlmostEqual(merged.width, 4, msg="Width should remain the same for vertically merged boxes.")
+        # The length should again be the sum plus gap
+        # For each box: half-length=3 => top is at y=10-3=7 for boxA, bottom is at y=20+3=23 for boxB => total length=16
+        self.assertAlmostEqual(merged.length, 16, msg="Merged length should encompass both boxes fully.")
+        # Rotation remains 90
+        self.assertEqual(merged.rotation, 90)
+        # The center is between y=7 and y=23 => midpoint = 15
+        self.assertAlmostEqual(merged.center_x, 10)
+        self.assertAlmostEqual(merged.center_y, 15)
 if __name__ == "__main__":
     unittest.main()

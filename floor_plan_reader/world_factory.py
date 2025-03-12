@@ -1,6 +1,6 @@
 import numpy as np
 
-from world import World
+from floor_plan_reader.world import World
 
 
 class WorldFactory:

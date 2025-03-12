@@ -264,7 +264,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
 if __name__ == "__main__":
     # Example:
     run_rect_ant_simulation(
-        image_path="dark_tones_only.png",
+        image_path="../dark_tones_only.png",
         threshold=80,    # if your floor is bright => increase threshold
         num_ants=500,
         w=2,
