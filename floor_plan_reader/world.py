@@ -16,6 +16,7 @@ class World:
         self.candidates = deque()
 
         self.occupied = None
+        self.walls = set()
         self.agents = []
         self.zombies = []
 
@@ -51,10 +52,12 @@ class World:
             if a.id == id:
                 return a
         return None
+
     def get_occupied_id(self,x,y):
         return self.occupied[int(y),int(x)]
+
     def collide_with_any(self, agent, x, y):
-        for a in self.agents:
+        for a in self.walls:
             if a is not agent:
                 if a.collidepoint(x, y):
                     return True

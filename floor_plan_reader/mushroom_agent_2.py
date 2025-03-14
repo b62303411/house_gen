@@ -6,7 +6,7 @@ from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
 
 
-class Mushroom(Agent):
+class Mushroomw(Agent):
 
     def __init__(self, start_x, start_y, world, mush_id=1):
         super().__init__(mush_id)

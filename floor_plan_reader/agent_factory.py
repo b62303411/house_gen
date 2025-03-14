@@ -1,6 +1,6 @@
 import random
 
-from mushroom_agent import Mushroom
+from floor_plan_reader.mushroom_agent import Mushroom
 
 
 class AgentFactory:
