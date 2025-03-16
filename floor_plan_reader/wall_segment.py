@@ -22,12 +22,15 @@ class WallSegment(Agent):
         super().__init__(id)
         self.scores = set()
         self.parts = set()
-        self.collision_box = CollisionBox(0, 0, 1, 1, 0)  # Will be set after ray trace
+        self.set_collision_box(CollisionBox(0, 0, 1, 1, 0))  # Will be set after ray trace
         self.alive = True
         self.state = "idle"
         font.init()
         self.f = font.Font(None, 8)
 
+    def set_collision_box(self,cb):
+        if isinstance(cb ,CollisionBox):
+            self.collision_box=cb
     def add_part(self, part):
         self.parts.add(part)
         self.state = "negotiate"
@@ -35,6 +38,11 @@ class WallSegment(Agent):
     def run(self):
         self.process_state()
 
+    def is_selected(self):
+        for p in self.parts:
+            if p.selected:
+                return True
+        return False
     def negotiate_phase(self):
         min_x = 999
         min_y = 999
@@ -46,7 +54,7 @@ class WallSegment(Agent):
         cb = None
         for p in self.parts:
             ratio = p.get_covered_ratio()
-            s = Scores(p.id,ratio)
+            s = Scores(p.id, ratio)
             self.scores.add(s)
             if cb is None:
                 cb = p.collision_box
@@ -69,7 +77,7 @@ class WallSegment(Agent):
         self.collision_box.set_position(x, y)
         self.collision_box.width = width
         self.collision_box.length = max(max_x - min_x, max_y - min_y)
-        self.collision_box = cb
+        self.set_collision_box(cb)
 
     def process_state(self):
 
@@ -96,7 +104,10 @@ class WallSegment(Agent):
         for c in corners:
             cp = vp.convert(c[0], c[1])
             corners_.append(cp)
-        pygame.draw.polygon(screen, colour, corners_, 1)
+        size = 1
+        if self.is_selected():
+            size = 3
+        pygame.draw.polygon(screen, colour, corners_, size)
         x, y = self.get_center()
         x, y = vp.convert(x, y)
         pygame.draw.circle(screen, colour, (x, y), 1)

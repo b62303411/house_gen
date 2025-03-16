@@ -1,3 +1,4 @@
+import json
 import unittest
 
 import numpy as np
@@ -158,5 +159,15 @@ class TestMushroomGrowth(unittest.TestCase):
         # The center is between y=7 and y=23 => midpoint = 15
         self.assertAlmostEqual(merged.center_x, 10)
         self.assertAlmostEqual(merged.center_y, 15)
+
+    def test_merge_vertical_aligned_json(self):
+        filename="E:\\workspace\\blender_house\\house_gen\\test.json"
+        with open(filename, "r") as f:
+            data = json.load(f)  # This will be a list of dicts
+
+            # Re-create each CollisionBox
+        boxes = [CollisionBox.from_dict(item) for item in data]
+        for b in boxes:
+            self.assertTrue(b.is_on_same_axis_as(boxes[0]))
 if __name__ == "__main__":
     unittest.main()

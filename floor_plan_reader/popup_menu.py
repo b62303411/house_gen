@@ -71,7 +71,7 @@ class PopupMenu:
         # Button
         pygame.draw.rect(surface, (100, 100, 200), self.button_rect)
         pygame.draw.rect(surface, (255, 255, 255), self.button_rect, 2)
-        print("view")
+        #print("view")
         label_text = self.font.render("Run Phase", True, (255, 255, 255))
         label_rect = label_text.get_rect(center=self.button_rect.center)
         surface.blit(label_text, label_rect)

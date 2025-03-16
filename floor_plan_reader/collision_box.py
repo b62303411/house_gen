@@ -63,36 +63,112 @@ class CollisionBox:
 
         return abs(rect_area - area_sum) < 1e-5
 
-    def is_on_same_axis_as(self, other, tolerance=1e-5):
+    def line_equation(self,p1, p2, tol=1e-9):
         """
-        Check that 'self' and 'other' both:
-          1) Have the same orientation (differ by 0° or 180°)
-          2) Are collinear along that orientation (their centers differ only along the direction)
+        Convert two points (x1,y1), (x2,y2) into a normalized (A,B,C) for the line A*x + B*y + C=0.
 
         Returns:
-            bool: True if they are on the same axis, False otherwise.
+            (A, B, C) as floats in a unique normalized form.
+            If p1 and p2 are the same point, returns None (undefined line).
         """
-        # 1) Check if they're parallel (0 or 180 difference)
-        angle_diff = abs((self.rotation - other.rotation) % 180)
-        if angle_diff > tolerance and abs(angle_diff - 180) > tolerance:
-            return False  # Not parallel => can't be on same axis
+        (x1, y1), (x2, y2) = p1, p2
 
-        # 2) Ensure center offsets do NOT differ along the normal
-        #    If they're truly on the same axis, the vector from self.center to other.center
-        #    should align with self's direction, meaning no (or negligible) projection on self's normal.
+        dx = x2 - x1
+        dy = y2 - y1
 
-        # Get self's direction & normal (unit or not, doesn't matter for ratio checks)
-        direction, normal = self.derive_direction_and_normal()
-        # Vector from self center to other center
-        dx = other.center_x - self.center_x
-        dy = other.center_y - self.center_y
+        # If the two points are effectively the same, can't form a valid line
+        if abs(dx) < tol and abs(dy) < tol:
+            return None
 
-        # Dot that vector with the normal. If near 0, they're aligned along direction
-        dot_with_normal = dx * normal[0] + dy * normal[1]
-        if abs(dot_with_normal) > tolerance:
-            return False  # There's too much offset along the normal => not collinear
+        A = dy
+        B = -dx
+        C = dx * y1 - dy * x1  # from formula: x2*y1 - x1*y2 rearranged
 
+        # Normalize so that (A,B) has length = 1
+        norm = math.hypot(A, B)
+        if norm < tol:
+            return None
+
+        A /= norm
+        B /= norm
+        C /= norm
+
+        # Enforce a sign convention so (A,B,C) is unique.
+        # e.g., if A < 0 or A=0 and B<0 => multiply all by -1
+        # This ensures each line is identified by a unique triplet sign.
+        if A < -tol or (abs(A) < tol and B < -tol):
+            A, B, C = -A, -B, -C
+
+        return (A, B, C)
+
+    def are_same_line(self,p1, p2, p3, p4, tol=1e-9):
+        """
+        Check whether the infinite lines defined by segments p1->p2 and p3->p4 are the same.
+
+        Args:
+            p1, p2, p3, p4: (x,y) points for two line segments.
+            tol: numerical tolerance
+
+        Returns:
+            bool: True if they define the same infinite line, False otherwise.
+        """
+        line1 = self.line_equation(p1, p2, tol)
+        line2 = self.line_equation(p3, p4, tol)
+
+        # If either is None, it means degenerate segment => can't define a valid line
+        if line1 is None or line2 is None:
+            return False
+
+        A1, B1, C1 = line1
+        A2, B2, C2 = line2
+
+        # Compare with tolerance. Two lines are same if each coefficient is near-equal
+        if (abs(A1 - A2) < tol and abs(B1 - B2) < tol and abs(C1 - C2) < tol):
+            return True
+        else:
+            return False
+    def is_on_same_axis_as(self, other, tolerance=5):
+
+        dx1,dy1=self.get_direction()
+        dx2,dy2=other.get_direction()
+        # 1) Check parallel: cross product of directions ~ 0
+        # cross(d1, d2) = dx1*dy2 - dy1*dx2
+        cross_dir = dx1 * dy2 - dy1 * dx2
+        if abs(cross_dir) > tolerance:
+            return False  # directions not parallel => different lines
+        cx1,cy1 = self.get_center()
+        cx2,cy2 = other.get_center()
+        # 2) Check collinearity: the vector between centers must also be parallel to d1 (or d2)
+        # vector (cx2-cx1, cy2-cy1) should have cross with d1 ~ 0
+        dcx = cx2 - cx1
+        dcy = cy2 - cy1
+        cross_centers = dcx * dy1 - dcy * dx1
+        if abs(cross_centers) > 100:
+            return False  # center offset is not along the shared direction => parallel lines but offset
+
+        # If both checks pass => same infinite line
         return True
+
+    @classmethod
+    def from_dict(cls, data):
+        """
+        Reconstruct a CollisionBox from a dictionary with the same keys.
+        """
+        return cls(
+            center_x=data["center_x"],
+            center_y=data["center_y"],
+            width=data["width"],
+            length=data["length"],
+            rotation=data["rotation"]
+        )
+    def to_dict(self):
+        return {
+            "center_x": self.center_x,
+            "center_y": self.center_y,
+            "width": self.width,
+            "length": self.length,
+            "rotation": self.rotation
+        }
     def get_normal_trace_points(self, steps=500, step_size=1.0):
         """
         Generate two series of points along the box's normal axis, starting from the center
@@ -266,7 +342,8 @@ class CollisionBox:
 
         # 1) Check parallel (same rotation or differs by 180)
         if not self.is_parallel_to(other):
-            raise ValueError("Boxes are not aligned (not parallel) and cannot be merged.")
+            return  False
+            #raise ValueError("Boxes are not aligned (not parallel) and cannot be merged.")
 
         # 2) Get this box's direction and normal (they're valid for both if parallel)
         direction, normal = self.derive_direction_and_normal()

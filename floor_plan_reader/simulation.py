@@ -1,3 +1,4 @@
+import json
 from collections import deque
 
 import cv2
@@ -61,6 +62,7 @@ class Simulation:
         self.zombie_candidates = []
         self.world = None
         self.selected = None
+        self.selections = set()
         self.mouse_actions = deque()
     def is_wall(self,a,mx,my):
         if isinstance(a, Mushroom):
@@ -73,6 +75,16 @@ class Simulation:
                 return True
         return False
 
+    def save_boxes_to_json(self,boxes, filename):
+        """
+        Serialize a list of CollisionBox objects to a JSON file.
+        """
+        # Convert each CollisionBox to a dict
+        data = [box.to_dict() for box in boxes]
+
+        # Write the list of dicts to a JSON file
+        with open(filename, "w") as f:
+            json.dump(data, f, indent=2)
     def handle_visible_pupup(self):
         popup = self.popup
         if self.selected is None and popup.visible:
@@ -84,17 +96,24 @@ class Simulation:
             popup.show()
             #self.selected = selection_candidate
 
-    def evaluate_selected(self,mx,my):
+    def evaluate_selected(self, mx, my):
         selection_candidate = None
         shallow = self.world.walls.copy()
         for a in shallow:
-            if self.is_wall(a,mx,my):
-                selection_candidate=a
+            if self.is_wall(a, mx, my):
+                selection_candidate = a
                 break
-        self.selected=selection_candidate
+        self.selected = selection_candidate
+        self.selections.add(selection_candidate)
 
 
     def execute_on_selected(self):
+        boxes = []
+        for c in self.selections:
+            #if not self.selected.is_on_same_axis_as(c):
+            boxes.append(c.collision_box)
+
+        self.save_boxes_to_json(boxes,"test.json")
         self.selected.crawl_phase()
     def run_ant_simulation(self,
             image_path,

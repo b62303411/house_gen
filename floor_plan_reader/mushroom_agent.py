@@ -46,6 +46,7 @@ class Mushroom(Agent):
         self.max_width = 1
         self.overlapping = set()
         self.stem_points = set()
+        self.crawl_points= set()
         self.collision_box_history = set()
         self.branches = []
         self.wall_segment = None
@@ -282,6 +283,9 @@ class Mushroom(Agent):
     def crawl_phase(self):
         h, w = self.world.get_shape()
         points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(h, w)
+        self.crawl_points = set()
+        self.crawl_points.update(points_forward)
+        self.crawl_points.update(points_backward)
         self.crawl(points_forward)
         self.crawl(points_backward)
 
@@ -699,6 +703,7 @@ class Mushroom(Agent):
         pygame.draw.line(surface, color, (end_x, end_y), (right_x, right_y), width)
 
     def draw(self, screen, vp):
+
         for cell in self.root_cells:
             sx, sy = vp.convert(cell.x, cell.y)
             if cell.is_root:
@@ -745,6 +750,14 @@ class Mushroom(Agent):
             x, y = vp.convert(x, y)
             colour = (0, 255, 0)
             pygame.draw.circle(screen, colour, (x, y), 1)
+
+        if self.selected:
+            for c in self.crawl_points:
+                x = c[0]
+                y = c[1]
+                x, y = vp.convert(x, y)
+                colour = (0, 255, 0)
+                pygame.draw.circle(screen, colour, (x, y), 1)
 
     def center_on_food(self):
         x, y = self.get_center()
