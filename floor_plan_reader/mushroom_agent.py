@@ -55,6 +55,7 @@ class Mushroom(Agent):
         self.right_margin = None
         self.right_inside = None
         self.selected=False
+        self.co_axial_walls=set()
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -228,22 +229,8 @@ class Mushroom(Agent):
     def evaluate_segment_agregate(self,obj):
         wall = None
         if obj is not None and obj.is_on_same_axis_as(self):
-            if obj.wall_segment is not None:
-                wall = obj.wall_segment
-            if self.wall_segment is not None:
-                wall = self.wall_segment
+            self.co_axial_walls.add(obj)
 
-            if wall is None:
-                wall = WallSegment(Id_Util.get_id())
-                wall.add_part(obj)
-                wall.add_part(self)
-                obj.wall_segment = wall
-                self.wall_segment = wall
-                self.world.candidates.append(wall)
-            if self.wall_segment is None:
-                self.wall_segment = wall
-            if obj.wall_segment is None:
-                obj.wall_segment = wall
     def crawl(self, points):
         steps = 0
         opening_lenght = 0
@@ -288,6 +275,29 @@ class Mushroom(Agent):
         self.crawl_points.update(points_backward)
         self.crawl(points_forward)
         self.crawl(points_backward)
+        wall = None
+        if self.wall_segment is not None:
+            wall = self.wall_segment
+        for coaxial in self.co_axial_walls:
+            if coaxial.wall_segment is not None:
+                wall = coaxial.wall_segment
+
+        if wall is None:
+            wall = WallSegment(Id_Util.get_id())
+            self.wall_segment = wall
+            wall.add_part(self)
+            for coaxial in self.co_axial_walls:
+                coaxial.wall_segment = wall
+                wall.add_part(coaxial)
+            self.world.candidates.append(wall)
+        else:
+            if self.wall_segment is None:
+                self.wall_segment=wall
+                wall.add_part(self)
+            for coaxial in self.co_axial_walls:
+                if coaxial.wall_segment is None:
+                    coaxial.wall_segment = self.wall_segment
+                    self.wall_segment.add_part(coaxial)
 
     def measure_limit(self, list):
         in_wall = True
@@ -353,7 +363,10 @@ class Mushroom(Agent):
             if x1 != x or y != y1:
                 cb = self.collision_box
                 if cb not in self.collision_box_history:
+                    center = cb.get_center()
                     self.collision_box_history.add(cb)
+                    if not self.world.is_food(center[0], center[1]):
+                        pass
                     return True
                 else:
                     return False
@@ -388,8 +401,8 @@ class Mushroom(Agent):
             is_on_food = True
 
         stem_length = int(max(abs(dx), abs(dy)))
-        self.collision_box.length = stem_length
-        self.collision_box.width = int(min(abs(dx), abs(dy)))
+        self.collision_box.set_lenght(stem_length)
+        self.collision_box.set_width(int(min(abs(dx), abs(dy))))
         self.set_position(cx, cy)
 
         angle = self.calculate_rotation_from_direction(dx, dy)

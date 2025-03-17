@@ -1,10 +1,13 @@
 import json
 import unittest
+from decimal import Decimal
 
 import numpy as np
 
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.collision_box import CollisionBox
+from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.wall_segment import WallSegment
 from mushroom_agent import Mushroom
 from world_factory import WorldFactory
 
@@ -13,7 +16,7 @@ class TestMushroomGrowth(unittest.TestCase):
     def setUp(self):
         wf = WorldFactory()
         # Initialize grid with empty space (0)
-        grid_size = (20, 20)
+        grid_size = (700, 700)
         grid = np.zeros(grid_size, dtype=int)
         wf.set_grid(grid)
         self.world = wf.create_World()  # Mock world
@@ -162,12 +165,74 @@ class TestMushroomGrowth(unittest.TestCase):
 
     def test_merge_vertical_aligned_json(self):
         filename="E:\\workspace\\blender_house\\house_gen\\test.json"
+        world = self.world
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts
 
             # Re-create each CollisionBox
         boxes = [CollisionBox.from_dict(item) for item in data]
+        mushrooms = []
+        ws = WallSegment(Id_Util.get_id())
         for b in boxes:
             self.assertTrue(b.is_on_same_axis_as(boxes[0]))
+            m = Mushroom(b.center_x,b.center_y,world,Id_Util.get_id())
+            m.collision_box=b.copy()
+            mushrooms.append(m)
+
+        for m in mushrooms:
+            ws.add_part(m)
+
+        ws.process_state()
+        x,y = ws.get_center()
+        a = Decimal(602.75)
+        b = Decimal(602.5)
+        c = Decimal(602.5)
+        d = Decimal(602.5)
+        e = Decimal(603.0)
+        value = (a + b +c+d+e )/5
+        self.assertAlmostEqual(Decimal(602.65), value)
+        half = Decimal(2)
+        max_y = Decimal(Decimal(322.0) + Decimal(35/half))
+        min_y = Decimal(Decimal(17.0)-Decimal(27/half))
+        l_y=max_y-min_y
+        c_y= min_y+l_y/2
+        l = Decimal(ws.collision_box.length+2)
+        self.assertAlmostEqual(l_y,l,delta=2)
+        self.assertAlmostEqual(602.65, x,delta=2)
+        self.assertAlmostEqual(171.5, c_y, delta=1)
+        self.assertAlmostEqual(170, y,delta=2)
+    def test_merge_vertical_aligned_json2(self):
+        filename="E:\\workspace\\blender_house\\house_gen\\test.json"
+        world = self.world
+        with open(filename, "r") as f:
+            data = json.load(f)  # This will be a list of dicts
+
+            # Re-create each CollisionBox
+        boxes = [CollisionBox.from_dict(item) for item in data]
+        mushrooms = []
+        ws = WallSegment(Id_Util.get_id())
+        for b in boxes:
+            self.assertTrue(b.is_on_same_axis_as(boxes[0]))
+            m = Mushroom(b.center_x,b.center_y,world,Id_Util.get_id())
+            m.collision_box=b.copy()
+            mushrooms.append(m)
+            self.world.agents.append(m)
+            self.world.walls.add(m)
+            pixels = b.iterate_covered_pixels()
+            for p in pixels:
+                self.world.draw_at(p,1)
+                self.world.occupy(p[0],p[1],m)
+        segment = None
+
+        for m in mushrooms:
+            m.crawl_phase()
+            ws = m.wall_segment
+            if ws is not None:
+                segment = ws
+            self.assertTrue(m.wall_segment is not None)
+
+        self.assertEqual(5,len(segment.parts))
+
+
 if __name__ == "__main__":
     unittest.main()

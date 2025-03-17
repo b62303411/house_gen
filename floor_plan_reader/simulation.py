@@ -208,8 +208,8 @@ class Simulation:
 
 
             # --- Update ants (simple example) ---
-
-            for agent in self.world.agents:
+            agents = self.world.agents.copy()
+            for agent in agents:
                 if agent.alive:
                     agent.run()
                 else:
@@ -225,7 +225,7 @@ class Simulation:
                 agent = self.world.candidates.popleft()
                 if isinstance(agent, Mushroom):
                     self.world.walls.add(agent)
-                self.world.agents.append(agent)
+                self.world.agents.add(agent)
 
             if not len(self.mouse_actions) == 0:
                 x,y = self.mouse_actions.pop()

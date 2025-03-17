@@ -1,12 +1,15 @@
 import math
+from decimal import Decimal
+
+from floor_plan_reader.math_segments import combine_segments_decimal
 
 
 class CollisionBox:
     def __init__(self, center_x, center_y, width, length, rotation):
         self.center_x = center_x
         self.center_y = center_y
-        self.width = width
-        self.length = length
+        self.width = float(width)
+        self.length = float(length)
         self.rotation = rotation
         self.default_direction = (1, 0)
         self.corners = None
@@ -19,6 +22,30 @@ class CollisionBox:
 
     def __hash__(self):
         return hash((self.center_x, self.center_y, self.width, self.length, self.rotation))
+
+    def set_width(self,width):
+        self.width = float(width)
+    def set_lenght(self,lenght):
+        self.length = float(lenght)
+    def copy(self):
+        """
+        Return a new CollisionBox that is a copy of this one.
+        """
+        new_box = CollisionBox(
+            center_x=self.center_x,
+            center_y=self.center_y,
+            width=self.width,
+            length=self.length,
+            rotation=self.rotation
+        )
+        # If needed, also copy any other dynamic attributes
+        # For example, default_direction or corners
+        # corners often should reset so new_box can recalc
+        new_box.default_direction = self.default_direction
+        # corners might remain None so it recalculates later,
+        # but if you do want to copy them directly, do so:
+        # new_box.corners = list(self.corners) if self.corners else None
+        return new_box
 
     def get_area(self):
         return self.width * self.length
@@ -63,7 +90,7 @@ class CollisionBox:
 
         return abs(rect_area - area_sum) < 1e-5
 
-    def line_equation(self,p1, p2, tol=1e-9):
+    def line_equation(self, p1, p2, tol=1e-9):
         """
         Convert two points (x1,y1), (x2,y2) into a normalized (A,B,C) for the line A*x + B*y + C=0.
 
@@ -101,7 +128,7 @@ class CollisionBox:
 
         return (A, B, C)
 
-    def are_same_line(self,p1, p2, p3, p4, tol=1e-9):
+    def are_same_line(self, p1, p2, p3, p4, tol=1e-9):
         """
         Check whether the infinite lines defined by segments p1->p2 and p3->p4 are the same.
 
@@ -127,17 +154,20 @@ class CollisionBox:
             return True
         else:
             return False
-    def is_on_same_axis_as(self, other, tolerance=5):
 
-        dx1,dy1=self.get_direction()
-        dx2,dy2=other.get_direction()
+    def is_on_same_axis_as(self, other, a_t=1,tolerance=5):
+        if not self.is_parallel_to(other):
+            return False
+
+        dx1, dy1 = self.get_direction()
+        dx2, dy2 = other.get_direction()
         # 1) Check parallel: cross product of directions ~ 0
         # cross(d1, d2) = dx1*dy2 - dy1*dx2
         cross_dir = dx1 * dy2 - dy1 * dx2
-        if abs(cross_dir) > tolerance:
+        if abs(cross_dir) > a_t:
             return False  # directions not parallel => different lines
-        cx1,cy1 = self.get_center()
-        cx2,cy2 = other.get_center()
+        cx1, cy1 = self.get_center()
+        cx2, cy2 = other.get_center()
         # 2) Check collinearity: the vector between centers must also be parallel to d1 (or d2)
         # vector (cx2-cx1, cy2-cy1) should have cross with d1 ~ 0
         dcx = cx2 - cx1
@@ -161,6 +191,7 @@ class CollisionBox:
             length=data["length"],
             rotation=data["rotation"]
         )
+
     def to_dict(self):
         return {
             "center_x": self.center_x,
@@ -169,6 +200,7 @@ class CollisionBox:
             "length": self.length,
             "rotation": self.rotation
         }
+
     def get_normal_trace_points(self, steps=500, step_size=1.0):
         """
         Generate two series of points along the box's normal axis, starting from the center
@@ -211,6 +243,7 @@ class CollisionBox:
             right_side_points.append((px, py))
 
         return left_side_points, right_side_points
+
     def derive_direction_and_normal(self):
         angle_rad = math.radians(self.rotation)
 
@@ -329,7 +362,26 @@ class CollisionBox:
                 if self.is_point_inside(x + 0.5, y + 0.5):  # Pixel center check
                     pixels.append((x, y))
         return pixels
-    def merge_aligned(self, other):
+
+    def to_decimal(self, value):
+        x = Decimal(value[0])
+        y = Decimal(value[1])
+        return x, y
+
+    def get_definition(self):
+        return self.get_center(),self.get_direction(),self.length
+    def merge_aligned2(self,other):
+        new_cx, new_cy, dirx, diry, new_length= combine_segments_decimal(
+            self,other)
+        merged_box = CollisionBox(
+            center_x=float(new_cx),
+            center_y=float(new_cy),
+            width=float(self.width),
+            length=float(new_length),
+            rotation=self.rotation  # same as 'other' since they are parallel
+        )
+        return merged_box
+    def merge_aligned(self, other, decimal_precision=3):
         """
         Merge this CollisionBox with another *parallel* CollisionBox to form
         a larger bounding box that encloses them both.
@@ -339,14 +391,16 @@ class CollisionBox:
         Raises:
             ValueError: If boxes are not parallel (cannot be merged this way).
         """
-
+        rounder = lambda val: round(val, decimal_precision)
         # 1) Check parallel (same rotation or differs by 180)
         if not self.is_parallel_to(other):
-            return  False
-            #raise ValueError("Boxes are not aligned (not parallel) and cannot be merged.")
+            return False
+            # raise ValueError("Boxes are not aligned (not parallel) and cannot be merged.")
 
         # 2) Get this box's direction and normal (they're valid for both if parallel)
         direction, normal = self.derive_direction_and_normal()
+        direction = self.to_decimal(direction)
+        normal = self.to_decimal(normal)
 
         # 3) Gather corners from both boxes
         corners_self = self.calculate_corners()
@@ -360,6 +414,7 @@ class CollisionBox:
         # 4) Project corners onto direction and normal to find combined min/max
         dir_values = []
         norm_values = []
+
         for (cx, cy) in all_corners:
             dir_val = dot(cx, cy, direction[0], direction[1])
             norm_val = dot(cx, cy, normal[0], normal[1])
@@ -368,26 +423,30 @@ class CollisionBox:
 
         min_dir, max_dir = min(dir_values), max(dir_values)
         min_norm, max_norm = min(norm_values), max(norm_values)
-
+        min_dir = Decimal(min_dir)
+        max_dir = Decimal(max_dir)
+        min_norm = Decimal(min_norm)
+        max_norm = Decimal(max_norm)
         # 5) The new box length/width spans from min->max along direction/normal
         new_length = max_dir - min_dir
-        new_width  = max_norm - min_norm
-
+        new_width = max_norm - min_norm
+        half = Decimal(0.5)
         # 6) Compute the center by taking midpoint in direction & normal space
-        center_dir = 0.5 * (min_dir + max_dir)
-        center_norm = 0.5 * (min_norm + max_norm)
+        center_dir = half * (min_dir + max_dir)
+        center_norm = half * (min_norm + max_norm)
 
         # 7) Convert that (center_dir, center_norm) back to world coordinates
         #    using direction and normal as a 2D basis
+
         center_x = center_dir * direction[0] + center_norm * normal[0]
         center_y = center_dir * direction[1] + center_norm * normal[1]
 
         # 8) Create a new bounding box
         merged_box = CollisionBox(
-            center_x=center_x,
-            center_y=center_y,
-            width=new_width,
-            length=new_length,
-            rotation=self.rotation   # same as 'other' since they are parallel
+            center_x=float(center_x),
+            center_y=float(center_y),
+            width=float(new_width),
+            length=float(new_length),
+            rotation=self.rotation  # same as 'other' since they are parallel
         )
         return merged_box
