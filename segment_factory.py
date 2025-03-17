@@ -11,6 +11,29 @@ from windows import WindowFactory
 from math import radians
 
 import math
+
+
+class BoardBuilder:
+    parent = None
+    length = None
+    height = None
+    depth = None
+    material = None
+
+    def add_board(self, name, location):
+        bpy.ops.object.select_all(action='DESELECT')
+        board = BoardFactory.add_board(
+            parent=self.parent,
+            board_name=name,
+            length=self.length,
+            height=self.height,
+            depth=self.depth,
+            location=location,
+            material=self.material
+        )
+        return board
+
+
 class SegmentFactory:
     STUD_SPECS = {
         "2x4": {"thickness": 0.0381, "width": 0.0889},  # 1.5" x 3.5"
@@ -18,6 +41,7 @@ class SegmentFactory:
         "2x8": {"thickness": 0.0381, "width": 0.1905},  # 1.5" x 7.5"
         "2x12": {"thickness": 0.0381, "width": 0.2921}  # 1.5" x 11.5"
     }
+
     @staticmethod
     def create_wall_segment(
             parent,
@@ -28,7 +52,7 @@ class SegmentFactory:
             materials,
             segment_name,
             stud_type="2x6",
-            window_specs=None
+            openings=None
     ):
         """
         Creates an exterior wall segment with:
@@ -80,17 +104,14 @@ class SegmentFactory:
         bottom_plate_count = 1
         top_plate_count = 2
         x_shift = stud_w / 2
-        # === Bottom Plate (flush) ===
-        bpy.ops.object.select_all(action='DESELECT')
-        bottom_plate = BoardFactory.add_board(
-            parent=segment_parent,
-            board_name=f"{segment_name}_BottomPlate",
-            length=seg_length,
-            height=plate_thickness,
-            depth=plate_depth,
-            location=(-x_shift, 0, plate_thickness * 0.5),
-            material=mat_framing
-        )
+
+        builder = BoardBuilder()
+        builder.material = mat_framing
+        builder.depth = plate_depth
+        builder.height = plate_thickness
+        builder.length = seg_length
+        builder.parent = segment_parent
+        bottom_plate = builder.add_board(f"{segment_name}_BottomPlate", (-x_shift, 0, plate_thickness * 0.5))
 
         # === First Top Plate (flush) ===
         # Placed just below the second top plate
@@ -228,40 +249,51 @@ class SegmentFactory:
             sheathing_z = wall_height / 2.0
 
         # 4) WINDOW FRAMING (optional)
-        if window_specs:
-            for ws in window_specs:
-                WindowFactory.create_window_opening(
-                    wall=segment_parent,
-                    name_prefix=f"{segment_name}_Window",
-                    window_center_x=ws["center_x"],
-                    window_bottom_z=ws["bottom_z"],
-                    window_width=ws["width"],
-                    window_height=ws["height"],
-                    bottom_plate_height=0,
-                    top_plate_height=plate_thickness,
-                    stud_spec=spec,
-                    wall_height=wall_height,
-                    second_top_plate_height=plate_thickness if top_plate_count > 1 else 0,
-                    material=mat_framing,
-                    glass_material=mat_glass
-                )
-        # Create a door
-        DoorFactory.create_door_opening(
-            wall=segment_parent,
-            name_prefix="MyDoor",
-            door_center_x=6.0,
-            door_bottom_z=0.0,
-            door_width=0.91,
-            door_height=2.03,
-            bottom_plate_height=0.0381,
-            top_plate_height=0.0381,
-            stud_spec=spec,
-            wall_height=2.7432,
-            second_top_plate_height=0.0381,
-            material=None,
-            is_load_bearing=True
-        )
+        if openings:
+            for opening in openings:
+                opening_type = opening["type"]
+                center_x = opening["center_x"]
+                bottom_z = opening["bottom_z"]
+                width = opening["width"]
+                height = opening["height"]
+                if opening_type == "window":
+                    WindowFactory.create_window_opening(
+                        wall=segment_parent,
+                        name_prefix=f"{segment_name}_Window",
+                        window_center_x=center_x,
+                        window_bottom_z=bottom_z,
+                        window_width=width,
+                        window_height=height,
+                        bottom_plate_height=0,
+                        top_plate_height=plate_thickness,
+                        stud_spec=spec,
+                        wall_height=wall_height,
+                        second_top_plate_height=plate_thickness if top_plate_count > 1 else 0,
+                        material=mat_framing,
+                        glass_material=mat_glass
+                    )
+                elif opening_type == "door":
+                    door_type = opening["sub_type"]
+                    # Create a door
+                    DoorFactory.create_door_opening(
+                        wall=segment_parent,
+                        name_prefix="MyDoor",
+                        door_center_x=center_x,
+                        door_bottom_z=bottom_z,
+                        door_width=width,
+                        door_height=height,
+                        bottom_plate_height=0.0381,
+                        top_plate_height=0.0381,
+                        stud_spec=spec,
+                        wall_height=wall_height,
+                        second_top_plate_height=0.0381,
+                        materials=materials,
+                        is_load_bearing=True,
+                        door_type = door_type
+
+                    )
         return segment_parent
+
     @staticmethod
     def create_wall_segment2(
             parent,

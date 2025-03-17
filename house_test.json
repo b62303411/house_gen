@@ -1,0 +1,452 @@
+{
+  "nodes": [
+    { "id": "N1",  "x": -5.28,   "y": 4.83  },
+    { "id": "N2",  "x": -5.28,   "y": -2.62969 },
+    { "id": "N3",  "x": -8.98506,   "y": -2.62969},
+    { "id": "N4",  "x": -8.98506,   "y": -7.25326},
+    { "id": "N5",  "x": 13.3296,  "y": -7.25326 },
+    { "id": "N6",  "x": 13.3296,  "y": -0.218268   },
+    { "id": "N7",  "x": 11.8548,  "y": -0.218268  },
+    { "id": "N8",  "x": 11.8548 ,  "y": 4.83},
+
+
+
+    { "id": "W1",  "x": -15, "y": 0.35  },
+    { "id": "W2",  "x": -12.206,  "y": 0.35  },
+    { "id": "W3",  "x": -12.206,  "y": 4.83},
+    { "id": "W4",  "x": -15, "y": 4.83 },
+
+
+    { "id": "I1",  "x": -4.67457 ,  "y": -2.62969  },
+    { "id": "I2",  "x": -4.67457,  "y": -4.04527  },
+    { "id": "I3",  "x": -4.67457,  "y": -5.22014 },
+    { "id": "I4",  "x": -4.67457,  "y": -7.25326  },
+    { "id": "I5",  "x": -3.5408 ,  "y": -2.62969  },
+    { "id": "I6",  "x": -1.71892,  "y": -2.62969  },
+    { "id": "I7",  "x": 1.45275,  "y": -2.69203 },
+    { "id": "I8",  "x": 3.67301 ,  "y": -2.69203  },
+    { "id": "I9",  "x": 4.84277 ,  "y": -2.69203  },
+    { "id": "I10",  "x": 6.74184 ,  "y": -2.69203  },
+    { "id": "I11",  "x": 7.87613 ,  "y": -2.69203  },
+    { "id": "I12",  "x": 10.1613  ,  "y": -2.69203  },
+    { "id": "I13",  "x": 11.7425 ,  "y": -2.69203  },
+    { "id": "I14",  "x": 13.3296,  "y": -2.69203  },
+    { "id": "I15",  "x": -2.68783,  "y": -7.25326  },
+    { "id": "I16",  "x": -1.37895,  "y": -7.25326 },
+    { "id": "I17",  "x": 1.45275,  "y": -7.25326  },
+    { "id": "I18",  "x": 4.8278 ,  "y": -7.25326  },
+    { "id": "I19",  "x": 6.78093,  "y": -7.25326  },
+    { "id": "I20",  "x": 10.1613 ,  "y": -7.25326 },
+    { "id": "I21",  "x": 5.87455,  "y": -0.604238  },
+    { "id": "I22",  "x": 8.40446 ,  "y": -0.604238  },
+    { "id": "I23",  "x": 8.40446 ,  "y": 0.626211  },
+    { "id": "I24",  "x": 10.1457,  "y": -0.604238  },
+    { "id": "I25",  "x": 10.1457,  "y": 0.626211  },
+    { "id": "I26",  "x": 5.87455,  "y": 0.626211  },
+    { "id": "I27",  "x": 5.87455,  "y": 1.60132  },
+    { "id": "I28",  "x": 5.66753,  "y": 1.60132  },
+    { "id": "I29",  "x": 5.66753,  "y": 4.83  },
+    { "id": "I30",  "x": 2.23096,  "y": 1.60132 },
+    { "id": "I31",  "x": 2.23096,  "y": 4.83  },
+    { "id": "I32",  "x": 0.770236,  "y": 2.24108   },
+    { "id": "I33",  "x": 0.770236,  "y": 4.83   },
+    { "id": "I34",  "x": -3.5408 ,  "y": -3.17084   },
+    { "id": "I35",  "x": -1.71892 ,  "y": -3.17084   },
+    { "id": "I36",  "x": -1.71892,  "y": -4.03644    },
+    { "id": "I37",  "x": -3.5408,  "y": -4.03644   },
+    { "id": "I38",  "x": -1.40813,  "y": -5.20773   },
+    { "id": "I39",  "x": -1.40813,  "y": -5.20773   },
+    { "id": "I40",  "x": -1.40813,  "y": -5.20773   },
+    { "id": "I41",  "x": -1.40813,  "y": -5.20773   },
+    { "id": "I42",  "x": -1.40813,  "y": -5.20773   }
+
+  ],
+
+  "edges": [
+
+    {
+      "id": "Ext_1",
+      "start_node": "N1", "end_node": "N2",
+      "wall_type": "exterior",
+         "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": [{
+          "type": "door",
+          "sub_type": "patio",
+          "center_x": 2.0,
+          "bottom_z": 0.0,
+          "width": 2,
+          "height": 2.032
+        },{
+          "type": "window",
+          "center_x": -2.0,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        }]
+    },
+    {
+      "id": "Ext_2",
+      "start_node": "N2", "end_node": "N3",
+      "wall_type": "exterior",
+         "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": [
+      ]
+    },
+    {
+      "id": "Ext_3",
+      "start_node": "N3", "end_node": "N4",
+      "wall_type": "exterior",
+         "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": [{
+          "type": "window",
+          "center_x": 0.0,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 1.2,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": -1.2,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        }]
+    },
+    {
+      "id": "Ext_4",
+      "start_node": "N4", "end_node": "N5",
+      "wall_type": "exterior",
+          "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": [{
+          "type": "window",
+          "center_x": -4.2,
+          "bottom_z": 0.5,
+          "width": 0.6,
+          "height": 0.8
+        },{
+          "type": "window",
+          "center_x": -2.2,
+          "bottom_z": 0.5,
+          "width": 2.5,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 2,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 3.6,
+          "bottom_z": 0.5,
+          "width": 0.9,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 5.4,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        }]
+    },
+    {
+      "id": "Ext_5",
+      "start_node": "N5", "end_node": "N6",
+      "wall_type": "exterior",
+          "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_6",
+      "start_node": "N6", "end_node": "N7",
+      "wall_type": "exterior",
+         "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_7",
+      "start_node": "N7", "end_node": "N8",
+      "wall_type": "exterior",
+          "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_8",
+      "start_node": "N8", "end_node": "N1",
+      "wall_type": "exterior",
+          "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": [{
+          "type": "window",
+          "center_x": -4.2,
+          "bottom_z": 0.5,
+          "width": 0.6,
+          "height": 0.8
+        },{
+          "type": "window",
+          "center_x": -2.2,
+          "bottom_z": 0.5,
+          "width": 2.5,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 2,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 3.6,
+          "bottom_z": 0.5,
+          "width": 0.9,
+          "height": 1.0
+        },{
+          "type": "window",
+          "center_x": 5.4,
+          "bottom_z": 0.5,
+          "width": 1.0,
+          "height": 1.0
+        }]
+    },
+    {
+      "id": "Workshop_1",
+      "start_node": "W1", "end_node": "W2",
+      "wall_type": "exterior",
+      "stud_type":"2x6",
+      "height": 2.1,
+      "openings": [{
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 0.0,
+          "bottom_z": 0.1,
+          "width": 2.0,
+          "height": 1.8
+        }]
+    },
+    {
+      "id": "Workshop_2",
+      "start_node": "W2", "end_node": "W3",
+      "wall_type": "exterior",
+      "stud_type":"2x6",
+      "height": 2.1,
+      "openings": []
+    },
+    {
+      "id": "Workshop_3",
+      "start_node": "W3", "end_node": "W4",
+      "wall_type": "exterior",
+      "stud_type":"2x6",
+      "height": 2.1,
+      "openings": []
+    },
+    {
+      "id": "Workshop_4",
+      "start_node": "W4", "end_node": "W1",
+      "wall_type": "exterior",
+      "stud_type":"2x6",
+      "height": 2.1,
+      "openings": [
+
+      ]
+    },
+    {
+      "id": "Int_MBed_Fam_1",
+      "start_node": "N2", "end_node": "I1",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432
+    },
+    {
+      "id": "Int_MBed_Fam_2",
+      "start_node": "I1", "end_node": "I2",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 0.0,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        }
+      ]
+    },{
+      "id": "Int_MBed_Fam_3",
+      "start_node": "I3", "end_node": "I4",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432
+    },
+    {
+      "id": "Int_Foyer_Dining",
+      "start_node": "I6", "end_node": "I14",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": [ {
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 0.0,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        },{
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 5.0,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        },{
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 6.5,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        }]
+    },
+    {
+      "id": "Int_MBed_Fam_4",
+      "start_node": "I3", "end_node": "I4",
+      "wall_type": "interior",
+      "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_MBath_1",
+      "start_node": "I17", "end_node": "I7",
+      "wall_type": "interior",
+      "stud_type":"2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_Bed_2",
+      "start_node": "I18", "end_node": "I9",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": [{
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 0.0,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        }]
+    },
+    {
+      "id": "Int_Bed_2",
+      "start_node": "I19", "end_node": "I10",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": [{
+          "type": "door",
+          "sub_type": "single",
+          "center_x": 0.0,
+          "bottom_z": 0.0,
+          "width": 0.9,
+          "height": 2.1
+        }]
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I20", "end_node": "I12",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I2", "end_node": "I36",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I3", "end_node": "I38",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I5", "end_node": "I37",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Int_Office_2",
+      "start_node": "I6", "end_node": "I36",
+      "wall_type": "interior",
+      "stud_type":"2x4",
+      "height": 2.7432,
+      "openings": []
+    }
+  ],
+  "furnitures":[
+    {
+       "id": "Shower_Master2",
+       "type": "Shower",
+      "location": [5.84532,-6.58799,0],
+       "orientation":[0,0,0]
+    },
+     {
+       "id": "Bed_1",
+       "type": "bed",
+      "location": [8.52005 ,-6.06175,0],
+       "orientation":[0,0,-90]
+    },
+    {
+       "id": "Bed_2",
+       "type": "bed",
+      "location": [2.73579 ,-6.06175,0],
+       "orientation":[0,0,-90]
+    },
+    {
+       "id": "Bed_master",
+       "type": "bed",
+      "location": [-7.03793 ,-6.06175,0],
+       "orientation":[0,0,-90]
+    },
+    {
+       "id": "table_set",
+       "type": "table_set",
+      "location": [4.11754  ,0,0],
+       "orientation":[0,0,0]
+    },{
+       "id": "Bath_Master",
+       "type": "Bath",
+      "location": [0.581463   ,-3.24077 ,0],
+       "orientation":[0,0,0]
+    },{
+       "id": "Shower_Master",
+       "type": "Shower",
+      "location": [-1.06656 ,-3.33264 ,0],
+       "orientation":[0,0,180]
+    }
+  ]
+}
