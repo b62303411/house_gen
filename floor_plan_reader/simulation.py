@@ -7,10 +7,12 @@ import pygame
 
 from floor_plan_reader.mushroom_agent import Mushroom
 from floor_plan_reader.popup_menu import PopupMenu
+from floor_plan_reader.user_input import UserInput
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
 font.init()
 f = font.Font(None, 36)  # Use default font with size 36
+f_small= font.Font(None, 12)
 class ViewPoint:
     def __init__(self):
         self.offset_x = 0
@@ -64,6 +66,13 @@ class Simulation:
         self.selected = None
         self.selections = set()
         self.mouse_actions = deque()
+        self.vp = ViewPoint()
+        self.user_input = UserInput(self)
+        self.screen=None
+        self.heigh=0
+        self.width=0
+        self.floorplan_surf=None
+        self.img_gray_surface=None
     def is_wall(self,a,mx,my):
         if isinstance(a, Mushroom):
             if a.is_valid():
@@ -115,6 +124,38 @@ class Simulation:
 
         self.save_boxes_to_json(boxes,"test.json")
         self.selected.crawl_phase()
+    def get_agent_count(self):
+        return len(self.world.agents)
+    def get_wall_segment_count(self):
+        return len(self.world.wall_segments)
+    def draw(self):
+        # --- Draw ---
+        self.screen.fill((50, 50, 50))
+
+        # Scale the floorplan based on zoom_factor
+        new_w = int(self.width * self.vp.zoom_factor)
+        new_h = int(self.height * self.vp.zoom_factor)
+        floorplan_scaled = pygame.transform.smoothscale(self.floorplan_surf, (new_w, new_h))
+        img = pygame.transform.smoothscale(self.img_gray_surface, (new_w, new_h))
+
+        # Blit the scaled floorplan at (0,0)
+        # screen.blit(floorplan_scaled, vp.get_center())
+        self.screen.blit(img, self.vp.get_center())
+        # Draw ants (scaled)
+        for agent in self.world.agents:
+            if agent.alive:
+                agent.draw(self.screen, self.vp)
+        # Render the number of agents in the top-left corner
+        text_surface = f.render(f"Agents: {self.get_agent_count()}", True, (255, 255, 0))
+        self.screen.blit(text_surface, (10, 10))  # Position (x=10, y=10)
+        text2_surface = f_small.render(f"Wall Seg: {self.get_wall_segment_count()}", True, (0, 0, 0))
+        self.screen.blit(text2_surface, (120, 40))  # Position (x=10, y=10)
+
+        self.handle_visible_pupup()
+        # Draw the pop-up
+        self.popup.draw(self.screen)
+
+        pygame.display.flip()
     def run_ant_simulation(self,
             image_path,
             image_path_filtered,
@@ -130,83 +171,42 @@ class Simulation:
             raise FileNotFoundError(f"Cannot load image: {image_path}")
 
         #img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
-        img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
+        self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         # 2) Create grid: 1=empty, 0=wall
         g = (img_gray >= threshold).astype(np.uint8)
         self.wf.set_grid(g)
         self.wf.set_num_ants(num_ants)
         self.world = self.wf.create_World()
-        height, width = self.world.grid.shape
+        self.height, self.width = self.world.grid.shape
 
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()
         # We make a window exactly the size of the image
-        screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
         pygame.display.set_caption("Ant Demo (Native Resolution + Zoom)")
 
         clock = pygame.time.Clock()
 
         # 4) Create a floorplan surface (the base image showing white/black)
         #    Then we won't re-scale it right away; we'll do that each frame based on zoom.
-        floorplan_surf = pygame.Surface((width, height))
-        for y in range(height):
-            for x in range(width):
+        self.floorplan_surf = pygame.Surface((self.width, self.height))
+        for y in range(self.height):
+            for x in range(self.width):
                 if self.world.grid[y, x] == 1:
-                    floorplan_surf.set_at((x, y), (255, 255, 255))  # white => empty
+                    self.floorplan_surf.set_at((x, y), (255, 255, 255))  # white => empty
                 else:
-                    floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
+                    self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
 
         # 7) Zoom parameters
-        vp = ViewPoint()
 
 
-        move_speed = 10
+
+
 
         running = True
         while running:
             clock.tick(120)  # up to 30 FPS
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-                    elif event.key == pygame.K_LEFT:  # Move left
-                        vp.move_left(move_speed)
-                    elif event.key == pygame.K_RIGHT:  # Move right
-                        vp.move_right(move_speed)
-                    elif event.key == pygame.K_UP:  # Move up
-                        vp.offset_y -= move_speed
-                    elif event.key == pygame.K_DOWN:  # Move down
-                        vp.offset_y += move_speed
-                elif event.type == pygame.VIDEORESIZE:
-                    # If the user resizes the window, we can catch the new size here if needed.
-                    # screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                    pass
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    # Mouse wheel up => event.button = 4
-                    # Mouse wheel down => event.button = 5
-                    if event.button == 4:  # scroll up => zoom in
-                        vp.zoom_in()
-                    elif event.button == 5:  # scroll down => zoom out
-                        vp.zoom_out()
-                    if self.popup.visible:
-                        self.popup.handle_event(
-                            event,
-                            on_button_click=lambda: self.execute_on_selected()
-                        )
-                    else:
-                        # Otherwise, handle normal events (e.g., box selection)
-                        if event.type == pygame.MOUSEBUTTONDOWN:
-                            mx, my = event.pos
-                            print(f"x:{mx} y:{my}")
-                            mx,my = vp.convert_back(mx,my)
-                            print(f"x:{mx} y:{my}")
-                            self.mouse_actions.append((mx,my))
-
-
-
+            self.user_input.run()
             # --- Update ants (simple example) ---
             agents = self.world.agents.copy()
             for agent in agents:
@@ -219,6 +219,10 @@ class Simulation:
                     self.world.agents.remove(zombie)
                 if zombie in self.world.walls:
                     self.world.walls.remove(zombie)
+                if zombie in self.world.blobs:
+                    self.world.blobs.remove(zombie)
+                if zombie in self.world.wall_segments:
+                    self.world.wall_segments.remove(zombie)
 
                 # else: no moves => ant stays put
             if not len(self.world.candidates) == 0:
@@ -230,32 +234,8 @@ class Simulation:
             if not len(self.mouse_actions) == 0:
                 x,y = self.mouse_actions.pop()
                 self.evaluate_selected(x,y)
-            # --- Draw ---
-            screen.fill((50, 50, 50))
 
-            # Scale the floorplan based on zoom_factor
-            new_w = int(width * vp.zoom_factor)
-            new_h = int(height * vp.zoom_factor)
-            floorplan_scaled = pygame.transform.smoothscale(floorplan_surf, (new_w, new_h))
-            img = pygame.transform.smoothscale(img_gray_surface, (new_w, new_h))
-
-            # Blit the scaled floorplan at (0,0)
-            #screen.blit(floorplan_scaled, vp.get_center())
-            screen.blit(img, vp.get_center())
-            # Draw ants (scaled)
-            for agent in self.world.agents:
-                if agent.alive:
-                    agent.draw(screen, vp)
-            # Render the number of agents in the top-left corner
-            text_surface = f.render(f"Agents: {len(self.world.agents)}", True, (255, 255, 0))
-            screen.blit(text_surface, (10, 10))  # Position (x=10, y=10)
-
-            self.handle_visible_pupup()
-            # Draw the pop-up
-            self.popup.draw(screen)
-
-            pygame.display.flip()
-
+            self.draw()
         pygame.quit()
         print("All done!")
 

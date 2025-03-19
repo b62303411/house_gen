@@ -201,6 +201,14 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertAlmostEqual(602.65, x,delta=2)
         self.assertAlmostEqual(171.5, c_y, delta=1)
         self.assertAlmostEqual(170, y,delta=2)
+
+    def test_corners(self):
+        cb = CollisionBox(17,354,7,7,315)
+
+        corners = cb.calculate_corners()
+
+        self.assertNotAlmostEquals(corners[1][0],corners[3][0])
+
     def test_merge_vertical_aligned_json2(self):
         filename="E:\\workspace\\blender_house\\house_gen\\test.json"
         world = self.world

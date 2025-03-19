@@ -14,7 +14,7 @@ class TestWallScanner(unittest.TestCase):
         self.wf = WorldFactory()
 
     def test_case_one(self):
-            file= "region_20x20_424_467.png"
+            file= "region_20x20_426_463.png"
             image_path = f"test_img\{file}"
             #image = Image.open(image_path)
             #image_array = np.array(image)

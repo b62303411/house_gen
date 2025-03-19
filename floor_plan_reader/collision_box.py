@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from floor_plan_reader.math_segments import combine_segments_decimal
 from floor_plan_reader.vector import Vector
-
+from shapely.geometry import Polygon
 
 class CollisionBox:
     def __init__(self, center_x, center_y, width, length, rotation):
@@ -244,10 +244,10 @@ class CollisionBox:
         angle_rad = math.radians(self.rotation)
 
         # Direction vector (rotated from default direction (1,0))
-        direction = (math.cos(angle_rad), math.sin(angle_rad))
+        direction = Vector( (math.cos(angle_rad), math.sin(angle_rad)))
 
         # Normal vector (rotated 90 degrees from direction)
-        normal = (-direction[1], direction[0])
+        normal = direction.get_normal()
 
         return direction, normal
 
@@ -256,7 +256,8 @@ class CollisionBox:
         return angle_diff < tolerance or abs(angle_diff - 180) < tolerance
 
     def is_overlapping(self, other):
-        return other.is_point_inside(self.center_x, self.center_y)
+        return self.calculate_overlap(other) > 0
+        #return other.is_point_inside(self.center_x, self.center_y)
 
     def get_ray_trace_points(self):
         direction = self.get_direction()
@@ -306,6 +307,21 @@ class CollisionBox:
         self.center_y = y
         self.corners = None
 
+    def calculate_overlap(self, other):
+        corners_self = self.calculate_corners()
+        corners_other = other.calculate_corners()
+
+        # Create Polygon objects for both boxes
+        polygon_self = Polygon(corners_self)
+        polygon_other = Polygon(corners_other)
+
+        # Check if the polygons intersect
+        if not polygon_self.intersects(polygon_other):
+            return 0  # No overlap
+
+        # Calculate the intersection area
+        intersection = polygon_self.intersection(polygon_other)
+        return intersection.area
     def calculate_corners(self):
         if self.corners is not None:
             return self.corners
@@ -314,27 +330,37 @@ class CollisionBox:
         half_width = (self.width) / 2 - .5
         direction, normal = self.derive_direction_and_normal()
 
-        dir_vec = (direction[0] * half_length, direction[1] * half_length)
-        norm_vec = (normal[0] * half_width, normal[1] * half_width)
+        back = direction.opposite()
+        back.scale(half_length)
+        front = direction.copy()
+        front.scale(half_length)
+        left = normal.copy()
+        left.scale(half_width)
+        position = Vector((self.center_x,self.center_y))
+        to_left = position+left+back
+        top_right=position-left+back
+        bottom_left = position+front+left
+        bottom_right = position+front-left
+
 
         # Calculate corners without offsets
         top_left = (
-            self.center_x - dir_vec[0] - norm_vec[0],
-            self.center_y - dir_vec[1] + norm_vec[1]  # Y-down adjustment
+            to_left.direction[0],
+            to_left.direction[1]  # Y-down adjustment
         )
         bottom_right = (
-            self.center_x + dir_vec[0] + norm_vec[0],
-            self.center_y + dir_vec[1] - norm_vec[1]  # Y-down adjustment
+            bottom_right.direction[0],
+            bottom_right.direction[1]  # Y-down adjustment
         )
 
         # Other corners for completeness
         top_right = (
-            self.center_x + dir_vec[0] - norm_vec[0],
-            self.center_y + dir_vec[1] + norm_vec[1]
+            top_right.direction[0],
+            top_right.direction[1]  # Y-down adjustment
         )
         bottom_left = (
-            self.center_x - dir_vec[0] + norm_vec[0],
-            self.center_y - dir_vec[1] - norm_vec[1]
+            bottom_left.direction[0],
+            bottom_left.direction[1]  # Y-down adjustment
         )
 
         # Order: [top-left, bottom-left, top-right, bottom-right]
@@ -396,8 +422,8 @@ class CollisionBox:
 
         # 2) Get this box's direction and normal (they're valid for both if parallel)
         direction, normal = self.derive_direction_and_normal()
-        direction = self.to_decimal(direction)
-        normal = self.to_decimal(normal)
+        direction = self.to_decimal(direction.direction)
+        normal = self.to_decimal(normal.direction)
 
         # 3) Gather corners from both boxes
         corners_self = self.calculate_corners()

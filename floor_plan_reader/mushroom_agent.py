@@ -7,6 +7,7 @@ from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.collision_box import CollisionBox
 from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.min_max import MinMax
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.vector import Vector
@@ -29,7 +30,7 @@ class Mushroom(Agent):
         self.max_width = 1
         self.overlapping = set()
         self.stem_points = set()
-        self.crawl_points= set()
+        self.crawl_points = set()
         self.collision_box_history = set()
         self.branches = []
         self.wall_segment = None
@@ -37,8 +38,8 @@ class Mushroom(Agent):
         self.left_inside = None
         self.right_margin = None
         self.right_inside = None
-        self.selected=False
-        self.co_axial_walls=set()
+        self.selected = False
+        self.co_axial_walls = set()
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -50,7 +51,8 @@ class Mushroom(Agent):
 
     def set_position(self, x, y):
         self.collision_box.set_position(x, y)
-    def set_selected(self,selected):
+
+    def set_selected(self, selected):
         self.selected = selected
 
     def get_center(self):
@@ -73,19 +75,14 @@ class Mushroom(Agent):
             return
         self.collision_box.width = self.left_margin + self.right_margin
         direction, normal = self.derive_direction_and_normal()
-        mag = math.hypot(normal[0], normal[1])
-        if mag > 0:
-            nx = normal[0] / mag
-            ny = normal[1] / mag
-        else:
-            # Degenerate case (no valid normal)
-            return
+
 
         right_dist = self.right_margin
         left_dist = self.left_margin
         # 2) Compute how far we are off. If right_dist is bigger, shift center outward.
         shift = (right_dist - left_dist) / 2.0
-
+        nx = normal.direction[0]
+        ny = normal.direction[1]
         x, y = self.get_center()
         # 3) Shift the center to balance
         x += shift * nx
@@ -211,7 +208,7 @@ class Mushroom(Agent):
         angle_deg = round(angle_deg / 45) * 45
         return angle_deg % 360
 
-    def evaluate_segment_agregate(self,obj):
+    def evaluate_segment_agregate(self, obj):
         wall = None
         if obj is not None and obj.is_on_same_axis_as(self):
             self.co_axial_walls.add(obj)
@@ -248,7 +245,7 @@ class Mushroom(Agent):
                         dir = self.get_direction()
                         directions = [normal, dir]
                         self.scan_for_walls(x, y, directions)
-                        #print("hum")
+                        # print("hum")
                 else:
                     measuring_opening = True
 
@@ -268,16 +265,15 @@ class Mushroom(Agent):
                 wall = coaxial.wall_segment
 
         if wall is None:
-            wall = WallSegment(Id_Util.get_id(),self.world)
+            wall = self.world.create_wall_segment()
             self.wall_segment = wall
             wall.add_part(self)
             for coaxial in self.co_axial_walls:
                 coaxial.wall_segment = wall
                 wall.add_part(coaxial)
-            self.world.candidates.append(wall)
         else:
             if self.wall_segment is None:
-                self.wall_segment=wall
+                self.wall_segment = wall
                 wall.add_part(self)
             for coaxial in self.co_axial_walls:
                 if coaxial.wall_segment is None:
@@ -330,6 +326,10 @@ class Mushroom(Agent):
         valid = self.collision_box.length > 3
         valid = self.collision_box.width > 3 and valid
         valid = self.collision_box.length > self.collision_box.width and valid
+        x,y = self.get_center()
+        on_food = self.world.is_food(x, y)
+        if not on_food:
+            return False
         corners = self.corners()
         invalid_corners = 0
         for c in corners:
@@ -391,7 +391,6 @@ class Mushroom(Agent):
             is_on_food = False
             if self.world.is_food(x, y):
                 is_on_food = True
-
 
             self.collision_box.set_lenght(stem_length)
             self.collision_box.set_width(width)
@@ -553,118 +552,9 @@ class Mushroom(Agent):
         values = self.scan_for_walls(x, y)
         return values
 
-    def is_3_wide_food(self,cx, cy):
-        nx,ny = self.collision_box.get_normal()
-        # For offset in [-1, 0, 1], check (cx + offset*nx, cy + offset*ny)
-        for offset in [-1, 0, 1]:
-            test_x = int(cx + offset * nx)
-            test_y = int(cy + offset * ny)
-            # Check bounds + food
-            if not self.world.is_within_bounds(test_x,test_y):
-                return False
-            if not self.world.is_food(test_x, test_y):
-                return False
-        return True
-    def measure_extent(self, x, y, dx, dy):
-        """Measure extent along a given direction vector (dx, dy) properly.
-       - First, crawl backward to find the start.
-       - Then, count forward to find the total steps.
-        """
-        height, width = self.world.grid.shape
-        min_x = None
-        min_y = None
-        max_x = None
-        max_y = None
-        # Step 1: Crawl backward until hitting a boundary
-        if self.world.is_food(int(x), int(y)):
-            min_x = x
-            min_y = y
-        else:
-            pass
-        while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)) and self.is_3_wide_food(x,y):
-            x -= dx
-            y -= dy
-            min_x = x
-            min_y = y
-        if min_x is None:
-            print(f"{x} {y}  {width} {height}")
-        # Step 2: Move one step forward to set the actual starting point
-        x += dx
-        y += dy
-        steps = 0
-
-        # Step 3: Count steps moving forward until hitting another boundary
-        while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)):
-            x += dx
-            y += dy
-            steps += 1  # Count steps only in the forward direction
-            max_x = x
-            max_y = y
-        if min_x is None or min_y is None:
-            pass
-        data = SondeData(steps,min_x,min_y,max_x,max_y)
-        return data  # The total step count along this direction
-
     def scan_for_walls(self, x, y, directions=list(
         map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
-        return self.wall_scanner.scan_for_walls(x,y,directions)
-    def scan_for_walls2(self, x, y, directions=list(map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (-0.5, -0.5)]))):
-
-
-        lengths = []
-        vectors = []
-        min_x = 900
-        min_y = 900
-        max_x = 0
-        max_y = 0
-        sondes = []
-        sonde_dic = {}
-        for d in directions:
-            s = Sonde(d,None)
-            sonde_dic[d] = s
-            sonde_dic[d.opposite()] = s
-            test = sonde_dic.get(d.opposite())
-            #v = Vector()
-            #v.direction = d
-            #v.position = (x, y)
-            #vectors.append(v)
-            data = self.measure_extent(x, y, d.dx(), d.dy())
-            s.data = data
-            sondes.append(s)
-            if data.min_x is None or data.max_x is None:
-                pass
-            else:
-                min_x = min(data.min_x + 1, min_x)
-                min_y = min(data.min_y + 1, min_y)
-                max_x = max(data.max_x - 1, max_x)
-                max_y = max(data.max_y - 1, max_y)
-                lengths.append(data)
-        # Step 3: Compute floating-point center
-        center_x = (min_x + max_x) / 2.0
-        center_y = (min_y + max_y) / 2.0
-        if(len(lengths)>2):
-            max_steps = 0
-            winer = None
-            for f in sondes:
-                max_steps= max(max_steps,f.data.steps)
-            for f in sondes:
-                if f.data.steps == max_steps:
-                    winner = f
-                    win_dir = winner.direction
-                    normal = win_dir.get_normal()
-                    width = sonde_dic.get(normal)
-                    if width is None:
-                        width = sonde_dic.get(normal.opposite())
-
-                    pass
-
-
-            lenght_x = lengths[0].steps
-            lenght_y = lengths[1].steps
-        else:
-            lenght_x=1
-            lenght_y=1
-        return (lenght_x, lenght_y, center_x, center_y)
+        return self.wall_scanner.scan_for_walls(x, y, directions)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0
@@ -766,7 +656,7 @@ class Mushroom(Agent):
                 else:
                     colour = (25, 25, 255)
             if self.selected:
-                colour = (255,0,0)
+                colour = (255, 0, 0)
             pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
         for cell in self.core_cells:
             sx, sy = vp.convert(cell.x, cell.y)
@@ -836,14 +726,9 @@ class Mushroom(Agent):
         # other.alive = False
 
     def create_branche(self, x, y):
-        if self.world.is_occupied(x, y):
-            return
-        if self.world.is_within_bounds(x, y):
-            branch = self.world.create_mushroom(x, y)
-            if branch is not None:
-                self.branches.append(branch)
-        else:
-            pass
+        if not self.world.is_blob(x,y):
+            self.world.create_blob(x,y)
+
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
@@ -855,4 +740,4 @@ class Mushroom(Agent):
     def record_stack_trace(self):
         y = self.collision_box.center_y
         x = self.collision_box.center_x
-        self.world.print_snapshot(x,y)
+        #self.world.print_snapshot(x, y)

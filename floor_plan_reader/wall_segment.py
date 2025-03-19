@@ -5,6 +5,7 @@ from pygame import font
 from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.collision_box import CollisionBox
+from floor_plan_reader.pruning_util import PruningUtil
 
 
 class Scores:
@@ -23,8 +24,9 @@ class Scores:
 
 class WallSegment(Agent):
 
-    def __init__(self, id,world):
+    def __init__(self, id, world):
         super().__init__(id)
+        self.collision_box = None
         self.world = world
         self.scores = set()
         self.parts = set()
@@ -34,6 +36,7 @@ class WallSegment(Agent):
         font.init()
         self.f = font.Font(None, 8)
         self.openings = set()
+        self.overlapping = set()
 
     def set_collision_box(self, cb):
         if isinstance(cb, CollisionBox):
@@ -52,14 +55,19 @@ class WallSegment(Agent):
                 return True
         return False
 
-
-    def set_position(self,x,y):
-        self.collision_box.set_position(x,y)
+    def set_position(self, x, y):
+        self.collision_box.set_position(x, y)
 
     def calculate_if_external(self):
         pass
+
     def calculate_openings(self):
         pass
+
+    def merge_alighned(self,cb,p):
+        if isinstance(cb, CollisionBox):
+            cb = cb.merge_aligned(p.collision_box)
+        return cb
     def negotiate_phase(self):
         cb = None
         for p in self.parts:
@@ -69,12 +77,13 @@ class WallSegment(Agent):
             if cb is None:
                 cb = p.collision_box.copy()
             else:
-                cb = cb.merge_aligned(p.collision_box)
+                cb = self.merge_alighned(cb,p)
+
         self.set_collision_box(cb)
 
     def process_state(self):
 
-        wrongs =[]
+        wrongs = []
         if self.state == "error":
             for n in self.parts:
                 for i in self.parts:
@@ -85,11 +94,21 @@ class WallSegment(Agent):
             self.negotiate_phase()
             error = False
             for n in self.parts:
-                if self.collision_box.width > 2*n.collision_box.width or self.collision_box.width > 100:
-                    error=True
+                if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
+                    error = True
                     break
             if error:
-                self.state="error"
+                self.state = "error"
+            else:
+                self.state = "prune"
+        elif self.state == "prune":
+
+            pruned, against = PruningUtil.prune(self, self.world.wall_segments)
+            if pruned:
+                #    for p in self.parts:
+                #        p.wall_segment = against
+                #        against.add_part(p)
+                self.state = "dead"
             else:
                 self.state = "normalize"
         elif self.state == "normalize":
@@ -98,6 +117,14 @@ class WallSegment(Agent):
         elif self.state == "fill":
             self.fill_box()
             self.state = "done"
+        elif self.state == "dead":
+            for e in self.overlapping:
+                ratio = e.collision_box.calculate_overlap(self.collision_box)
+                print(ratio)
+
+
+
+
 
     def fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -106,11 +133,17 @@ class WallSegment(Agent):
             y = p[1]
             self.world.occupy_wall(x, y, self)
 
+    def is_valid(self):
+        not_to_short = self.collision_box.length != 0
+        not_to_wide = self.collision_box.width < 100
+        return not_to_wide and not_to_short
+
     def normalize(self):
         width = self.collision_box.width
         for p in self.parts:
             width = min(width, p.collision_box.width)
         self.collision_box.width = width
+
         def dot(px, py, qx, qy):
             """Dot product of 2D vectors (px,py) · (qx,qy)."""
             return px * qx + py * qy
@@ -125,8 +158,8 @@ class WallSegment(Agent):
         # - Parent direction & normal (unit vectors in float form)
         p_direction, p_normal = parent_box.derive_direction_and_normal()
         # - Convert to Decimal for consistent arithmetic
-        pdx, pdy = Decimal(p_direction[0]), Decimal(p_direction[1])
-        pnx, pny = Decimal(p_normal[0]), Decimal(p_normal[1])
+        pdx, pdy = Decimal(p_direction.direction[0]), Decimal(p_direction.direction[1])
+        pnx, pny = Decimal(p_normal.direction[0]), Decimal(p_normal.direction[1])
 
         # - Parent center
         pcx_float, pcy_float = parent_box.get_center()
@@ -187,12 +220,20 @@ class WallSegment(Agent):
             cbox.corners = None
             cbox.calculate_corners()
 
-
     def corners(self):
         return self.collision_box.calculate_corners()
 
     def get_center(self):
         return self.collision_box.get_center()
+
+    def draw_corners(self, screen, vp, corners, colour=(0, 255, 255), size=1):
+        corners_ = []
+
+        for c in corners:
+            cp = vp.convert(c[0], c[1])
+            corners_.append(cp)
+
+        pygame.draw.polygon(screen, colour, corners_, size)
 
     def draw(self, screen, vp):
 
@@ -200,18 +241,19 @@ class WallSegment(Agent):
             colour = (255, 50, 200)
         else:
             colour = (255, 0, 200)
-        if self.state=="error":
+        if self.state == "error":
             colour = (255, 0, 0)
         corners = self.corners()
-        corners_ = []
 
-        for c in corners:
-            cp = vp.convert(c[0], c[1])
-            corners_.append(cp)
         size = 1
         if self.is_selected():
             size = 3
-        pygame.draw.polygon(screen, colour, corners_, size)
+
+        self.draw_corners(screen, vp, corners, colour, size)
+        colour = (0, 255, 0)
+        for o in self.overlapping:
+            self.draw_corners(screen, vp, o.corners(), colour, 3)
+
         x, y = self.get_center()
         x, y = vp.convert(x, y)
         pygame.draw.circle(screen, colour, (x, y), 1)
@@ -225,3 +267,15 @@ class WallSegment(Agent):
 
     def get_collision_box(self):
         return self.collision_box
+
+    def get_occupation_ratio(self):
+        if self.collision_box.get_area() == 0:
+            return 0
+        value = 0
+        for p in self.parts:
+            value += p.get_occupation_ratio()
+        ratio = value / len(self.parts)
+        return ratio
+
+    def kill(self):
+        self.alive = False
