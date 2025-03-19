@@ -1,6 +1,10 @@
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
+<<<<<<< HEAD
 from floor_plan_reader.math.vector import Vector
+=======
+from floor_plan_reader.vector import Vector
+>>>>>>> 9f79a5f (stable)
 from sortedcontainers import SortedList
 
 
@@ -41,9 +45,13 @@ class ScanResult:
     def get_dir(self):
         return self.stem_sonde.direction
     def is_valid(self):
+<<<<<<< HEAD
         lenght_valid = self.get_lenght()>2
         width_valid = self.get_width() > 2 and self.get_width() < 15
         return lenght_valid and width_valid
+=======
+        return self.get_lenght()>0
+>>>>>>> 9f79a5f (stable)
 class WallScanner:
     def __init__(self, world):
         self.world = world
@@ -51,6 +59,7 @@ class WallScanner:
     def is_food(self, x, y):
         return self.world.is_food(int(x), int(y))
 
+<<<<<<< HEAD
     def is_wide_enough(self, cx, cy, direction, target=3):
         normal = direction.get_normal()
         nx, ny = normal.direction
@@ -69,10 +78,26 @@ class WallScanner:
             return True
 
         return False
+=======
+    def is_3_wide_food(self, cx, cy, direction):
+        normal = direction.get_normal()
+        nx, ny = normal.direction
+        # For offset in [-1, 0, 1], check (cx + offset*nx, cy + offset*ny)
+        for offset in [-1, 0, 1]:
+            test_x = int(cx + offset * nx)
+            test_y = int(cy + offset * ny)
+            # Check bounds + food
+            if not self.world.is_within_bounds(test_x, test_y):
+                return False
+            if not self.is_food(test_x, test_y):
+                return False
+        return True
+>>>>>>> 9f79a5f (stable)
 
     def is_within_bounds(self,x,y):
         return self.world.is_within_bounds(x,y)
 
+<<<<<<< HEAD
     def ping(self,x,y,d,target=2):
         is_within_bounds = self.is_within_bounds(x,y)
         if not is_within_bounds:
@@ -87,6 +112,17 @@ class WallScanner:
         occupided = self.world.is_wall_occupied(x,y)
         return food and not occupided
 
+=======
+    def ping(self,x,y,d):
+        is_within_bounds = self.is_within_bounds(x,y)
+        if not is_within_bounds:
+            return False
+        is_food = self.is_food(x,y)
+
+        is_wide_enough = self.is_3_wide_food(x,y,d)
+        return is_food and is_wide_enough
+
+>>>>>>> 9f79a5f (stable)
     def measure_extent(self, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
        - First, crawl backward to find the start.
@@ -99,7 +135,11 @@ class WallScanner:
         max_x = None
         max_y = None
         # Step 1: Crawl backward until hitting a boundary
+<<<<<<< HEAD
         if self.is_cell_valid(x, y):
+=======
+        if self.is_food(x, y):
+>>>>>>> 9f79a5f (stable)
             min_x = x
             min_y = y
         else:
@@ -118,7 +158,11 @@ class WallScanner:
         steps = 0
 
         # Step 3: Count steps moving forward until hitting another boundary
+<<<<<<< HEAD
         while self.ping(x,y,d):
+=======
+        while 0 <= x < width and 0 <= y < height and self.is_food(x, y):
+>>>>>>> 9f79a5f (stable)
             x += dx
             y += dy
             steps += 1  # Count steps only in the forward direction

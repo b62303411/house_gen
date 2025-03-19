@@ -1,37 +1,52 @@
-import logging
 import math
+import random
 
 import pygame
 
 from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
-from floor_plan_reader.display.arrow import Arrow
-from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
-from floor_plan_reader.display.cell_renderer import CellRenderer
-from floor_plan_reader.math.collision_box import CollisionBox
-from floor_plan_reader.math.min_max import MinMax
-from floor_plan_reader.math.vector import Vector
-from floor_plan_reader.mush_agent_state_machine import MushAgentStateMachine
-from floor_plan_reader.wall_scanner import WallScanner
+from floor_plan_reader.collision_box import CollisionBox
+from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.wall_segment import WallSegment
+
+
+class Vector:
+    def __init__(self):
+        self.direction = (0, 0)
+        self.position = (0, 0)
+        self.lenght = 1
+
+
+class MinMax:
+    def __init__(self,
+                 min_x=9999, max_x=0, min_y=9999, max_y=0):
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+
+    def evaluate(self, min_x=9999, max_x=9999, min_y=9999, max_y=9999):
+        self.min_x = min(self.min_x, min_x)
+        self.min_y = min(self.min_y, min_y)
+        self.max_y = min(self.max_y, max_y)
+        self.max_x = min(self.max_x, max_x)
 
 
 class Mushroom(Agent):
-    def __init__(self,world, blob,start_x, start_y,mush_id):
+    def __init__(self, start_x, start_y, world, mush_id):
         super().__init__(mush_id)
-        self.perimeter = None
-        self.wall_scanner = WallScanner(world)
         self.world = world
         self.outward_points = set()
         self.root_cells = set([Cell(start_x, start_y)])
         self.core_cells = set()
         self.collision_box = CollisionBox(start_x, start_y, 1, 1, 0)  # Will be set after ray trace
         self.alive = True
-
+        self.state = "ray_trace"
         self.growth_cells = set()
         self.max_width = 1
         self.overlapping = set()
         self.stem_points = set()
-        self.crawl_points = set()
+        self.crawl_points= set()
         self.collision_box_history = set()
         self.branches = []
         self.wall_segment = None
@@ -39,12 +54,8 @@ class Mushroom(Agent):
         self.left_inside = None
         self.right_margin = None
         self.right_inside = None
-        self.selected = False
-        self.co_axial_walls = set()
-        self.state_machine = MushAgentStateMachine(self)
-        self.cell_render = CellRenderer()
-        self.bb_drawer = BoundingBoxDrawer()
-        self.blob = blob
+        self.selected=False
+        self.co_axial_walls=set()
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -56,9 +67,8 @@ class Mushroom(Agent):
 
     def set_position(self, x, y):
         self.collision_box.set_position(x, y)
-
-    def set_selected(self, selected):
-        self.selected = selected
+    def set_selected(self,selected):
+        self.selected=selected
 
     def get_center(self):
         return self.collision_box.get_center()
@@ -66,14 +76,8 @@ class Mushroom(Agent):
     def run(self):
         self.process_state()
 
-    def get_state(self):
-        return self.state_machine.state
-
     def derive_direction_and_normal(self):
         return self.collision_box.derive_direction_and_normal()
-
-    def is_centered(self):
-        return abs(self.left_margin - self.right_margin) > 2
 
     def try_to_center(self):
         lm = None
@@ -86,13 +90,19 @@ class Mushroom(Agent):
             return
         self.collision_box.width = self.left_margin + self.right_margin
         direction, normal = self.derive_direction_and_normal()
+        mag = math.hypot(normal[0], normal[1])
+        if mag > 0:
+            nx = normal[0] / mag
+            ny = normal[1] / mag
+        else:
+            # Degenerate case (no valid normal)
+            return
 
         right_dist = self.right_margin
         left_dist = self.left_margin
         # 2) Compute how far we are off. If right_dist is bigger, shift center outward.
         shift = (right_dist - left_dist) / 2.0
-        nx = normal.direction[0]
-        ny = normal.direction[1]
+
         x, y = self.get_center()
         # 3) Shift the center to balance
         x += shift * nx
@@ -108,10 +118,75 @@ class Mushroom(Agent):
 
         dx = lm - lm_d
         dy = rm - rm_d
-        logging.debug(f"dx:{dx} dy:{dy}")
+        print(f"dx:{dx} dy:{dy}")
 
     def process_state(self):
-        self.state_machine.process_state()
+        if self.state == "ray_trace":
+            self.ray_trace_phase()
+            self.fill_box()
+            self.state = "recenter_phase"
+        if self.state == "recenter_phase":
+            if self.recenter_phase():
+                self.state = "recenter_phase"
+            else:
+                self.state = "pruning"
+        elif self.state == "pruning":
+            self.prunning_phase()
+            self.state = "wall_type"
+        elif self.state == "overlap":
+            self.overlap_phase()
+            self.state = "crawl"
+        elif self.state == "crawl":
+            self.crawl_phase()
+            self.state = "wrapup"
+        elif self.state == "wall_type":
+            self.wall_type_phase()
+            if abs(self.left_margin - self.right_margin) > 2:
+                self.state = "center"
+            else:
+                self.state = "overlap"
+        elif self.state == "center":
+            self.try_to_center()
+            self.state = "overlap"
+        elif self.state == "wrapup":
+            if self.is_valid():
+                self.forced_fill_box()
+                self.state = "done"
+            else:
+                self.kill()
+
+    def process_state_(self):
+        """State machine for floor plan resolution."""
+        if self.state == "ray_trace":
+            self.ray_trace_phase()
+            self.fill_box()
+            self.state = "stem_growth"
+        elif self.state == "stem_growth":
+            self.stem_growth_phase()
+            self.state = "width_assessment"
+        elif self.state == "width_assessment":
+            self.width_assessment_phase()
+            self.state = "pruning"
+        elif self.state == "width_expansion":
+            self.width_ray_trace()
+            self.state = "pruning"
+        elif self.state == "pruning":
+            self.prunning_phase()
+            self.state = "overlap"
+        elif self.state == "overlap":
+            self.overlap_phase()
+            self.state = "perimeter_reaction"
+        elif self.state == "perimeter_reaction":
+            self.perimeter_reaction_phase()
+            self.state = "growth" if self.has_growth_cells() else "done"
+        elif self.state == "growth":
+            self.growth_phase()
+            if self.is_valid():
+                self.state = "done"
+            else:
+                self.kill()
+        # min_x, max_x, min_y, max_y = self.ray_trace()
+        # self.update_bounding_box_and_center(min_x, max_x, min_y, max_y)
 
     def fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -123,7 +198,6 @@ class Mushroom(Agent):
                 self.root_cells.add(cell)
                 self.world.occupy(x, y, self)
                 self.stem_points.add(cell)
-        self.cell_render.generate_image(self.root_cells)
 
     def forced_fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -137,8 +211,6 @@ class Mushroom(Agent):
                 self.stem_points.add(cell)
 
     def get_occupation_ratio(self):
-        if self.collision_box.get_area() == 0:
-            return 0
         return len(self.root_cells) / self.collision_box.get_area()
 
     def is_parallel_to(self, other):
@@ -147,7 +219,14 @@ class Mushroom(Agent):
     def is_on_same_axis_as(self, other):
         return self.collision_box.is_on_same_axis_as(other.collision_box)
 
-    def evaluate_segment_agregate(self, obj):
+    def calculate_rotation_from_direction(self, dx, dy):
+        angle_rad = math.atan2(dy, dx)
+        angle_deg = math.degrees(angle_rad)
+        # Normalize angle to nearest 45 degrees
+        angle_deg = round(angle_deg / 45) * 45
+        return angle_deg % 360
+
+    def evaluate_segment_agregate(self,obj):
         wall = None
         if obj is not None and obj.is_on_same_axis_as(self):
             self.co_axial_walls.add(obj)
@@ -184,7 +263,7 @@ class Mushroom(Agent):
                         dir = self.get_direction()
                         directions = [normal, dir]
                         self.scan_for_walls(x, y, directions)
-                        # print("hum")
+                        #print("hum")
                 else:
                     measuring_opening = True
 
@@ -204,15 +283,16 @@ class Mushroom(Agent):
                 wall = coaxial.wall_segment
 
         if wall is None:
-            wall = self.world.create_wall_segment()
+            wall = WallSegment(Id_Util.get_id())
             self.wall_segment = wall
             wall.add_part(self)
             for coaxial in self.co_axial_walls:
                 coaxial.wall_segment = wall
                 wall.add_part(coaxial)
+            self.world.candidates.append(wall)
         else:
             if self.wall_segment is None:
-                self.wall_segment = wall
+                self.wall_segment=wall
                 wall.add_part(self)
             for coaxial in self.co_axial_walls:
                 if coaxial.wall_segment is None:
@@ -262,13 +342,7 @@ class Mushroom(Agent):
             self.world.free(r.x, r.y)
 
     def is_valid(self):
-        valid = self.collision_box.length > 3
-        valid = self.collision_box.width > 3 and valid
-        valid = self.collision_box.length > self.collision_box.width and valid
-        x, y = self.get_center()
-        on_food = self.world.is_food(x, y)
-        if not on_food:
-            return False
+        valid = self.collision_box.length > 2
         corners = self.corners()
         invalid_corners = 0
         for c in corners:
@@ -299,7 +373,7 @@ class Mushroom(Agent):
         return False
 
     def overlap_phase(self):
-        mushrooms = self.blob.mushrooms
+        mushrooms = self.world.find_all(Mushroom)
         for m in mushrooms:
             if m != self and m.alive and m.is_valid():
                 if self.collision_box.is_parallel_to(m.collision_box):
@@ -320,32 +394,26 @@ class Mushroom(Agent):
 
     def performe_ray_trace(self):
         """Determine the longest axis."""
-        result = self.ray_trace_from_center()
-        if result.is_valid():
-            stem_length = result.get_lenght()
-            width = result.get_width()
-            cx, cy = result.center
-            dx, dy = result.get_dir().direction
-            x, y = self.get_center()
-            is_on_food = False
-            if self.world.is_food(x, y):
-                is_on_food = True
+        dx, dy, cx, cy = self.ray_trace_from_center()
+        x, y = self.get_center()
+        is_on_food = False
+        if self.world.is_food(x, y):
+            is_on_food = True
 
-            self.collision_box.set_lenght(stem_length)
-            self.collision_box.set_width(width)
-            self.set_position(cx, cy)
+        stem_length = int(max(abs(dx), abs(dy)))
+        self.collision_box.set_lenght(stem_length)
+        self.collision_box.set_width(int(min(abs(dx), abs(dy))))
+        self.set_position(cx, cy)
 
-            angle = self.collision_box.calculate_rotation_from_direction(dx, dy)
-            self.collision_box.rotation = angle
-            self.corners()
-            direction = (1, 0) if abs(dx) > abs(dy) and dx > 0 else (-1, 0) if abs(dx) > abs(dy) else (
-                0, 1) if dy > 0 else (0, -1)
-            x, y = self.get_center()
-            if is_on_food and not self.world.is_food(x, y):
-                area = self.collision_box.get_area()
-                logging.debug(f"center out {area}?")
-        else:
-            self.record_stack_trace()
+        angle = self.calculate_rotation_from_direction(dx, dy)
+        self.collision_box.rotation = angle
+        self.corners()
+        direction = (1, 0) if abs(dx) > abs(dy) and dx > 0 else (-1, 0) if abs(dx) > abs(dy) else (
+            0, 1) if dy > 0 else (0, -1)
+        x, y = self.get_center()
+        if is_on_food and not self.world.is_food(x, y):
+            area = self.collision_box.get_area()
+            print(f"center out {area}?")
         # print(
         #    f"Mushroom {self.id}: Ray trace - length={self.stem_length}, direction={direction}, center=({x}, {y})")
 
@@ -370,7 +438,7 @@ class Mushroom(Agent):
                 self.root_cells.add(cell)
                 self.world.occupied[sy, sx] = self.id
                 self.stem_points.append(cell)
-        logging.debug(f"Mushroom {self.id}: Stem grown - {len(self.stem_points)} points")
+        print(f"Mushroom {self.id}: Stem grown - {len(self.stem_points)} points")
 
     def width_assessment_phase(self):
         """Assess available width at each stem point."""
@@ -389,7 +457,7 @@ class Mushroom(Agent):
                 else:
                     break
             self.widths[point] = width
-        logging.debug(f"Mushroom {self.id}: Width assessed - {len(self.widths)} points")
+        print(f"Mushroom {self.id}: Width assessed - {len(self.widths)} points")
 
     def width_ray_trace(self):
         points = self.collision_box.get_ray_trace_points()
@@ -421,7 +489,7 @@ class Mushroom(Agent):
                     cell = Cell(wx, wy)
                     self.root_cells.add(cell)
                     self.world.occupied[wy, wx] = self.id
-        logging.debug(f"Mushroom {self.id}: Width expanded - {len(self.root_cells)} cells")
+        print(f"Mushroom {self.id}: Width expanded - {len(self.root_cells)} cells")
 
     def perimeter_reaction_phase(self):
         """Mark perimeter and identify growth cells by walking the edge of root_cells."""
@@ -448,11 +516,9 @@ class Mushroom(Agent):
 
         self.perimeter = perimeter
         self.growth_cells = growth_cells
-        logging.debug(f"Mushroom {self.id}: Perimeter - {len(perimeter)} cells, Growth cells - {len(growth_cells)}")
+        print(f"Mushroom {self.id}: Perimeter - {len(perimeter)} cells, Growth cells - {len(growth_cells)}")
 
     def get_covered_ratio(self):
-        if self.collision_box.get_area() == 0:
-            return 0
         return len(self.stem_points) / self.collision_box.get_area()
 
     def growth_phase(self):
@@ -467,7 +533,7 @@ class Mushroom(Agent):
         if candidate:
             self.world.create_mushroom(candidate.x, candidate.y)
             self.growth_cells = set()  # Clear all growth cells after spawning one mushroom
-            logging.debug(
+            print(
                 f"Mushroom {self.id}: Spawned new mushroom at ({candidate.x}, {candidate.y}), new agent count={len(self.world.agents)}")
         else:
             self.growth_cells.clear()
@@ -491,9 +557,72 @@ class Mushroom(Agent):
         values = self.scan_for_walls(x, y)
         return values
 
-    def scan_for_walls(self, x, y, directions=list(
-        map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
-        return self.wall_scanner.scan_for_walls(x, y, directions)
+    def measure_extent(self, x, y, dx, dy):
+        """Measure extent along a given direction vector (dx, dy) properly.
+       - First, crawl backward to find the start.
+       - Then, count forward to find the total steps.
+        """
+        height, width = self.world.grid.shape
+        min_x = None
+        min_y = None
+        max_x = None
+        max_y = None
+        # Step 1: Crawl backward until hitting a boundary
+        if self.world.is_food(int(x), int(y)):
+            min_x = x
+            min_y = y
+        else:
+            pass
+        while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)):
+            x -= dx
+            y -= dy
+            min_x = x
+            min_y = y
+        if min_x is None:
+            print(f"{x} {y}  {width} {height}")
+        # Step 2: Move one step forward to set the actual starting point
+        x += dx
+        y += dy
+        steps = 0
+
+        # Step 3: Count steps moving forward until hitting another boundary
+        while 0 <= x < width and 0 <= y < height and self.world.is_food(int(x), int(y)):
+            x += dx
+            y += dy
+            steps += 1  # Count steps only in the forward direction
+            max_x = x
+            max_y = y
+        if min_x is None or min_y is None:
+            pass
+        return (steps, min_x, min_y, max_x, max_y)  # The total step count along this direction
+
+    def scan_for_walls(self, x, y, directions=[(1, 0), (0, 1), (.5, .5), (-.5, -.5)]):
+        lengths = []
+        vectors = []
+        min_x = 900
+        min_y = 900
+        max_x = 0
+        max_y = 0
+        for d in directions:
+            v = Vector()
+            v.direction = d
+            v.position = (x, y)
+            vectors.append(v)
+            data = self.measure_extent(x, y, d[0], d[1])
+            if data[1] is None:
+                pass
+            min_x = min(data[1] + 1, min_x)
+            min_y = min(data[2] + 1, min_y)
+            max_x = max(data[3] - 1, max_x)
+            max_y = max(data[4] - 1, max_y)
+            lengths.append(data)
+        # Step 3: Compute floating-point center
+        center_x = (min_x + max_x) / 2.0
+        center_y = (min_y + max_y) / 2.0
+        lenght_x = lengths[0][0]
+        lenght_y = lengths[1][0]
+
+        return (lenght_x, lenght_y, center_x, center_y)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0
@@ -519,7 +648,12 @@ class Mushroom(Agent):
         box = self.collision_box
         cx, cy = box.get_center()
         cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction
+        nx, ny = box.get_normal()
+        mag = math.hypot(nx, ny)
+        if mag == 0:
+            return  # No valid direction to draw
+        nx /= mag
+        ny /= mag
         length = 1.5 * self.left_margin * vp.zoom_factor
         color = (200, 0, 0)
         self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
@@ -528,27 +662,58 @@ class Mushroom(Agent):
         self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
 
     def draw_normal_arrow(self, surface, vp, color=(0, 255, 0), width=2):
+
         box = self.collision_box
         # 1) Get the center and normal from the box
         cx, cy = box.get_center()
         cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction  # might not be unit-length
+        nx, ny = box.get_normal()  # might not be unit-length
         # If the user wants to draw on 'left', invert the normal
         if self.left_inside == False:
             nx, ny = -nx, -ny
-
+        # 2) Normalize the normal vector
+        mag = math.hypot(nx, ny)
+        if mag == 0:
+            return  # No valid direction to draw
+        nx /= mag
+        ny /= mag
         length = 15
         self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
 
     def draw_arrow(self, cx, cy, nx, ny, vp, surface, color, length, width=2):
-        arrow = Arrow(cx, cy, nx, ny, length, width, color)
+        # 3) Calculate the end of the arrow line
+        end_x = cx + nx * vp.zoom_factor * length
+        end_y = cy + ny * vp.zoom_factor * length
 
-        arrow.draw(surface, vp)
+        # 4) Draw the main arrow line
+        pygame.draw.line(surface, color, (cx, cy), (end_x, end_y), width)
 
-    def draw_cells(self, cells, screen, vp):
-        for cell in cells:
-            sx, sy = vp.convert(cell.x, cell.y)
-            pygame.draw.rect(screen, (100, 200, 160), pygame.Rect(sx, sy, 1, 1))
+        # 5) Draw an arrowhead (small lines angled ~30° off the main direction)
+        arrow_size = 10  # length of each arrowhead side
+        arrow_angle_deg = 30  # how wide the arrowhead angle is
+        arrow_angle_rad = math.radians(arrow_angle_deg)
+
+        # We'll rotate the normalized vector +/- arrow_angle_rad
+        # to get two lines forming the arrowhead
+        # Vector rotation formula: (x*cosθ - y*sinθ, x*sinθ + y*cosθ)
+
+        # Left arrowhead direction
+        left_dx = nx * math.cos(arrow_angle_rad) - ny * math.sin(arrow_angle_rad)
+        left_dy = nx * math.sin(arrow_angle_rad) + ny * math.cos(arrow_angle_rad)
+
+        # Right arrowhead direction (negative angle)
+        right_dx = nx * math.cos(-arrow_angle_rad) - ny * math.sin(-arrow_angle_rad)
+        right_dy = nx * math.sin(-arrow_angle_rad) + ny * math.cos(-arrow_angle_rad)
+
+        # Convert those directions into the tip coordinates
+        left_x = end_x - left_dx * arrow_size
+        left_y = end_y - left_dy * arrow_size
+        right_x = end_x - right_dx * arrow_size
+        right_y = end_y - right_dy * arrow_size
+
+        # Draw lines for the arrowhead
+        pygame.draw.line(surface, color, (end_x, end_y), (left_x, left_y), width)
+        pygame.draw.line(surface, color, (end_x, end_y), (right_x, right_y), width)
 
     def draw(self, screen, vp):
 
@@ -564,10 +729,11 @@ class Mushroom(Agent):
                 else:
                     colour = (25, 25, 255)
             if self.selected:
-                colour = (255, 0, 0)
+                colour = (255,0,0)
             pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
-
-        self.draw_cells(self.core_cells,screen, vp)
+        for cell in self.core_cells:
+            sx, sy = vp.convert(cell.x, cell.y)
+            pygame.draw.rect(screen, (100, 200, 160), pygame.Rect(sx, sy, 1, 1))
 
         if self.alive:
             if self.is_outer_wall():
@@ -576,9 +742,14 @@ class Mushroom(Agent):
                 colour = (255, 255, 0)
         else:
             colour = (255, 0, 0)
-        if self.collision_box is not None:
-            self.bb_drawer.draw(self.collision_box,screen,vp, colour)
 
+        corners = self.corners()
+        corners_ = []
+
+        for c in corners:
+            cp = vp.convert(c[0], c[1])
+            corners_.append(cp)
+        pygame.draw.polygon(screen, colour, corners_, 1)
         x, y = self.get_center()
         x, y = vp.convert(x, y)
         pygame.draw.circle(screen, colour, (x, y), 1)
@@ -616,7 +787,7 @@ class Mushroom(Agent):
         return False
 
     def merge_with(self, other):
-        logging.debug(f"Merging Mushroom {self.id} with {other.id}")
+        print(f"Merging Mushroom {self.id} with {other.id}")
         self.root_cells.update(other.root_cells)
         self.core_cells.update(other.core_cells)
         self.branches.extend(other.branches)
@@ -628,8 +799,14 @@ class Mushroom(Agent):
         # other.alive = False
 
     def create_branche(self, x, y):
-        if not self.world.is_blob(x, y):
-            self.world.create_blob(x, y)
+        if self.world.is_occupied(x, y):
+            return
+        if self.world.is_within_bounds(x, y):
+            branch = self.world.create_mushroom(x, y)
+            if branch is not None:
+                self.branches.append(branch)
+        else:
+            pass
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
@@ -637,15 +814,3 @@ class Mushroom(Agent):
 
     def get_world_rect(self):
         return self.collision_box
-
-    def record_stack_trace(self):
-        y = self.collision_box.center_y
-        x = self.collision_box.center_x
-        # self.world.print_snapshot(x, y)
-
-    def print_box(self):
-        y = self.collision_box.center_y
-        x = self.collision_box.center_x
-        height = self.collision_box.width
-        width = self.collision_box.length
-        self.world.print_snapshot(x, y, width + 10, height + 10, "debug")

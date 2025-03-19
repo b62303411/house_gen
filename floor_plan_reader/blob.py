@@ -2,24 +2,21 @@ import pygame
 
 from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
-from floor_plan_reader.math.bounding_box import BoundingBox
 
 
 class Blob(Agent):
     def __init__(self, id, world, x, y):
         super().__init__(id)
-        self.bounding_box = None
         self.world = world
         self.cells = set()
         self.growth = set()
-        self.mushrooms = set()
         self.free_slot = set()
         self.origin = Cell(x, y)
         self.cells.add(self.origin)
         self.growth.add(self.origin)
         self.status = "born"
         self.alive = True
-        self.len_start = 0
+        self.len_start =0
         self.active_mush = None
 
     def is_food(self, x, y):
@@ -39,14 +36,6 @@ class Blob(Agent):
             self.world.set_blob(c.x, c.y, self)
             self.cells.add(c)
         other.alive = False
-
-    def calculate_bounding_box(self):
-        cells = self.cells
-        min_x = min(cell.x for cell in cells)
-        max_x = max(cell.x for cell in cells)
-        min_y = min(cell.y for cell in cells)
-        max_y = max(cell.y for cell in cells)
-        self.bounding_box = BoundingBox(min_x,min_y,max_x,max_y)
 
     def germinate(self, g):
         coord_list = self.world.get_neighbors_8(g.x, g.y)
@@ -73,8 +62,7 @@ class Blob(Agent):
             self.germinate(g)
 
         pass
-    def add_free_slot(self,cell):
-        self.free_slot.add(cell)
+
     def run(self):
         if self.status == "born":
             self.status = "grow"
@@ -83,42 +71,35 @@ class Blob(Agent):
             self.grow()
             size_after = self.blob_size()
             if not size_after > size:
-                if size_after > 12:
+                if size_after > 8:
                     self.status = "mush"
                     for c in self.cells:
                         self.free_slot.add(c)
                 else:
                     self.status = "cleanup"
         elif self.status == "mush":
-            self.calculate_bounding_box()
             length = len(self.free_slot)
             free = self.free_slot.copy()
             for s in free:
-                if self.world.is_occupied(s.x, s.y):
+                if self.world.is_occupied(s.x,s.y):
                     self.free_slot.remove(s)
-            if length != len(self.free_slot) and length > 0:
+            if length != len(self.free_slot) and length >0:
                 self.status = "mush"
             elif length > 0:
-                if self.active_mush is None or self.active_mush.get_state() == 'done' or self.active_mush.alive == False:
+                if self.active_mush is None or self.active_mush.state =='done' or self.active_mush.alive == False:
                     first_element = next(iter(self.free_slot))
                     self.create_mushroom(first_element.x, first_element.y)
             else:
                 self.alive = False
-            for n in self.cells:
-                if not self.world.is_any_occupied(n.x, n.y):
-                    self.add_free_slot(n)
-
+            pass
         elif self.status == "cleanup":
             for c in self.cells:
-                self.world.draw_at((c.x, c.y), 0)
+                self.world.draw_at((c.x,c.y),0)
             self.alive = False
-
-    def create_mushroom(self, x, y):
-        c = Cell(x, y)
+    def create_mushroom(self,x,y):
+        c = Cell(x,y)
         self.free_slot.remove(c)
-        self.active_mush = self.world.create_mushroom(self,x, y)
-        self.mushrooms.add(self.active_mush)
-
+        self.active_mush = self.world.create_mushroom(x,y)
     def draw(self, screen, vp):
         colour = (200, 0, 0)
         if self.status != "mush":
