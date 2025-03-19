@@ -2,6 +2,7 @@ import math
 from decimal import Decimal
 
 from floor_plan_reader.math_segments import combine_segments_decimal
+from floor_plan_reader.vector import Vector
 
 
 class CollisionBox:
@@ -62,7 +63,7 @@ class CollisionBox:
             270: (0, -1),
             315: (math.sqrt(2) / 2, -math.sqrt(2) / 2)
         }
-        return directions.get(angle_deg, (0, 0))
+        return Vector(directions.get(angle_deg, (0, 0)))
 
     def get_vector(self):
         dir = self.get_direction()
@@ -159,8 +160,8 @@ class CollisionBox:
         if not self.is_parallel_to(other):
             return False
 
-        dx1, dy1 = self.get_direction()
-        dx2, dy2 = other.get_direction()
+        dx1, dy1 = self.get_direction().direction
+        dx2, dy2 = other.get_direction().direction
         # 1) Check parallel: cross product of directions ~ 0
         # cross(d1, d2) = dx1*dy2 - dy1*dx2
         cross_dir = dx1 * dy2 - dy1 * dx2
@@ -173,7 +174,7 @@ class CollisionBox:
         dcx = cx2 - cx1
         dcy = cy2 - cy1
         cross_centers = dcx * dy1 - dcy * dx1
-        if abs(cross_centers) > 100:
+        if abs(cross_centers) > 10:
             return False  # center offset is not along the shared direction => parallel lines but offset
 
         # If both checks pass => same infinite line
@@ -216,13 +217,8 @@ class CollisionBox:
                 along negative/positive normal directions.
         """
         # 1) Get and normalize the normal
-        nx, ny = self.get_normal()
-        length = math.hypot(nx, ny)
-        if length == 0:
-            return [], []
+        nx, ny = self.get_normal().direction
 
-        nx /= length  # Make it unit length
-        ny /= length
 
         cx, cy = self.get_center()
 
@@ -273,11 +269,12 @@ class CollisionBox:
         return points
 
     def get_normal(self):
-        direction = self.get_direction()
-        return (-direction[1], direction[0])
+        dir = self.get_direction()
+        return dir.get_normal()
+
 
     def get_extended_ray_trace_points(self, max_x, max_y):
-        direction = self.get_direction()
+        direction = self.get_direction().direction
         half_length = self.length / 2.0
 
         points_forward = []

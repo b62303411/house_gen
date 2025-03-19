@@ -1,4 +1,5 @@
 from collections import deque
+from PIL import Image
 
 import numpy as np
 import random
@@ -34,9 +35,37 @@ class World:
         self.occupied = np.zeros(self.grid.shape, dtype=np.uint64)
         self.blob_grid = np.zeros(self.grid.shape, dtype=np.uint64)
         self.occupied_wall=np.zeros(self.grid.shape, dtype=np.uint64)
-
+    def print_snapshot(self,x,y,size =20):
+        x = int(x)
+        y = int(y)
+        grid = self.grid
+        # Ensure the region is within the image boundaries
+        if x - size // 2 >= 0 and x + size // 2 <= grid.shape[1] and \
+                y - size // 2 >= 0 and y + size // 2 <= grid.shape[0]:
+            # Extract the 10x10 region
+            region = grid[y - size // 2:y + size // 2, x - size // 2:x + size // 2]
+            color_coded = np.zeros((size, size, 3), dtype=np.uint8)
+            color_coded[region == 1] = [255, 255, 255]
+            center_x, center_y = size // 2, size // 2
+            color_coded[center_y, center_x] = [0, 255, 0]
+            # 4) Save the extracted region as an image file
+            region_image = Image.fromarray(color_coded)
+            name = f"region_{size}x{size}_{x}_{y}.png"
+            region_image.save(name)
+            print(f"{size}x{size} region saved as '{name}'")
+        else:
+            print("The region is out of bounds.")
     def free(self,x,y):
         self.occupied[int(y), int(x)] =0
+
+    def is_any_occupied(self,x,y):
+        h, w = self.grid.shape
+        y,x = int(y), int(x)
+        if 0 <= x < w and 0 <= y < h:
+            wall_part_occupied = self.occupied[y, x] != 0
+            wall_occupied = self.occupied_wall[y,x] !=0
+            return wall_occupied or wall_part_occupied
+        return True  # Out of bounds is occupied
     def is_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
@@ -68,7 +97,11 @@ class World:
                     return True
         return False
     def occupy_wall(self,x, y, wall):
-        self.occupied_wall[int(y), int(x)]=wall.id
+        h, l = self.occupied.shape
+        x,y = int(x),int(y)
+        if y >= h or x >= l:
+            return
+        self.occupied_wall[y, x]=wall.id
 
     def find_all(self, type):
         results = []
@@ -126,7 +159,8 @@ class World:
         """
 
         if self.is_within_bounds(x,y):
-            food = (self.grid[int(y), int(x)] == 1)
+            value = self.grid[int(y), int(x)]
+            food = (value == 1)
             return food
         return False
 

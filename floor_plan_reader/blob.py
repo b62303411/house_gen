@@ -16,7 +16,7 @@ class Blob(Agent):
         self.growth.add(self.origin)
         self.status = "born"
         self.alive = True
-        self.len_start =0
+        self.len_start = 0
         self.active_mush = None
 
     def is_food(self, x, y):
@@ -62,7 +62,8 @@ class Blob(Agent):
             self.germinate(g)
 
         pass
-
+    def add_free_slot(self,cell):
+        self.free_slot.add(cell)
     def run(self):
         if self.status == "born":
             self.status = "grow"
@@ -71,7 +72,7 @@ class Blob(Agent):
             self.grow()
             size_after = self.blob_size()
             if not size_after > size:
-                if size_after > 8:
+                if size_after > 12:
                     self.status = "mush"
                     for c in self.cells:
                         self.free_slot.add(c)
@@ -81,25 +82,30 @@ class Blob(Agent):
             length = len(self.free_slot)
             free = self.free_slot.copy()
             for s in free:
-                if self.world.is_occupied(s.x,s.y):
+                if self.world.is_occupied(s.x, s.y):
                     self.free_slot.remove(s)
-            if length != len(self.free_slot) and length >0:
+            if length != len(self.free_slot) and length > 0:
                 self.status = "mush"
             elif length > 0:
-                if self.active_mush is None or self.active_mush.state =='done' or self.active_mush.alive == False:
+                if self.active_mush is None or self.active_mush.state == 'done' or self.active_mush.alive == False:
                     first_element = next(iter(self.free_slot))
                     self.create_mushroom(first_element.x, first_element.y)
             else:
                 self.alive = False
-            pass
+            for n in self.cells:
+                if not self.world.is_any_occupied(n.x, n.y):
+                    self.add_free_slot(n)
+
         elif self.status == "cleanup":
             for c in self.cells:
-                self.world.draw_at((c.x,c.y),0)
+                self.world.draw_at((c.x, c.y), 0)
             self.alive = False
-    def create_mushroom(self,x,y):
-        c = Cell(x,y)
+
+    def create_mushroom(self, x, y):
+        c = Cell(x, y)
         self.free_slot.remove(c)
-        self.active_mush = self.world.create_mushroom(x,y)
+        self.active_mush = self.world.create_mushroom(x, y)
+
     def draw(self, screen, vp):
         colour = (200, 0, 0)
         if self.status != "mush":
