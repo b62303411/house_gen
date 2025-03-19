@@ -7,6 +7,9 @@ class Vector:
         self.direction = direction
         self.length = 1
 
+    def copy(self):
+        return Vector(self.direction)
+
     def __hash__(self):
         """Hash the vector based on its direction."""
         return hash(self.direction)

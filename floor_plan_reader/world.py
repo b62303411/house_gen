@@ -5,6 +5,8 @@ import random
 
 from floor_plan_reader.agent_factory import AgentFactory
 from floor_plan_reader.ants import Ant
+from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.wall_segment import WallSegment
 
 
 class World:
@@ -20,6 +22,7 @@ class World:
         self.occupied = None
         self.walls = set()
         self.agents = set()
+        self.wall_segments = set()
         self.zombies = []
         self.blobs = set()
 
@@ -77,6 +80,11 @@ class World:
                 results.append(a)
         return results
 
+    def create_wall_segment(self):
+        ws = WallSegment(Id_Util.get_id(), self)
+        self.candidates.append(ws)
+        self.wall_segments.add(ws)
+        return ws
     def create_blob(self,x,y):
         if self.is_within_bounds(x,y):
             if not self.is_blob(x,y):
