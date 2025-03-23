@@ -38,7 +38,7 @@ class Ant(Agent):
     def run(self):
         if self.world.is_food(self.x, self.y):
             self.alive = False
-            self.world.create_mushroom(self.x, self.y)
+            self.world.create_blob(self.x, self.y)
         else:
             valid = self.find_valid_neighbors()
             if valid:
