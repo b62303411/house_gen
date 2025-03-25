@@ -146,13 +146,14 @@ class Simulation:
                            num_ants=20,
                            allow_revisit=False
                            ):
+        self.wf.set_num_ants(num_ants)
         self.init_world(image_path)
         img_colour = cv2.imread(image_path)
 
         # img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
         self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         # 2) Create grid: 1=empty, 0=wall
-        self.wf.set_num_ants(num_ants)
+
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()
         # We make a window exactly the size of the image

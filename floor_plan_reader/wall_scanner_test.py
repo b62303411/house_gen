@@ -45,7 +45,7 @@ class TestWallScanner(unittest.TestCase):
 
         self.simulation = Simulation()
         file = "debug_169x15_552_337.png"
-        image_path = f"test_img\{file}"
+        image_path = f"test_img\\{file}"
         self.simulation.init_world(image_path)
         self.simulation.view.vp.zoom_factor=5
         self.screen = pygame.display.set_mode((self.simulation.width*5, self.simulation.height*5), pygame.RESIZABLE)
@@ -86,7 +86,7 @@ class TestWallScanner(unittest.TestCase):
 
     def test_case_one(self):
         file = "region_20x20_426_463.png"
-        image_path = f"test_img\{file}"
+        image_path = f"test_img\\{file}"
         # image = Image.open(image_path)
         # image_array = np.array(image)
         self.wf.set_img(image_path)

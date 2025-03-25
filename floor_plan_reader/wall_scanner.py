@@ -51,7 +51,7 @@ class WallScanner:
     def is_food(self, x, y):
         return self.world.is_food(int(x), int(y))
 
-    def is_3_wide_food(self, cx, cy, direction):
+    def is_wide_enough(self, cx, cy, direction, target=3):
         normal = direction.get_normal()
         nx, ny = normal.direction
         x,y =cx,cy
@@ -65,7 +65,7 @@ class WallScanner:
             x += nx
             y += ny
             steps +=1
-        if steps > 3:
+        if steps > target:
             return True
 
         return False
@@ -73,13 +73,13 @@ class WallScanner:
     def is_within_bounds(self,x,y):
         return self.world.is_within_bounds(x,y)
 
-    def ping(self,x,y,d):
+    def ping(self,x,y,d,target=2):
         is_within_bounds = self.is_within_bounds(x,y)
         if not is_within_bounds:
             return False
         is_food = self.is_cell_valid(x,y)
 
-        is_wide_enough = self.is_3_wide_food(x,y,d)
+        is_wide_enough = self.is_wide_enough(x,y,d,target)
         return is_food and is_wide_enough
 
     def is_cell_valid(self,x,y):
