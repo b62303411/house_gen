@@ -3,6 +3,7 @@ import random
 import numpy as np
 import cv2
 
+
 ################################################################################
 # Ant (Rectangle) Data Structure
 ################################################################################
@@ -31,9 +32,9 @@ class RectAnt:
         half_w = w // 2
         half_h = h // 2
 
-        left   = self.x - half_w
-        top    = self.y - half_h
-        right  = left + (w - 1)
+        left = self.x - half_w
+        top = self.y - half_h
+        right = left + (w - 1)
         bottom = top + (h - 1)
         return (left, top, right, bottom)
 
@@ -57,9 +58,9 @@ def can_place_rect(grid, ants, nx, ny, w, h):
     # Compute bounding box of the prospective position
     half_w = w // 2
     half_h = h // 2
-    left   = nx - half_w
-    top    = ny - half_h
-    right  = left + (w - 1)
+    left = nx - half_w
+    top = ny - half_h
+    right = left + (w - 1)
     bottom = top + (h - 1)
 
     # 1) Check out-of-bounds
@@ -109,15 +110,17 @@ def state_from_neighbor_count(count):
     else:
         return "corner"
 
+
 def color_for_state(state):
     if state == "searching":
-        return (128, 0, 128)   # purple
+        return (128, 0, 128)  # purple
     elif state == "crumb":
-        return (255, 0, 0)     # red
+        return (255, 0, 0)  # red
     elif state == "segment":
-        return (0, 0, 255)     # blue
+        return (0, 0, 255)  # blue
     else:
-        return (255, 255, 0)   # yellow
+        return (255, 255, 0)  # yellow
+
 
 def draw_rect_ant(screen, ant):
     """
@@ -150,6 +153,7 @@ def get_8_neighbors(x, y, width, height):
                 coords.append((nx, ny))
     return coords
 
+
 def find_valid_neighbors(grid, ants, ant):
     """
     For a rectangle-based ant, find up to 8 potential moves (8-connected),
@@ -163,6 +167,7 @@ def find_valid_neighbors(grid, ants, ant):
         if can_place_rect(grid, ants, nx, ny, ant.width, ant.height):
             valid.append((nx, ny))
     return valid
+
 
 def move_ant(ant, nx, ny):
     ant.x = nx
@@ -201,7 +206,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
             if grid[y, x] == 1:
                 floorplan_surf.set_at((x, y), (255, 255, 255))  # empty => white
             else:
-                floorplan_surf.set_at((x, y), (0, 0, 0))        # wall => black
+                floorplan_surf.set_at((x, y), (0, 0, 0))  # wall => black
 
     # 4) Spawn ants
     ants = []
@@ -215,7 +220,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
             break
         # Try to place a rectangle of size (w x h) at (px, py)
         if can_place_rect(grid, ants, px, py, w, h):
-            new_ant = RectAnt(px, py, ant_id=placed+1, width=w, height=h)
+            new_ant = RectAnt(px, py, ant_id=placed + 1, width=w, height=h)
             ants.append(new_ant)
             placed += 1
 
@@ -247,7 +252,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
             # else stays in place
 
         # Draw
-        screen.blit(floorplan_surf, (0,0))
+        screen.blit(floorplan_surf, (0, 0))
         for ant in ants:
             draw_rect_ant(screen, ant)
 
@@ -265,7 +270,7 @@ if __name__ == "__main__":
     # Example:
     run_rect_ant_simulation(
         image_path="dark_tones/dark_tones_only.png",
-        threshold=80,    # if your floor is bright => increase threshold
+        threshold=80,  # if your floor is bright => increase threshold
         num_ants=500,
         w=2,
         h=2

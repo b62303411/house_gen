@@ -48,7 +48,7 @@ class IntersectionSolver:
                     node = self.world.create_node((ix, iy))
                     node.lines = [lineA.id, lineB.id]
                     angle_dif = lineA.seg.collision_box.rotation-lineB.seg.collision_box.rotation
-                    if angle_dif < 20 :
+                    if angle_dif < 25 :
                         continue
                     lineA.seg.add_node(node)
                     lineB.seg.add_node(node)

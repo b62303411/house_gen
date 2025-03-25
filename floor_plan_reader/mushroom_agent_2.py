@@ -1,3 +1,4 @@
+import logging
 from random import random
 
 import pygame
@@ -137,7 +138,7 @@ class Mushroomw(Agent):
                 self.grow_branch()
                 self.detect_if_all_visited()
             else:
-                print("")
+                logging.debug("branches")
         # for b in self.braches:
         #    b.run()
 

@@ -1,4 +1,5 @@
 import json
+import logging
 from collections import deque
 
 import cv2
@@ -19,18 +20,24 @@ font.init()
 f = font.Font(None, 36)  # Use default font with size 36
 f_small = font.Font(None, 12)
 
-
-
+# --------------------------
+# Set up logging
+# --------------------------
+# You can customize the logging level and format to suit your needs
+logging.basicConfig(
+    level=logging.INFO,  # could also be DEBUG, WARNING, ERROR, CRITICAL
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"
+)
 
 
 class Simulation:
     def __init__(self):
 
-
+        self.running = True
         self.wf = WorldFactory()
         self.zombie_candidates = []
         self.world = None
-
 
         self.view = SimulationView(self)
 
@@ -39,13 +46,23 @@ class Simulation:
         self.floorplan_surf = None
         self.img_gray_surface = None
         self.intersections = set()
+        self.solver = None
+        self.jw = JsonWriter()
+        self.tasks = [
+            {
+                "name": "save_floor_plan",
+                "interval": 1000,  # Runs every 1000ms (1 second)
+                "accumulator": 0,
+                "action": lambda: self.save_floor_plan()
+            }
+        ]
 
     def is_wall(self, a, mx, my):
         if isinstance(a, Mushroom):
             if a.is_valid():
                 pass
             if a.is_valid() and a.collidepoint(mx, my):
-                print(a.id)
+                logging.debug(f"{a.id}")
                 selection_candidate = a
                 a.set_selected(True)
                 return True
@@ -62,13 +79,11 @@ class Simulation:
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
 
-
     def get_agent_count(self):
         return len(self.world.agents)
 
     def get_wall_segment_count(self):
         return len(self.world.wall_segments)
-
 
     def run(self):
         agents = self.world.agents.copy()
@@ -94,15 +109,24 @@ class Simulation:
                 self.world.walls.add(agent)
             self.world.agents.add(agent)
 
+    def stop(self):
+        self.running = False
 
-    def init_world(self,image_path_filtered,threshold=200):
+    def init_world(self, image_path_filtered, threshold=200):
+        # 1) Load grayscale
         img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
+        img_gray = cv2.bitwise_not(img_gray)
         g = (img_gray >= threshold).astype(np.uint8)
         self.wf.set_grid(g)
         self.world = self.wf.create_World()
+        self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
+
+        # 4) Create a floorplan surface (the base image showing white/black)
+        #    Then we won't re-scale it right away; we'll do that each frame based on zoom.
+
         self.floorplan_surf = pygame.Surface((self.width, self.height))
         for y in range(self.height):
             for x in range(self.width):
@@ -111,6 +135,10 @@ class Simulation:
                 else:
                     self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
 
+    def save_floor_plan(self):
+        result = self.solver.build_lines_and_intersections(self.world.wall_segments)
+        self.intersections = result.get("intersections")
+        self.jw.build_floorplan_json(result, self.world.walls)
     def run_ant_simulation(self,
                            image_path,
                            image_path_filtered,
@@ -118,21 +146,13 @@ class Simulation:
                            num_ants=20,
                            allow_revisit=False
                            ):
-        # 1) Load grayscale
-        img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        img_gray = cv2.bitwise_not(img_gray)
+        self.init_world(image_path)
         img_colour = cv2.imread(image_path)
 
         # img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
         self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         # 2) Create grid: 1=empty, 0=wall
-        g = (img_gray >= threshold).astype(np.uint8)
-        self.wf.set_grid(g)
         self.wf.set_num_ants(num_ants)
-        self.world = self.wf.create_World()
-        solver = IntersectionSolver(self.world)
-        self.height, self.width = self.world.grid.shape
-
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()
         # We make a window exactly the size of the image
@@ -140,30 +160,28 @@ class Simulation:
 
         clock = pygame.time.Clock()
 
-        # 4) Create a floorplan surface (the base image showing white/black)
-        #    Then we won't re-scale it right away; we'll do that each frame based on zoom.
-        self.floorplan_surf = pygame.Surface((self.width, self.height))
-        for y in range(self.height):
-            for x in range(self.width):
-                if self.world.grid[y, x] == 1:
-                    self.floorplan_surf.set_at((x, y), (255, 255, 255))  # white => empty
-                else:
-                    self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
-
         # 7) Zoom parameters
-        running = True
-        while running:
-            clock.tick(120)  # up to 30 FPS
+        self.running = True
+        while self.running:
+            dt = clock.tick(120)  # up to 30 FPS
 
             # --- Update ants (simple example) ---
             self.run()
             self.view.run()
 
 
-            result = solver.build_lines_and_intersections(self.world.wall_segments)
-            self.intersections = result.get("intersections")
-            jw = JsonWriter()
-            jw.build_floorplan_json(result, self.world.walls)
+
+
+            # ----------------------------------------------------------------
+            # Update each task timer; execute task if interval is reached
+            # ----------------------------------------------------------------
+            for task in self.tasks:
+                task["accumulator"] += dt
+                if task["accumulator"] >= task["interval"]:
+                    # Run the scheduled action
+                    task["action"]()
+                    # Reset this task's accumulator
+                    task["accumulator"] = 0
             self.view.draw()
         pygame.quit()
-        print("All done!")
+        logging.info("All done!")

@@ -1,4 +1,5 @@
 import json
+import threading
 
 
 class JsonWriter:
@@ -13,6 +14,14 @@ class JsonWriter:
             json.dump(floorplan_dict, f, indent=2)
         print(f"JSON saved to {filename}")
 
+    def save_floorplan_async(self, filename, data):
+        """
+        Spawns a new thread to save the floorplan without blocking the main thread.
+        """
+        thread = threading.Thread(target=self.save_floorplan_json,
+                                  args=(filename, data),
+                                  daemon=True)
+        thread.start()
     def build_floorplan_json(self,result_info,walls, furnitures=None):
         """
         1) Subdivide walls at intersections -> segments
@@ -46,5 +55,5 @@ class JsonWriter:
             "edges": edges,
             "furnitures":[]
         }
-        self.save_floorplan_json("experiment_floorplan.json",result)
+        self.save_floorplan_async("experiment_floorplan.json",result)
         return result
