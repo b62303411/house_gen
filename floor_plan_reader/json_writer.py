@@ -1,4 +1,5 @@
 import json
+import logging
 import threading
 
 
@@ -12,7 +13,7 @@ class JsonWriter:
         """
         with open(filename, "w") as f:
             json.dump(floorplan_dict, f, indent=2)
-        print(f"JSON saved to {filename}")
+        logging.info(f"JSON saved to {filename}")
 
     def save_floorplan_async(self, filename, data):
         """

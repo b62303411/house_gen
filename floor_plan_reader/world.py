@@ -1,3 +1,4 @@
+import logging
 from collections import deque
 from PIL import Image
 
@@ -85,9 +86,9 @@ class World:
             region_image = Image.fromarray(color_coded)
             name = f"{name_prefix}_{width}x{height}_{x}_{y}.png"
             region_image.save(name)
-            print(f"{width}x{height} region saved as '{name}'")
+            logging.info(f"{width}x{height} region saved as '{name}'")
         else:
-            print("The region is out of bounds.")
+            logging.info("The region is out of bounds.")
 
     def free(self, x, y):
         self.occupied[int(y), int(x)] = 0
@@ -230,7 +231,7 @@ class World:
         # 6) Spawn ants at random empty locations
         empty_pixels = np.argwhere(self.grid == 0)
         if len(empty_pixels) == 0:
-            print("No empty space found!")
+            logging.info("No empty space found!")
             return
 
         chosen_indices = random.sample(range(len(empty_pixels)), min(self.num_ants, len(empty_pixels)))

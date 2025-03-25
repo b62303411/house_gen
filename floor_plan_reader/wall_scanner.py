@@ -99,7 +99,7 @@ class WallScanner:
             min_x = x
             min_y = y
         if min_x is None:
-            print(f"{x} {y}  {width} {height}")
+            logging.info(f"{x} {y}  {width} {height}")
         # Step 2: Move one step forward to set the actual starting point
         x += dx
         y += dy

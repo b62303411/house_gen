@@ -55,7 +55,7 @@ class Simulation:
             if a.is_valid():
                 pass
             if a.is_valid() and a.collidepoint(mx, my):
-                print(a.id)
+                logging.debug(a.id)
                 selection_candidate = a
                 a.set_selected(True)
                 return True

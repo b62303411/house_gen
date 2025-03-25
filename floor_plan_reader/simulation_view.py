@@ -1,3 +1,4 @@
+import logging
 from collections import deque
 
 import pygame
@@ -42,7 +43,7 @@ class SimulationView:
             popup.hide()
         elif not popup.visible and self.selected is not None:
             # print("?===============================?")
-            print(f"selected:{self.selected.id}")
+            logging.debug(f"selected:{self.selected.id}")
             popup.show()
             # self.selected = selection_candidate
 

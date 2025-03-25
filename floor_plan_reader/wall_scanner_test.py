@@ -1,4 +1,4 @@
-
+import logging
 import threading
 import time
 
@@ -40,12 +40,12 @@ class TestWallScanner(unittest.TestCase):
         img = pygame.transform.smoothscale(self.simulation.img_gray_surface, (new_w, new_h))
 
     def worker(self):
-        print("Thread started")
+        logging.debug("Thread started")
         #time.sleep(2)  # Simulate some work
         while True:
             self.simulation.view.draw()
             time.sleep(0.5)
-        print("Thread finished")
+        logging.debug("Thread finished")
     def test_case_two(self):
 
 

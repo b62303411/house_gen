@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 
@@ -44,7 +46,7 @@ class UserInput:
                     # Otherwise, handle normal events (e.g., box selection)
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         mx, my = event.pos
-                        print(f"x:{mx} y:{my}")
+                        logging.debug(f"x:{mx} y:{my}")
                         mx, my = vp.convert_back(mx, my)
-                        print(f"x:{mx} y:{my}")
+                        logging.debug(f"x:{mx} y:{my}")
                         self.simulation.mouse_actions.append((mx, my))

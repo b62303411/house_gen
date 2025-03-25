@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pygame
 
@@ -14,9 +16,9 @@ class CellRenderer:
 
         try:
             surf = pygame.surfarray.make_surface(arr)
-            print("Success! Surface =", surf)
+            logging.info("Success! Surface =", surf)
         except Exception as e:
-            print("Failed with error:", e)
+            logging.info("Failed with error:", e)
 
         min_x = min(cell.x for cell in cells)
         max_x = max(cell.x for cell in cells)

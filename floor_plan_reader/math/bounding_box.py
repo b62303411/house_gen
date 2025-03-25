@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 from shapely import Polygon, LineString
 
@@ -43,6 +45,6 @@ class BoundingBox:
         line = LineString([(x1, y1), (x2, y2)])
         # Check intersection
         if self.get_poly().intersects(line):
-            print("Line intersects the rectangle!")
+            logging.debug("Line intersects the rectangle!")
         else:
-            print("No intersection.")
+            logging.debug("No intersection.")

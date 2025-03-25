@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 import random
 import numpy as np
@@ -225,7 +227,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
             placed += 1
 
     if not ants:
-        print("No ants could be placed. Possibly no space for those rectangle sizes!")
+        logging.info("No ants could be placed. Possibly no space for those rectangle sizes!")
         return
 
     # 5) Main loop
@@ -259,7 +261,7 @@ def run_rect_ant_simulation(image_path, threshold=200, num_ants=5, w=6, h=3):
         pygame.display.flip()
 
     pygame.quit()
-    print("Done. All ants have stopped.")
+    logging.info("Done. All ants have stopped.")
 
 
 ################################################################################

@@ -5,6 +5,7 @@ import pygame
 
 from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
+from floor_plan_reader.mushroom_agent import Mushroom
 
 
 class Mushroomw(Agent):
@@ -80,9 +81,9 @@ class Mushroomw(Agent):
                                     if self.world.collide_with_any(self,nx,ny):
                                         stem.is_visited= True
                                         stem.sprouted = True
-                                        print("found stem dead")
+                                        logging.debug("found stem dead")
                                     else:
-                                        print("found stem")
+                                        logging.debug("found stem")
         if cell in cell_to_move:
             self.root_cells.remove(cell)
             # self.root_cells.remove(cell)

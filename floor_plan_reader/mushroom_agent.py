@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 
@@ -7,6 +8,7 @@ from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.math.collision_box import CollisionBox
+from floor_plan_reader.math.min_max import MinMax
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.vector import Vector
@@ -433,7 +435,7 @@ class Mushroom(Agent):
                 self.root_cells.add(cell)
                 self.world.occupied[sy, sx] = self.id
                 self.stem_points.append(cell)
-        print(f"Mushroom {self.id}: Stem grown - {len(self.stem_points)} points")
+        logging.debug(f"Mushroom {self.id}: Stem grown - {len(self.stem_points)} points")
 
     def width_assessment_phase(self):
         """Assess available width at each stem point."""
@@ -452,7 +454,7 @@ class Mushroom(Agent):
                 else:
                     break
             self.widths[point] = width
-        print(f"Mushroom {self.id}: Width assessed - {len(self.widths)} points")
+        logging.debug(f"Mushroom {self.id}: Width assessed - {len(self.widths)} points")
 
     def width_ray_trace(self):
         points = self.collision_box.get_ray_trace_points()
@@ -484,7 +486,7 @@ class Mushroom(Agent):
                     cell = Cell(wx, wy)
                     self.root_cells.add(cell)
                     self.world.occupied[wy, wx] = self.id
-        print(f"Mushroom {self.id}: Width expanded - {len(self.root_cells)} cells")
+        logging.info(f"Mushroom {self.id}: Width expanded - {len(self.root_cells)} cells")
 
     def perimeter_reaction_phase(self):
         """Mark perimeter and identify growth cells by walking the edge of root_cells."""
@@ -511,7 +513,7 @@ class Mushroom(Agent):
 
         self.perimeter = perimeter
         self.growth_cells = growth_cells
-        print(f"Mushroom {self.id}: Perimeter - {len(perimeter)} cells, Growth cells - {len(growth_cells)}")
+        logging.info(f"Mushroom {self.id}: Perimeter - {len(perimeter)} cells, Growth cells - {len(growth_cells)}")
 
     def get_covered_ratio(self):
         if self.collision_box.get_area() == 0:
@@ -530,7 +532,7 @@ class Mushroom(Agent):
         if candidate:
             self.world.create_mushroom(candidate.x, candidate.y)
             self.growth_cells = set()  # Clear all growth cells after spawning one mushroom
-            print(
+            logging.info(
                 f"Mushroom {self.id}: Spawned new mushroom at ({candidate.x}, {candidate.y}), new agent count={len(self.world.agents)}")
         else:
             self.growth_cells.clear()
@@ -589,7 +591,7 @@ class Mushroom(Agent):
             min_x = x
             min_y = y
         if min_x is None:
-            print(f"{x} {y}  {width} {height}")
+            logging.debug(f"{x} {y}  {width} {height}")
         # Step 2: Move one step forward to set the actual starting point
         x += dx
         y += dy
@@ -826,7 +828,7 @@ class Mushroom(Agent):
         return False
 
     def merge_with(self, other):
-        print(f"Merging Mushroom {self.id} with {other.id}")
+        logging.debug(f"Merging Mushroom {self.id} with {other.id}")
         self.root_cells.update(other.root_cells)
         self.core_cells.update(other.core_cells)
         self.branches.extend(other.branches)

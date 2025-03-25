@@ -46,5 +46,5 @@ class UserInput:
                         mx, my = event.pos
                         logging.debug(f"x:{mx} y:{my}")
                         mx, my = vp.convert_back(mx, my)
-                        print(f"x:{mx} y:{my}")
+                        logging.debug(f"x:{mx} y:{my}")
                         self.view.mouse_actions.append((mx, my))

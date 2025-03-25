@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 import pygame
@@ -79,7 +80,7 @@ class WallSegment(Agent):
                 for i in self.parts:
                     if not n.collision_box.is_on_same_axis_as(i.collision_box):
                         wrongs.append(i)
-                print("")
+                logging.debug("error")
         if self.state == "negotiate":
             self.negotiate_phase()
             error = False
