@@ -105,7 +105,7 @@ class Mushroom(Agent):
 
         dx = lm - lm_d
         dy = rm - rm_d
-        print(f"dx:{dx} dy:{dy}")
+        logging.debug(f"dx:{dx} dy:{dy}")
 
     def process_state(self):
         if self.state == "ray_trace":

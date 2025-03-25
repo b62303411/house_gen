@@ -360,6 +360,22 @@ class CollisionBox:
                     pixels.append((x, y))
         return pixels
 
+    def get_center_line(self):
+        """
+        Returns a 2D line segment for the box's center line:
+        segment start (x1, y1), segment end (x2, y2).
+        """
+        direction, _ = self.derive_direction_and_normal()
+        dx, dy = direction  # e.g. (cosθ, sinθ)
+        half_len = self.length / 2.0
+
+        cx, cy = self.center_x, self.center_y
+        x1 = cx - dx * half_len
+        y1 = cy - dy * half_len
+        x2 = cx + dx * half_len
+        y2 = cy + dy * half_len
+
+        return (x1, y1), (x2, y2)
     def to_decimal(self, value):
         x = Decimal(value[0])
         y = Decimal(value[1])

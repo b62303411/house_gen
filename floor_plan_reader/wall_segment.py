@@ -23,7 +23,7 @@ class Scores:
 
 class WallSegment(Agent):
 
-    def __init__(self, id,world):
+    def __init__(self, id, world):
         super().__init__(id)
         self.world = world
         self.scores = set()
@@ -34,7 +34,9 @@ class WallSegment(Agent):
         font.init()
         self.f = font.Font(None, 8)
         self.openings = set()
-
+        self.nodes = set()
+    def add_node(self,node):
+        self.nodes.add(node)
     def set_collision_box(self, cb):
         if isinstance(cb, CollisionBox):
             self.collision_box = cb.copy()
@@ -52,14 +54,15 @@ class WallSegment(Agent):
                 return True
         return False
 
-
-    def set_position(self,x,y):
-        self.collision_box.set_position(x,y)
+    def set_position(self, x, y):
+        self.collision_box.set_position(x, y)
 
     def calculate_if_external(self):
         pass
+
     def calculate_openings(self):
         pass
+
     def negotiate_phase(self):
         cb = None
         for p in self.parts:
@@ -74,7 +77,7 @@ class WallSegment(Agent):
 
     def process_state(self):
 
-        wrongs =[]
+        wrongs = []
         if self.state == "error":
             for n in self.parts:
                 for i in self.parts:
@@ -85,11 +88,11 @@ class WallSegment(Agent):
             self.negotiate_phase()
             error = False
             for n in self.parts:
-                if self.collision_box.width > 2*n.collision_box.width or self.collision_box.width > 100:
-                    error=True
+                if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
+                    error = True
                     break
             if error:
-                self.state="error"
+                self.state = "error"
             else:
                 self.state = "normalize"
         elif self.state == "normalize":
@@ -111,6 +114,7 @@ class WallSegment(Agent):
         for p in self.parts:
             width = min(width, p.collision_box.width)
         self.collision_box.width = width
+
         def dot(px, py, qx, qy):
             """Dot product of 2D vectors (px,py) · (qx,qy)."""
             return px * qx + py * qy
@@ -187,7 +191,6 @@ class WallSegment(Agent):
             cbox.corners = None
             cbox.calculate_corners()
 
-
     def corners(self):
         return self.collision_box.calculate_corners()
 
@@ -200,7 +203,7 @@ class WallSegment(Agent):
             colour = (255, 50, 200)
         else:
             colour = (255, 0, 200)
-        if self.state=="error":
+        if self.state == "error":
             colour = (255, 0, 0)
         corners = self.corners()
         corners_ = []

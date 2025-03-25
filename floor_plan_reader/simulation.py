@@ -11,6 +11,7 @@ from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
 from floor_plan_reader.mushroom_agent import Mushroom
 from floor_plan_reader.simulation_view import SimulationView
+from floor_plan_reader.wall_segment import WallSegment
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
 
@@ -100,6 +101,8 @@ class Simulation:
             agent = self.world.candidates.popleft()
             if isinstance(agent, Mushroom):
                 self.world.walls.add(agent)
+            if isinstance(agent, WallSegment):
+                self.world.wall_segments.add(agent)
             self.world.agents.add(agent)
 
     def init_world(self, image_path_filtered, threshold=200):
