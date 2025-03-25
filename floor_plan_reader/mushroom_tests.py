@@ -1,10 +1,13 @@
 import json
 import unittest
+from decimal import Decimal
 
 import numpy as np
 
 from floor_plan_reader.cell import Cell
-from floor_plan_reader.collision_box import CollisionBox
+from floor_plan_reader.math.collision_box import CollisionBox
+from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.wall_segment import WallSegment
 from mushroom_agent import Mushroom
 from world_factory import WorldFactory
 
@@ -13,7 +16,7 @@ class TestMushroomGrowth(unittest.TestCase):
     def setUp(self):
         wf = WorldFactory()
         # Initialize grid with empty space (0)
-        grid_size = (20, 20)
+        grid_size = (700, 700)
         grid = np.zeros(grid_size, dtype=int)
         wf.set_grid(grid)
         self.world = wf.create_World()  # Mock world
@@ -47,81 +50,82 @@ class TestMushroomGrowth(unittest.TestCase):
         is_food = self.world.is_food_at(self.mushroom.get_center())
         self.assertTrue(is_food, "Mushroom need to be on the food")
         self.mushroom.run()
-        self.assertLessEqual(self.mushroom.collision_box.width,3)
-        self.assertLessEqual(self.mushroom.collision_box.length,10)
-        self.assertEqual(self.mushroom.state,"stem_growth")
+        self.assertLessEqual(self.mushroom.collision_box.width, 3)
+        self.assertLessEqual(self.mushroom.collision_box.length, 10)
+        self.assertEqual(self.mushroom.state, "stem_growth")
         self.mushroom.run()
         self.assertEqual(self.mushroom.state, "width_assessment")
         self.mushroom.run()
-        #self.assertEqual(self.mushroom.state,"width_expansion")
+        # self.assertEqual(self.mushroom.state,"width_expansion")
         self.mushroom.run()
         corners = self.mushroom.collision_box.calculate_corners()
-        bottom_right = corners [0]
-        other = corners [1]
+        bottom_right = corners[0]
+        other = corners[1]
         top_let = corners[2]
         dir = self.mushroom.collision_box.get_direction()
-        self.assertEqual(dir[0],1)
+        self.assertEqual(dir[0], 1)
         self.assertEqual(top_let[0], 11)
         self.assertEqual(top_let[1], 4)
-        self.assertEqual(bottom_right[0],2)
+        self.assertEqual(bottom_right[0], 2)
         self.assertEqual(bottom_right[1], 6)
         self.assertEqual(other[0], 11)
         self.assertEqual(other[1], 6)
         for c in corners:
-            self.assertTrue(self.mushroom.collidepoint(c[0],c[1]))
+            self.assertTrue(self.mushroom.collidepoint(c[0], c[1]))
         self.assertTrue(self.mushroom.center_on_food())
         x, y = self.mushroom.get_center()
         self.assertEqual(x, 6.5)
         self.assertEqual(y, 5)
 
     def test_wall_detection_vertical_wall(self):
-        self.mushroom = Mushroom(4,2, self.world, 1)
-        self.world.grid[2:12,4:7] = 1  # Horizontal wall (3 pixels thick, 4 pixels long)
+        self.mushroom = Mushroom(4, 2, self.world, 1)
+        self.world.grid[2:12, 4:7] = 1  # Horizontal wall (3 pixels thick, 4 pixels long)
         self.assertFalse(self.world.is_food(int(2), int(4)))
         self.assertTrue(self.world.is_food(int(4), int(4)))
         self.assertFalse(self.world.is_food(int(2), int(4)))
         is_food = self.world.is_food_at(self.mushroom.get_center())
         self.assertTrue(is_food, "Mushroom need to be on the food")
         self.mushroom.run()
-        self.assertLessEqual(self.mushroom.collision_box.width,3)
-        self.assertLessEqual(self.mushroom.collision_box.length,10)
-        self.assertEqual(self.mushroom.state,"stem_growth")
+        self.assertLessEqual(self.mushroom.collision_box.width, 3)
+        self.assertLessEqual(self.mushroom.collision_box.length, 10)
+        self.assertEqual(self.mushroom.state, "stem_growth")
         self.mushroom.run()
         self.assertEqual(self.mushroom.state, "width_assessment")
         self.mushroom.run()
-        #self.assertEqual(self.mushroom.state,"width_expansion")
+        # self.assertEqual(self.mushroom.state,"width_expansion")
         self.mushroom.run()
         corners = self.mushroom.collision_box.calculate_corners()
-        bottom_right = corners [0]
-        other = corners [1]
+        bottom_right = corners[0]
+        other = corners[1]
         top_let = corners[2]
         dir = self.mushroom.collision_box.get_direction()
-        self.assertEqual(dir[0],0)
+        self.assertEqual(dir[0], 0)
         self.assertEqual(dir[1], 1)
         self.assertEqual(top_let[0], 4)
         self.assertEqual(top_let[1], 11)
-        self.assertEqual(bottom_right[0],6)
+        self.assertEqual(bottom_right[0], 6)
         self.assertEqual(bottom_right[1], 2)
         self.assertEqual(other[0], 6)
         self.assertEqual(other[1], 11)
         for c in corners:
-            self.assertTrue(self.mushroom.collidepoint(c[0],c[1]))
+            self.assertTrue(self.mushroom.collidepoint(c[0], c[1]))
         self.assertTrue(self.mushroom.center_on_food())
-        x,y = self.mushroom.get_center()
+        x, y = self.mushroom.get_center()
         self.assertEqual(x, 5)
-        self.assertEqual(y,6.5)
+        self.assertEqual(y, 6.5)
+
     def test_wall_detection(self):
         pass
 
     def test_collisions(self):
-        c = CollisionBox(10,10,4,25,45)
-        c.length=25
+        c = CollisionBox(10, 10, 4, 25, 45)
+        c.length = 25
         c.width = 30
-        c.center_y=453.5
-        c.center_x=109.5
-        c.rotation =45
+        c.center_y = 453.5
+        c.center_x = 109.5
+        c.rotation = 45
         corners = c.calculate_corners()
-        self.assertEqual(1,corners[0][1])
+        self.assertEqual(1, corners[0][1])
 
     def test_merge_horizontal_aligned(self):
         # Two boxes, same y, horizontal orientation
@@ -161,13 +165,83 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertAlmostEqual(merged.center_y, 15)
 
     def test_merge_vertical_aligned_json(self):
-        filename="E:\\workspace\\blender_house\\house_gen\\test.json"
+        filename = "E:\\workspace\\blender_house\\house_gen\\test.json"
+        world = self.world
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts
 
             # Re-create each CollisionBox
         boxes = [CollisionBox.from_dict(item) for item in data]
+        mushrooms = []
+        ws = WallSegment(Id_Util.get_id())
         for b in boxes:
             self.assertTrue(b.is_on_same_axis_as(boxes[0]))
+            m = Mushroom(b.center_x, b.center_y, world, Id_Util.get_id())
+            m.collision_box = b.copy()
+            mushrooms.append(m)
+
+        for m in mushrooms:
+            ws.add_part(m)
+
+        ws.process_state()
+        x, y = ws.get_center()
+        a = Decimal(602.75)
+        b = Decimal(602.5)
+        c = Decimal(602.5)
+        d = Decimal(602.5)
+        e = Decimal(603.0)
+        value = (a + b + c + d + e) / 5
+        self.assertAlmostEqual(Decimal(602.65), value)
+        half = Decimal(2)
+        max_y = Decimal(Decimal(322.0) + Decimal(35 / half))
+        min_y = Decimal(Decimal(17.0) - Decimal(27 / half))
+        l_y = max_y - min_y
+        c_y = min_y + l_y / 2
+        l = Decimal(ws.collision_box.length + 2)
+        self.assertAlmostEqual(l_y, l, delta=2)
+        self.assertAlmostEqual(602.65, x, delta=2)
+        self.assertAlmostEqual(171.5, c_y, delta=1)
+        self.assertAlmostEqual(170, y, delta=2)
+
+    def test_corners(self):
+        cb = CollisionBox(17, 354, 7, 7, 315)
+
+        corners = cb.calculate_corners()
+
+        self.assertNotAlmostEquals(corners[1][0], corners[3][0])
+
+    def test_merge_vertical_aligned_json2(self):
+        filename = "E:\\workspace\\blender_house\\house_gen\\test.json"
+        world = self.world
+        with open(filename, "r") as f:
+            data = json.load(f)  # This will be a list of dicts
+
+            # Re-create each CollisionBox
+        boxes = [CollisionBox.from_dict(item) for item in data]
+        mushrooms = []
+        ws = WallSegment(Id_Util.get_id())
+        for b in boxes:
+            self.assertTrue(b.is_on_same_axis_as(boxes[0]))
+            m = Mushroom(b.center_x, b.center_y, world, Id_Util.get_id())
+            m.collision_box = b.copy()
+            mushrooms.append(m)
+            self.world.agents.append(m)
+            self.world.walls.add(m)
+            pixels = b.iterate_covered_pixels()
+            for p in pixels:
+                self.world.draw_at(p, 1)
+                self.world.occupy(p[0], p[1], m)
+        segment = None
+
+        for m in mushrooms:
+            m.crawl_phase()
+            ws = m.wall_segment
+            if ws is not None:
+                segment = ws
+            self.assertTrue(m.wall_segment is not None)
+
+        self.assertEqual(5, len(segment.parts))
+
+
 if __name__ == "__main__":
     unittest.main()
