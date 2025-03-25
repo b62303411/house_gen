@@ -100,10 +100,21 @@ class World:
             return wall_occupied or wall_part_occupied
         return True  # Out of bounds is occupied
 
+
+    def is_wall_occupied(self,x,y):
+        h, w = self.grid.shape
+        if 0 <= x < w and 0 <= y < h:
+            occupided_value = self.occupied_wall[int(y), int(x)]
+            i_val = int(occupided_value)
+            return i_val != 0
+        return True  # Out of bounds is occupied
+
     def is_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            return self.occupied[int(y), int(x)] != 0
+            occupided_value =  self.occupied[int(y), int(x)]
+            i_val = int(occupided_value)
+            return i_val != 0
         return True  # Out of bounds is occupied
 
     def get_shape(self):
@@ -162,10 +173,10 @@ class World:
                 self.blobs.add(blob)
                 return blob
 
-    def create_mushroom(self, x, y):
+    def create_mushroom(self,blob, x, y):
         if self.is_within_bounds(x, y):
             if not self.is_occupied(x, y):
-                mush = self.af.create_mushroom(self, x, y)
+                mush = self.af.create_mushroom(self,blob, x, y)
                 self.occupy(x, y, mush)
                 self.candidates.append(mush)
                 return mush

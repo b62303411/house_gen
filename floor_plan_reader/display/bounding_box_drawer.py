@@ -8,7 +8,7 @@ class BoundingBoxDrawer:
     def draw(self,bb,screen,vp, colour):
         if bb is None:
             return
-        corners = bb.corners()
+        corners = bb.calculate_corners()
         corners_ = []
 
         for c in corners:

@@ -77,10 +77,15 @@ class WallScanner:
         is_within_bounds = self.is_within_bounds(x,y)
         if not is_within_bounds:
             return False
-        is_food = self.is_food(x,y)
+        is_food = self.is_cell_valid(x,y)
 
         is_wide_enough = self.is_3_wide_food(x,y,d)
         return is_food and is_wide_enough
+
+    def is_cell_valid(self,x,y):
+        food = self.is_food(x, y)
+        occupided = self.world.is_wall_occupied(x,y)
+        return food and not occupided
 
     def measure_extent(self, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
@@ -94,7 +99,7 @@ class WallScanner:
         max_x = None
         max_y = None
         # Step 1: Crawl backward until hitting a boundary
-        if self.is_food(x, y):
+        if self.is_cell_valid(x, y):
             min_x = x
             min_y = y
         else:

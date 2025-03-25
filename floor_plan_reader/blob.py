@@ -2,15 +2,17 @@ import pygame
 
 from floor_plan_reader.agent import Agent
 from floor_plan_reader.cell import Cell
+from floor_plan_reader.math.bounding_box import BoundingBox
 
 
 class Blob(Agent):
     def __init__(self, id, world, x, y):
         super().__init__(id)
+        self.bounding_box = None
         self.world = world
         self.cells = set()
         self.growth = set()
-        self.mushrooms=set()
+        self.mushrooms = set()
         self.free_slot = set()
         self.origin = Cell(x, y)
         self.cells.add(self.origin)
@@ -37,6 +39,14 @@ class Blob(Agent):
             self.world.set_blob(c.x, c.y, self)
             self.cells.add(c)
         other.alive = False
+
+    def calculate_bounding_box(self):
+        cells = self.cells
+        min_x = min(cell.x for cell in cells)
+        max_x = max(cell.x for cell in cells)
+        min_y = min(cell.y for cell in cells)
+        max_y = max(cell.y for cell in cells)
+        self.bounding_box = BoundingBox(min_x,min_y,max_x,max_y)
 
     def germinate(self, g):
         coord_list = self.world.get_neighbors_8(g.x, g.y)
@@ -80,6 +90,7 @@ class Blob(Agent):
                 else:
                     self.status = "cleanup"
         elif self.status == "mush":
+            self.calculate_bounding_box()
             length = len(self.free_slot)
             free = self.free_slot.copy()
             for s in free:
@@ -105,7 +116,7 @@ class Blob(Agent):
     def create_mushroom(self, x, y):
         c = Cell(x, y)
         self.free_slot.remove(c)
-        self.active_mush = self.world.create_mushroom(x, y)
+        self.active_mush = self.world.create_mushroom(self,x, y)
         self.mushrooms.add(self.active_mush)
 
     def draw(self, screen, vp):

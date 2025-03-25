@@ -15,7 +15,7 @@ from floor_plan_reader.wall_scanner import WallScanner
 
 
 class Mushroom(Agent):
-    def __init__(self, start_x, start_y, world, mush_id):
+    def __init__(self,world, blob,start_x, start_y,mush_id):
         super().__init__(mush_id)
         self.perimeter = None
         self.wall_scanner = WallScanner(world)
@@ -43,6 +43,7 @@ class Mushroom(Agent):
         self.state_machine = MushAgentStateMachine(self)
         self.cell_render = CellRenderer()
         self.bb_drawer = BoundingBoxDrawer()
+        self.blob = blob
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -297,7 +298,7 @@ class Mushroom(Agent):
         return False
 
     def overlap_phase(self):
-        mushrooms = self.world.find_all(Mushroom)
+        mushrooms = self.blob.mushrooms
         for m in mushrooms:
             if m != self and m.alive and m.is_valid():
                 if self.collision_box.is_parallel_to(m.collision_box):
