@@ -1,7 +1,7 @@
 import math
 from decimal import Decimal
 
-from floor_plan_reader.math_segments import combine_segments_decimal
+from floor_plan_reader.math.math_segments import combine_segments_decimal
 from floor_plan_reader.vector import Vector
 
 

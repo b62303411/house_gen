@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import threading
 import time
 
@@ -10,18 +10,15 @@ from PIL.Image import Image
 
 from floor_plan_reader.display.view_point import ViewPoint
 from floor_plan_reader.simulation import Simulation
-=======
+
 import numpy as np
 import unittest
 
 from PIL.Image import Image
 
->>>>>>> 9f79a5f (stable)
 from floor_plan_reader.wall_scanner import WallScanner
 from floor_plan_reader.world_factory import WorldFactory
 
-
-<<<<<<< HEAD
 class TestWallScanner(unittest.TestCase):
     def setUp(self):
         self.wf = WorldFactory()
@@ -114,16 +111,14 @@ class TestWallScanner(unittest.TestCase):
         scanner = WallScanner(self.world)
         result = scanner.scan_for_walls(center_x, center_y)
         self.assertTrue(result.is_valid())
-=======
 
 
 class TestWallScanner(unittest.TestCase):
     def setUp(self):
         self.wf = WorldFactory()
-
     def test_case_one(self):
             file= "region_20x20_426_463.png"
-            image_path = f"test_img\{file}"
+            image_path = f"test_img\\{file}"
             #image = Image.open(image_path)
             #image_array = np.array(image)
             self.wf.set_img(image_path)
@@ -142,6 +137,3 @@ class TestWallScanner(unittest.TestCase):
             scanner = WallScanner(self.world)
             result = scanner.scan_for_walls(center_x, center_y)
             self.assertTrue(result.is_valid())
-
-
->>>>>>> 9f79a5f (stable)

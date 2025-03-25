@@ -8,10 +8,7 @@ class PruningUtil:
                         candiate.overlapping.add(m)
                         ratio = candiate.get_occupation_ratio()
                         if ratio < m.get_occupation_ratio():
-<<<<<<< HEAD
                             candiate.kill()
-=======
                             #candiate.kill()
->>>>>>> f7ec241 (diagonal works just need to figure out overlapping mofo)
                             return True,m
         return False,None

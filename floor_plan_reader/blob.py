@@ -99,7 +99,7 @@ class Blob(Agent):
     def create_mushroom(self,x,y):
         c = Cell(x,y)
         self.free_slot.remove(c)
-        self.active_mush = self.world.create_mushroom(x,y)
+        self.active_mush = self.world.create_mushroom(self,x,y)
     def draw(self, screen, vp):
         colour = (200, 0, 0)
         if self.status != "mush":
