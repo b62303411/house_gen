@@ -1,21 +1,24 @@
+import logging
 import math
 
 import pygame
 
-from floor_plan_reader.agent import Agent
+from floor_plan_reader.agents.agent import Agent
+from floor_plan_reader.agents.mush_agent_state_machine import MushAgentStateMachine
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.display.arrow import Arrow
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.display.cell_renderer import CellRenderer
+from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.math.min_max import MinMax
 from floor_plan_reader.math.vector import Vector
-from floor_plan_reader.mush_agent_state_machine import MushAgentStateMachine
+
 from floor_plan_reader.wall_scanner import WallScanner
 
 
 class Mushroom(Agent):
-    def __init__(self,world, blob,start_x, start_y,mush_id):
+    def __init__(self, world, blob, start_x, start_y, mush_id):
         super().__init__(mush_id)
         self.perimeter = None
         self.wall_scanner = WallScanner(world)
@@ -118,11 +121,14 @@ class Mushroom(Agent):
             x = p[0]
             y = p[1]
             if self.world.is_food(x, y) and not self.world.is_occupied(x, y):
-                cell = Cell(x, y)
-                self.root_cells.add(cell)
-                self.world.occupy(x, y, self)
-                self.stem_points.add(cell)
+                self.add_cell(x, y)
         self.cell_render.generate_image(self.root_cells)
+
+    def add_cell(self, x, y):
+        cell = Cell(x, y)
+        self.root_cells.add(cell)
+        self.world.occupy(x, y, self)
+        self.stem_points.add(cell)
 
     def forced_fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -130,10 +136,7 @@ class Mushroom(Agent):
             x = p[0]
             y = p[1]
             if self.world.is_food(x, y):
-                cell = Cell(x, y)
-                self.root_cells.add(cell)
-                self.world.occupy(x, y, self)
-                self.stem_points.add(cell)
+                self.add_cell(x, y)
 
     def get_occupation_ratio(self):
         if self.collision_box.get_area() == 0:
@@ -298,7 +301,7 @@ class Mushroom(Agent):
         return False
 
     def overlap_phase(self):
-        mushrooms = self.blob.mushrooms
+        mushrooms = self.blob.walls
         for m in mushrooms:
             if m != self and m.alive and m.is_valid():
                 if self.collision_box.is_parallel_to(m.collision_box):
@@ -365,10 +368,8 @@ class Mushroom(Agent):
             sx = int(x + self.get_direction()[0] * i)
             sy = int(y + self.get_direction()[1] * i)
             if self.world.is_food(sx, sy) and not self.world.is_occupied(sx, sy):
-                cell = Cell(sx, sy)
-                self.root_cells.add(cell)
-                self.world.occupied[sy, sx] = self.id
-                self.stem_points.append(cell)
+                self.add_cell(sx, sy)
+
         logging.debug(f"Mushroom {self.id}: Stem grown - {len(self.stem_points)} points")
 
     def width_assessment_phase(self):
@@ -417,10 +418,12 @@ class Mushroom(Agent):
                 wx = point.x + perpendicular[0] * offset
                 wy = point.y + perpendicular[1] * offset
                 if self.can_grow(wx, wy):
-                    cell = Cell(wx, wy)
-                    self.root_cells.add(cell)
-                    self.world.occupied[wy, wx] = self.id
+                    self.add_cell(wx, wy)
+
         logging.info(f"Mushroom {self.id}: Width expanded - {len(self.root_cells)} cells")
+
+    def has_coordinate(self, x, y):
+        return Cell(x, y) in self.root_cells
 
     def perimeter_reaction_phase(self):
         """Mark perimeter and identify growth cells by walking the edge of root_cells."""
@@ -566,7 +569,7 @@ class Mushroom(Agent):
                 colour = (255, 0, 0)
             pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
 
-        self.draw_cells(self.core_cells,screen, vp)
+        self.draw_cells(self.core_cells, screen, vp)
 
         if self.alive:
             if self.is_outer_wall():
@@ -576,7 +579,7 @@ class Mushroom(Agent):
         else:
             colour = (255, 0, 0)
         if self.collision_box is not None:
-            self.bb_drawer.draw(self.collision_box,screen,vp, colour)
+            self.bb_drawer.draw(self.collision_box, screen, vp, colour)
 
         x, y = self.get_center()
         x, y = vp.convert(x, y)
@@ -633,9 +636,10 @@ class Mushroom(Agent):
     def print_box(self):
         bb = BoundingBox.from_cells(self.core_cells)
         x, y = bb.get_center()
-        width, height =bb.get_shape()
+        width, height = bb.get_shape()
         self.world.print_snapshot(x, y, width + 4, height + 4, "wall")
         self.record_stack_trace()
+
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
         return rect.is_point_inside(int(x), int(y))
@@ -654,3 +658,6 @@ class Mushroom(Agent):
         height = self.collision_box.width
         width = self.collision_box.length
         self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
+
+    def create_blob(self, x, y):
+        self.world.create_blob(x,y)

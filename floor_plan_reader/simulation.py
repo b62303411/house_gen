@@ -1,16 +1,15 @@
 import json
+import logging
 from collections import deque
 
 import cv2
 import numpy as np
 import pygame
 
-from floor_plan_reader.display.status_window import StatusWindow
+from floor_plan_reader.agents.ant_mushroom import Mushroom
+from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.mushroom_agent import Mushroom
-from floor_plan_reader.display.popup_menu import PopupMenu
-from floor_plan_reader.display.user_input import UserInput
 from floor_plan_reader.simulation_view import SimulationView
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
@@ -151,7 +150,7 @@ class Simulation:
         self.wf.set_grid(g)
         self.wf.set_num_ants(num_ants)
         self.world = self.wf.create_World()
-        solver = IntersectionSolver(self.world)
+        self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
 
         # 3) Init Pygame with the *exact* dimensions as the image

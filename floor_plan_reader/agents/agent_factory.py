@@ -9,8 +9,8 @@ class AgentFactory:
         self.world = world
 
     def create_mushroom(self,  blob, x, y):
-        # self, world, blob, start_x, start_y, mush_id
-        mush = Mushroom(x, y, self.world, blob, Id_Util.get_id())
+        # world, blob, start_x, start_y, mush_id
+        mush = Mushroom(self.world, blob,x, y, Id_Util.get_id())
         return mush
 
     def create_blob(self, x, y):

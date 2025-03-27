@@ -54,9 +54,10 @@ class Blob(Agent):
                             self.world.set_blob(x, y, self)
                         else:
                             blob = self.world.get_blob(x, y)
-                            if blob.id != self.id:
-                                if self.blob_size() > blob.blob_size():
-                                    self.eat(blob)
+                            if blob is not None:
+                                if blob.id != self.id:
+                                    if self.blob_size() > blob.blob_size():
+                                        self.eat(blob)
         self.growth.remove(g)
 
     def grow(self):
@@ -92,7 +93,7 @@ class Blob(Agent):
             if length != len(self.free_slot) and length > 0:
                 self.status = "mush"
             elif length > 0:
-                if self.active_mush is None or self.active_mush.state == 'done' or self.active_mush.alive == False:
+                if self.active_mush is None or self.active_mush.get_state() == 'done' or self.active_mush.alive == False:
                     first_element = next(iter(self.free_slot))
                     self.create_mushroom(first_element.x, first_element.y)
                 if len(self.walls) > 15:

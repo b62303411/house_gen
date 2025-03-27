@@ -1,6 +1,8 @@
 import math
 from decimal import Decimal
 
+from shapely import Polygon
+
 from floor_plan_reader.math.math_segments import combine_segments_decimal
 from floor_plan_reader.vector import Vector
 
@@ -244,10 +246,10 @@ class CollisionBox:
         angle_rad = math.radians(self.rotation)
 
         # Direction vector (rotated from default direction (1,0))
-        direction = (math.cos(angle_rad), math.sin(angle_rad))
+        direction = Vector( (math.cos(angle_rad), math.sin(angle_rad)))
 
         # Normal vector (rotated 90 degrees from direction)
-        normal = (-direction[1], direction[0])
+        normal = direction.get_normal()
 
         return direction, normal
 
@@ -256,7 +258,24 @@ class CollisionBox:
         return angle_diff < tolerance or abs(angle_diff - 180) < tolerance
 
     def is_overlapping(self, other):
-        return other.is_point_inside(self.center_x, self.center_y)
+        return self.calculate_overlap_ratio(other) > 0.1
+        #return other.is_point_inside(self.center_x, self.center_y)
+
+    def get_center_line(cb):
+        """
+        Returns ((x1, y1), (x2, y2)) for the center line of a CollisionBox
+        using length and rotation, ignoring width.
+        """
+        direction, _ = cb.derive_direction_and_normal()
+        dx, dy = direction.direction
+        half_len = cb.length / 2.0
+        cx, cy = cb.center_x, cb.center_y
+
+        x1 = cx - dx * half_len
+        y1 = cy - dy * half_len
+        x2 = cx + dx * half_len
+        y2 = cy + dy * half_len
+        return (x1, y1), (x2, y2)
 
     def get_ray_trace_points(self):
         direction = self.get_direction()
@@ -305,6 +324,26 @@ class CollisionBox:
         self.center_x = x
         self.center_y = y
         self.corners = None
+    def calculate_overlap_ratio(self,other):
+        overlap = self.calculate_overlap(other)
+        if self.get_area() == 0:
+            return 0
+        return overlap /self.get_area()
+    def calculate_overlap(self, other):
+        corners_self = self.calculate_corners()
+        corners_other = other.calculate_corners()
+
+        # Create Polygon objects for both boxes
+        polygon_self = Polygon(corners_self)
+        polygon_other = Polygon(corners_other)
+
+        # Check if the polygons intersect
+        if not polygon_self.intersects(polygon_other):
+            return 0  # No overlap
+
+        # Calculate the intersection area
+        intersection = polygon_self.intersection(polygon_other)
+        return intersection.area
 
     def calculate_corners(self):
         if self.corners is not None:
@@ -314,27 +353,36 @@ class CollisionBox:
         half_width = (self.width) / 2 - .5
         direction, normal = self.derive_direction_and_normal()
 
-        dir_vec = (direction[0] * half_length, direction[1] * half_length)
-        norm_vec = (normal[0] * half_width, normal[1] * half_width)
+        back = direction.opposite()
+        back.scale(half_length)
+        front = direction.copy()
+        front.scale(half_length)
+        left = normal.copy()
+        left.scale(half_width)
+        position = Vector((self.center_x,self.center_y))
+        to_left = position+left+back
+        top_right=position-left+back
+        bottom_left = position+front+left
+        bottom_right = position+front-left
 
         # Calculate corners without offsets
         top_left = (
-            self.center_x - dir_vec[0] - norm_vec[0],
-            self.center_y - dir_vec[1] + norm_vec[1]  # Y-down adjustment
+            to_left.direction[0],
+            to_left.direction[1]  # Y-down adjustment
         )
         bottom_right = (
-            self.center_x + dir_vec[0] + norm_vec[0],
-            self.center_y + dir_vec[1] - norm_vec[1]  # Y-down adjustment
+            bottom_right.direction[0],
+            bottom_right.direction[1]  # Y-down adjustment
         )
 
         # Other corners for completeness
         top_right = (
-            self.center_x + dir_vec[0] - norm_vec[0],
-            self.center_y + dir_vec[1] + norm_vec[1]
+            top_right.direction[0],
+            top_right.direction[1]  # Y-down adjustment
         )
         bottom_left = (
-            self.center_x - dir_vec[0] + norm_vec[0],
-            self.center_y - dir_vec[1] - norm_vec[1]
+            bottom_left.direction[0],
+            bottom_left.direction[1]  # Y-down adjustment
         )
 
         # Order: [top-left, bottom-left, top-right, bottom-right]
@@ -366,7 +414,7 @@ class CollisionBox:
         segment start (x1, y1), segment end (x2, y2).
         """
         direction, _ = self.derive_direction_and_normal()
-        dx, dy = direction  # e.g. (cosθ, sinθ)
+        dx, dy = direction.direction  # e.g. (cosθ, sinθ)
         half_len = self.length / 2.0
 
         cx, cy = self.center_x, self.center_y
@@ -412,8 +460,8 @@ class CollisionBox:
 
         # 2) Get this box's direction and normal (they're valid for both if parallel)
         direction, normal = self.derive_direction_and_normal()
-        direction = self.to_decimal(direction)
-        normal = self.to_decimal(normal)
+        direction = self.to_decimal(direction.direction)
+        normal = self.to_decimal(normal.direction)
 
         # 3) Gather corners from both boxes
         corners_self = self.calculate_corners()
@@ -463,3 +511,11 @@ class CollisionBox:
             rotation=self.rotation  # same as 'other' since they are parallel
         )
         return merged_box
+
+
+    def calculate_rotation_from_direction(self, dx, dy):
+        angle_rad = math.atan2(dy, dx)
+        angle_deg = math.degrees(angle_rad)
+        # Normalize angle to nearest 45 degrees
+        angle_deg = round(angle_deg / 45) * 45
+        return angle_deg % 360

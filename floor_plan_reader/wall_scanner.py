@@ -1,3 +1,5 @@
+import logging
+
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.math.vector import Vector
