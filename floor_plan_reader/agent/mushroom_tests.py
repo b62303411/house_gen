@@ -4,10 +4,11 @@ from decimal import Decimal
 
 import numpy as np
 
+from floor_plan_reader.agent.blob import Blob
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.id_util import Id_Util
-from floor_plan_reader.wall_segment import WallSegment
+from floor_plan_reader.agent.wall_segment import WallSegment
 from mushroom_agent import Mushroom
 from world_factory import WorldFactory
 
@@ -20,7 +21,8 @@ class TestMushroomGrowth(unittest.TestCase):
         grid = np.zeros(grid_size, dtype=int)
         wf.set_grid(grid)
         self.world = wf.create_World()  # Mock world
-        self.mushroom = Mushroom(5, 5, self.world, 1)
+        b = Blob(5, self.world,5,5)
+        self.mushroom = Mushroom(self.world,b,5, 5,1)
 
     def test_test(self):
         self.mushroom.run()

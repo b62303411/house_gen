@@ -1,16 +1,12 @@
 import json
-from collections import deque
 
 import cv2
 import numpy as np
 import pygame
 
-from floor_plan_reader.display.status_window import StatusWindow
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.mushroom_agent import Mushroom
-from floor_plan_reader.display.popup_menu import PopupMenu
-from floor_plan_reader.display.user_input import UserInput
+from floor_plan_reader.agent.mushroom_agent import Mushroom
 from floor_plan_reader.simulation_view import SimulationView
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font

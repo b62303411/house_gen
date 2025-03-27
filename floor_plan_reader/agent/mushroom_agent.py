@@ -1,5 +1,3 @@
-import math
-
 import pygame
 
 from floor_plan_reader.agent import Agent
@@ -10,7 +8,7 @@ from floor_plan_reader.display.cell_renderer import CellRenderer
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.math.min_max import MinMax
 from floor_plan_reader.math.vector import Vector
-from floor_plan_reader.mush_agent_state_machine import MushAgentStateMachine
+from floor_plan_reader.agent.mush_agent_state_machine import MushAgentStateMachine
 from floor_plan_reader.wall_scanner import WallScanner
 
 

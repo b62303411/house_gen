@@ -73,7 +73,7 @@ class WallScanner:
     def is_within_bounds(self,x,y):
         return self.world.is_within_bounds(x,y)
 
-    def ping(self,x,y,d):
+    def ping(self,x,y,d,target):
         is_within_bounds = self.is_within_bounds(x,y)
         if not is_within_bounds:
             return False
@@ -105,7 +105,7 @@ class WallScanner:
         else:
             pass
 
-        while self.ping(x,y,d):
+        while self.ping(x,y,d,target=4):
             x -= dx
             y -= dy
             min_x = x
@@ -118,7 +118,7 @@ class WallScanner:
         steps = 0
 
         # Step 3: Count steps moving forward until hitting another boundary
-        while self.ping(x,y,d):
+        while self.ping(x,y,d,target=4):
             x += dx
             y += dy
             steps += 1  # Count steps only in the forward direction
