@@ -2,7 +2,8 @@ from decimal import Decimal
 
 import pygame
 from pygame import font
-from floor_plan_reader.agent import Agent
+
+from floor_plan_reader.agent.agent import Agent
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.pruning_util import PruningUtil
 
