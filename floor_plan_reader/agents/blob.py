@@ -1,6 +1,6 @@
 import pygame
 
-from floor_plan_reader.agent.agent import Agent
+from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.math.bounding_box import BoundingBox
 

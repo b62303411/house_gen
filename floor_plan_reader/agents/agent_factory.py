@@ -1,6 +1,6 @@
-from floor_plan_reader.agent.blob import Blob
+from floor_plan_reader.agents.blob import Blob
 from floor_plan_reader.id_util import Id_Util
-from floor_plan_reader.agent.mushroom_agent import Mushroom
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 
 
 class AgentFactory:

@@ -2,7 +2,7 @@ from random import random
 
 import pygame
 
-from floor_plan_reader.agent import Agent
+from floor_plan_reader.agents import Agent
 from floor_plan_reader.cell import Cell
 
 

@@ -4,11 +4,11 @@ from PIL import Image
 import numpy as np
 import random
 
-from floor_plan_reader.agent.agent_factory import AgentFactory
-from floor_plan_reader.agent.ants import Ant
+from floor_plan_reader.agents.agent_factory import AgentFactory
+from floor_plan_reader.agents.ants import Ant
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.node import Node
-from floor_plan_reader.agent.wall_segment import WallSegment
+from floor_plan_reader.agents.wall_segment import WallSegment
 
 
 class World:

@@ -2,7 +2,7 @@ import numpy as np
 import pygame
 import random
 
-from floor_plan_reader.agent.agent import Agent
+from floor_plan_reader.agents.agent import Agent
 
 
 class Ant(Agent):

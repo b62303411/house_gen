@@ -6,7 +6,7 @@ import pygame
 
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.agent.mushroom_agent import Mushroom
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.simulation_view import SimulationView
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
