@@ -1,16 +1,14 @@
-import logging
 from collections import deque
 from PIL import Image
 
 import numpy as np
 import random
 
-from floor_plan_reader.agents.agent_factory import AgentFactory
-from floor_plan_reader.agents.ants import Ant
-from floor_plan_reader.agents.blob import Blob
+from floor_plan_reader.agent_factory import AgentFactory
+from floor_plan_reader.ants import Ant
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.node import Node
-from floor_plan_reader.agents.wall_segment import WallSegment
+from floor_plan_reader.wall_segment import WallSegment
 
 
 class World:
@@ -70,8 +68,8 @@ class World:
         if x - width // 2 >= 0 and x + width // 2 <= grid.shape[1] and \
                 y - height // 2 >= 0 and y + height // 2 <= grid.shape[0]:
             # Extract the 10x10 region
-            height = int(height)
-            width = int(width)
+            height=int(height)
+            width =int(width)
             h1 = int(y - height // 2)
             h2 = int(y + height // 2)
             w1 = int(x - width // 2)
@@ -102,19 +100,20 @@ class World:
             return wall_occupied or wall_part_occupied
         return True  # Out of bounds is occupied
 
-    def is_wall_occupied(self, x, y):
+
+    def is_wall_occupied(self,x,y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            occupied_value = self.occupied_wall[int(y), int(x)]
-            i_val = int(occupied_value)
+            occupided_value = self.occupied_wall[int(y), int(x)]
+            i_val = int(occupided_value)
             return i_val != 0
         return True  # Out of bounds is occupied
 
     def is_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            occupied_value = self.occupied[int(y), int(x)]
-            i_val = int(occupied_value)
+            occupided_value =  self.occupied[int(y), int(x)]
+            i_val = int(occupided_value)
             return i_val != 0
         return True  # Out of bounds is occupied
 
@@ -168,16 +167,16 @@ class World:
     def create_blob(self, x, y):
         if self.is_within_bounds(x, y):
             if not self.is_blob(x, y):
-                blob = self.af.create_blob(x, y)
+                blob = self.af.create_blob(self, x, y)
                 self.set_blob(x, y, blob)
                 self.agents.add(blob)
                 self.blobs.add(blob)
                 return blob
 
-    def create_mushroom(self, blob: Blob, x: int, y: int):
+    def create_mushroom(self,blob, x, y):
         if self.is_within_bounds(x, y):
             if not self.is_occupied(x, y):
-                mush = self.af.create_mushroom(blob, x, y)
+                mush = self.af.create_mushroom(self,blob, x, y)
                 self.occupy(x, y, mush)
                 self.candidates.append(mush)
                 return mush
@@ -223,7 +222,7 @@ class World:
             return food
         return False
 
-    def is_within_bounds(self, x: int, y: int):
+    def is_within_bounds(self, x, y):
         h, w = self.grid.shape
         return 0 <= x < w and 0 <= y < h
 

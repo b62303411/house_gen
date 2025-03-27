@@ -1,15 +1,17 @@
 import json
-import logging
+from collections import deque
 
 import cv2
 import numpy as np
 import pygame
 
+from floor_plan_reader.display.status_window import StatusWindow
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.agents.mushroom_agent import Mushroom
+from floor_plan_reader.mushroom_agent import Mushroom
+from floor_plan_reader.display.popup_menu import PopupMenu
+from floor_plan_reader.display.user_input import UserInput
 from floor_plan_reader.simulation_view import SimulationView
-from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
 
@@ -18,8 +20,10 @@ f = font.Font(None, 36)  # Use default font with size 36
 f_small = font.Font(None, 12)
 
 
-class Simulation:
 
+
+
+class Simulation:
     def __init__(self):
 
         self.running = True
@@ -28,6 +32,7 @@ class Simulation:
         self.world = None
         self.solver = None
         self.view = SimulationView(self)
+
         self.width = 0
         self.height = None
         self.floorplan_surf = None
@@ -73,11 +78,13 @@ class Simulation:
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
 
+
     def get_agent_count(self):
         return len(self.world.agents)
 
     def get_wall_segment_count(self):
         return len(self.world.wall_segments)
+
 
     def run(self):
         agents = self.world.agents.copy()
@@ -105,28 +112,14 @@ class Simulation:
                 self.world.wall_segments.add(agent)
             self.world.agents.add(agent)
 
-    def init_world(self, image_path_filtered, threshold=200):
+
+    def init_world(self,image_path_filtered,threshold=200):
         img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
-        img_gray = cv2.bitwise_not(img_gray)
-        _, hard_mask = cv2.threshold(img_gray, 160, 255, cv2.THRESH_BINARY_INV)
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(hard_mask)
-
-
-        binary = cv2.adaptiveThreshold(
-            enhanced,
-            255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  # or MEAN_C
-            cv2.THRESH_BINARY_INV,  # Invert: dark walls become white
-            blockSize=15,
-            C=2
-        )
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
-        g = (binary >= 255).astype(np.uint8)
-        self.wf.set_grid(g )
+        g = (img_gray >= threshold).astype(np.uint8)
+        self.wf.set_grid(g)
         self.world = self.wf.create_World()
-        self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
         self.floorplan_surf = pygame.Surface((self.width, self.height))
         for y in range(self.height):
@@ -146,19 +139,37 @@ class Simulation:
                            num_ants=20,
                            allow_revisit=False
                            ):
-        self.wf.set_num_ants(num_ants)
-        self.init_world(image_path, threshold)
-        self.solver = IntersectionSolver(self.world)
-
+        # 1) Load grayscale
+        img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        img_gray = cv2.bitwise_not(img_gray)
         img_colour = cv2.imread(image_path)
+
         # img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
         self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
+        # 2) Create grid: 1=empty, 0=wall
+        g = (img_gray >= threshold).astype(np.uint8)
+        self.wf.set_grid(g)
+        self.wf.set_num_ants(num_ants)
+        self.world = self.wf.create_World()
+        solver = IntersectionSolver(self.world)
+        self.height, self.width = self.world.grid.shape
 
+        # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()
         # We make a window exactly the size of the image
         self.view.init()
 
         clock = pygame.time.Clock()
+
+        # 4) Create a floorplan surface (the base image showing white/black)
+        #    Then we won't re-scale it right away; we'll do that each frame based on zoom.
+        self.floorplan_surf = pygame.Surface((self.width, self.height))
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.world.grid[y, x] == 1:
+                    self.floorplan_surf.set_at((x, y), (255, 255, 255))  # white => empty
+                else:
+                    self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
 
         # 7) Zoom parameters
         self.running = True
@@ -176,4 +187,4 @@ class Simulation:
                     task["command"]()
                     task["accumulator"] = 0
         pygame.quit()
-        logging.info("All done!")
+        print("All done!")

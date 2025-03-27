@@ -1,4 +1,3 @@
-import logging
 from random import random
 
 import pygame
@@ -81,9 +80,9 @@ class Mushroomw(Agent):
                                     if self.world.collide_with_any(self,nx,ny):
                                         stem.is_visited= True
                                         stem.sprouted = True
-                                        logging.debug("found stem dead")
+                                        print("found stem dead")
                                     else:
-                                        logging.debug("found stem")
+                                        print("found stem")
         if cell in cell_to_move:
             self.root_cells.remove(cell)
             # self.root_cells.remove(cell)
@@ -139,7 +138,7 @@ class Mushroomw(Agent):
                 self.grow_branch()
                 self.detect_if_all_visited()
             else:
-                logging.debug("branches")
+                print("")
         # for b in self.braches:
         #    b.run()
 

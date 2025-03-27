@@ -32,9 +32,9 @@ class Agent:
 
     def get_rect(self, zoom_factor=1.0):
         """
-        Return a pygame.Rect that represents this agent's
+        Return a pygame.Rect that represents this agents's
         axis-aligned bounding box in *screen space* (after zoom).
-        By default, we treat the agent's (x,y) as its center or top-left.
+        By default, we treat the agents's (x,y) as its center or top-left.
         We'll implement it in child classes.
         """
         return pygame.Rect(0, 0, 0, 0)
