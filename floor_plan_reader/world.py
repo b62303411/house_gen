@@ -5,12 +5,12 @@ from PIL import Image
 import numpy as np
 import random
 
-from floor_plan_reader.agent_factory import AgentFactory
-from floor_plan_reader.ants import Ant
-from floor_plan_reader.blob import Blob
+from floor_plan_reader.agents.agent_factory import AgentFactory
+from floor_plan_reader.agents.ants import Ant
+from floor_plan_reader.agents.blob import Blob
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.node import Node
-from floor_plan_reader.wall_segment import WallSegment
+from floor_plan_reader.agents.wall_segment import WallSegment
 
 
 class World:
@@ -105,16 +105,16 @@ class World:
     def is_wall_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            occupided_value = self.occupied_wall[int(y), int(x)]
-            i_val = int(occupided_value)
+            occupied_value = self.occupied_wall[int(y), int(x)]
+            i_val = int(occupied_value)
             return i_val != 0
         return True  # Out of bounds is occupied
 
     def is_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            occupided_value = self.occupied[int(y), int(x)]
-            i_val = int(occupided_value)
+            occupied_value = self.occupied[int(y), int(x)]
+            i_val = int(occupied_value)
             return i_val != 0
         return True  # Out of bounds is occupied
 

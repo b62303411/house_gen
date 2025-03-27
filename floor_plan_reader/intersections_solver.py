@@ -27,7 +27,7 @@ class IntersectionSolver:
             (x1, y1), (x2, y2) = cb.get_center_line()
             line_obj = LineString([(x1, y1), (x2, y2)])  # Shapely geometry
             self.create_line(line_id, seg, (x1, y1), (x2, y2), line_obj)
-
+        merge_candidates =[]
         # STEP 2: Pairwise intersections
         intersections = set()
         n = len(self.lines)
@@ -48,7 +48,8 @@ class IntersectionSolver:
                     node = self.world.create_node((ix, iy))
                     node.lines = [lineA.id, lineB.id]
                     angle_dif = lineA.seg.collision_box.rotation-lineB.seg.collision_box.rotation
-                    if angle_dif < 25 :
+                    if abs(angle_dif) < 30:
+                        merge_candidates.append({"a": lineA.id, "b": lineB.id})
                         continue
                     lineA.seg.add_node(node)
                     lineB.seg.add_node(node)
@@ -70,7 +71,9 @@ class IntersectionSolver:
                     for (ix, iy) in coords:
                         node = self.world.create_node((ix, iy))
                         node.lines = [lineA.id, lineB.id]
-
+                        angle_dif = lineA.seg.collision_box.rotation - lineB.seg.collision_box.rotation
+                        if abs(angle_dif) < 30:
+                            continue
                         intersections.add(node)
                         lineA.seg.add_node(node)
                         lineB.seg.add_node(node)
@@ -78,5 +81,6 @@ class IntersectionSolver:
 
         return {
             "lines": line_list,
-            "intersections": list(intersections)
+            "intersections": list(intersections),
+            "merge_candidates": merge_candidates
         }

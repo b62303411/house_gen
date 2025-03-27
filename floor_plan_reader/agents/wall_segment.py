@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pygame
 from pygame import font
-from floor_plan_reader.agent import Agent
+from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.math.collision_box import CollisionBox
 
 

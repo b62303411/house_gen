@@ -1,19 +1,20 @@
 import logging
 import math
-import random
 
 import pygame
 
-from floor_plan_reader.agent import Agent
+from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.cell import Cell
+from floor_plan_reader.display.arrow import Arrow
 from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.math.min_max import MinMax
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.vector import Vector
 from floor_plan_reader.wall_scanner import WallScanner
-from floor_plan_reader.wall_segment import WallSegment
+from floor_plan_reader.agents.wall_segment import WallSegment
 
 
 class Mushroom(Agent):
@@ -43,6 +44,8 @@ class Mushroom(Agent):
         self.co_axial_walls = set()
         self.blob = blob
 
+    def get_state(self):
+        return self.state
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
 
@@ -240,7 +243,7 @@ class Mushroom(Agent):
 
                         self.evaluate_segment_agregate(obj)
                     else:
-                        self.create_branche(x, y)
+                        self.create_blob(x, y)
                 else:
                     opening_lenght = opening_lenght + 1
 
@@ -364,7 +367,7 @@ class Mushroom(Agent):
         return False
 
     def overlap_phase(self):
-        mushrooms = self.world.find_all(Mushroom)
+        mushrooms = self.blob.walls
         for m in mushrooms:
             if m != self and m.alive and m.is_valid():
                 if self.collision_box.is_parallel_to(m.collision_box):
@@ -722,39 +725,9 @@ class Mushroom(Agent):
         self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
 
     def draw_arrow(self, cx, cy, nx, ny, vp, surface, color, length, width=2):
-        # 3) Calculate the end of the arrow line
-        end_x = cx + nx * vp.zoom_factor * length
-        end_y = cy + ny * vp.zoom_factor * length
 
-        # 4) Draw the main arrow line
-        pygame.draw.line(surface, color, (cx, cy), (end_x, end_y), width)
-
-        # 5) Draw an arrowhead (small lines angled ~30° off the main direction)
-        arrow_size = 10  # length of each arrowhead side
-        arrow_angle_deg = 30  # how wide the arrowhead angle is
-        arrow_angle_rad = math.radians(arrow_angle_deg)
-
-        # We'll rotate the normalized vector +/- arrow_angle_rad
-        # to get two lines forming the arrowhead
-        # Vector rotation formula: (x*cosθ - y*sinθ, x*sinθ + y*cosθ)
-
-        # Left arrowhead direction
-        left_dx = nx * math.cos(arrow_angle_rad) - ny * math.sin(arrow_angle_rad)
-        left_dy = nx * math.sin(arrow_angle_rad) + ny * math.cos(arrow_angle_rad)
-
-        # Right arrowhead direction (negative angle)
-        right_dx = nx * math.cos(-arrow_angle_rad) - ny * math.sin(-arrow_angle_rad)
-        right_dy = nx * math.sin(-arrow_angle_rad) + ny * math.cos(-arrow_angle_rad)
-
-        # Convert those directions into the tip coordinates
-        left_x = end_x - left_dx * arrow_size
-        left_y = end_y - left_dy * arrow_size
-        right_x = end_x - right_dx * arrow_size
-        right_y = end_y - right_dy * arrow_size
-
-        # Draw lines for the arrowhead
-        pygame.draw.line(surface, color, (end_x, end_y), (left_x, left_y), width)
-        pygame.draw.line(surface, color, (end_x, end_y), (right_x, right_y), width)
+        a = Arrow(cx,cy,nx,ny,width,length,color)
+        a.draw(surface,vp)
 
     def draw(self, screen, vp):
 
@@ -820,10 +793,12 @@ class Mushroom(Agent):
     def can_merge_with(self, other):
         if not isinstance(other, Mushroom) or self is other:
             return False
-        if self.collidepoint(other.center_x, other.center_y):
+        x_o,y_o = other.get_center()
+        x,y = self.get_center()
+        if self.collidepoint(x_o, y_o):
             tolerance = 0.1
-            same_x = abs(self.center_x - other.center_x) < tolerance
-            same_y = abs(self.center_y - other.center_y) < tolerance
+            same_x = abs(x - x_o) < tolerance
+            same_y = abs(y - y_o) < tolerance
             return same_x or same_y
         return False
 
@@ -849,6 +824,12 @@ class Mushroom(Agent):
         else:
             pass
 
+    def print_box(self):
+        bb = BoundingBox.from_cells(self.core_cells)
+        x, y = bb.get_center()
+        width, height =bb.get_shape()
+        self.world.print_snapshot(x, y, width + 4, height + 4, "wall")
+        self.record_stack_trace()
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
         return rect.is_point_inside(int(x), int(y))
@@ -860,3 +841,6 @@ class Mushroom(Agent):
         y = self.collision_box.center_y
         x = self.collision_box.center_x
         self.world.print_snapshot(x, y)
+
+    def create_blob(self, x, y):
+        self.world.create_blob(x,y)

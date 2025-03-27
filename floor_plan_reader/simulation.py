@@ -1,17 +1,15 @@
 import json
 import logging
-from collections import deque
 
 import cv2
 import numpy as np
 import pygame
 
-from floor_plan_reader.display.view_point import ViewPoint
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.mushroom_agent import Mushroom
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.simulation_view import SimulationView
-from floor_plan_reader.wall_segment import WallSegment
+from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
 
@@ -38,7 +36,7 @@ class Simulation:
         self.jw = JsonWriter()
         self.tasks = [
             {
-                "name": "TaskA",
+                "name": "Save Blue Print",
                 "interval": 5000,  # 1 second
                 "accumulator": 0,
                 "command": self.save_blue_print
@@ -51,6 +49,8 @@ class Simulation:
 
         self.jw.build_floorplan_json(result, self.world.walls)
 
+    def get_blob_count(self):
+        return len(self.world.blobs)
     def is_wall(self, a, mx, my):
         if isinstance(a, Mushroom):
             if a.is_valid():
@@ -108,10 +108,23 @@ class Simulation:
     def init_world(self, image_path_filtered, threshold=200):
         img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
         img_gray = cv2.bitwise_not(img_gray)
+        _, hard_mask = cv2.threshold(img_gray, 160, 255, cv2.THRESH_BINARY_INV)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(hard_mask)
+
+
+        binary = cv2.adaptiveThreshold(
+            enhanced,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  # or MEAN_C
+            cv2.THRESH_BINARY_INV,  # Invert: dark walls become white
+            blockSize=15,
+            C=2
+        )
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
-        g = (img_gray >= threshold).astype(np.uint8)
-        self.wf.set_grid(g)
+        g = (binary >= 255).astype(np.uint8)
+        self.wf.set_grid(g )
         self.world = self.wf.create_World()
         self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape

@@ -3,9 +3,9 @@ from random import random
 
 import pygame
 
-from floor_plan_reader.agent import Agent
+from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.cell import Cell
-from floor_plan_reader.mushroom_agent import Mushroom
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 
 
 class Mushroomw(Agent):
