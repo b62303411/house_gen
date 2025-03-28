@@ -2,19 +2,12 @@ import logging
 import threading
 import time
 
-import numpy as np
-import unittest
-
 import pygame
-from PIL.Image import Image
 
 from floor_plan_reader.display.view_point import ViewPoint
 from floor_plan_reader.simulation import Simulation
 
-import numpy as np
 import unittest
-
-from PIL.Image import Image
 
 from floor_plan_reader.wall_scanner import WallScanner
 from floor_plan_reader.world_factory import WorldFactory
