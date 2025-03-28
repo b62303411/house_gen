@@ -6,8 +6,8 @@ from floor_plan_reader.math.bounding_box import BoundingBox
 
 
 class Blob(Agent):
-    def __init__(self, id, world, x, y):
-        super().__init__(id)
+    def __init__(self, agent_id, world, x, y):
+        super().__init__(agent_id)
         self.world = world
         self.cells = set()
         self.growth = set()

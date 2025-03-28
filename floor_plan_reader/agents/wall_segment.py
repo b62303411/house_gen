@@ -25,8 +25,8 @@ class Scores:
 
 class WallSegment(Agent):
 
-    def __init__(self, id, world):
-        super().__init__(id)
+    def __init__(self, agent_id, world):
+        super().__init__(agent_id)
         self.collision_box = None
         self.world = world
         self.scores = set()
