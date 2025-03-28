@@ -323,43 +323,43 @@ class CabinetFactory:
         # Left Stile
         stile_left = create_board(
             name=f"{name_prefix}_Frame_StileLeft",
-            width = face_frame_width,  # local X
-            height = (cab_height),  # local Y
-            thickness = frame_thick,  # local Z
-            location = (-cab_width / 2 + face_frame_width / 2, 0, cab_height / 2),
-            parent = parent,
-            material = material_frame
+            width=face_frame_width,  # local X
+            height=(cab_height),  # local Y
+            thickness=frame_thick,  # local Z
+            location=(-cab_width / 2 + face_frame_width / 2, 0, cab_height / 2),
+            parent=parent,
+            material=material_frame
         )
         # Right Stile
         stile_right = create_board(
             name=f"{name_prefix}_Frame_StileRight",
-            width = face_frame_width,
-            height = (cab_height),
-            thickness = frame_thick,
-            location = (cab_width / 2 - face_frame_width / 2, 0, cab_height / 2),
-            parent = parent,
-            material = material_frame
+            width=face_frame_width,
+            height=(cab_height),
+            thickness=frame_thick,
+            location=(cab_width / 2 - face_frame_width / 2, 0, cab_height / 2),
+            parent=parent,
+            material=material_frame
         )
         # Top Rail
         rail_top = create_board(
             name=f"{name_prefix}_Frame_RailTop",
-            width = (cab_width - 2 * face_frame_width),
-            height = face_frame_width,
-            thickness = frame_thick,
-            location = (0, 0, cab_height - face_frame_width / 2),
-            parent = parent,
-            material = material_frame
+            width=(cab_width - 2 * face_frame_width),
+            height=face_frame_width,
+            thickness=frame_thick,
+            location=(0, 0, cab_height - face_frame_width / 2),
+            parent=parent,
+            material=material_frame
         )
         # Bottom Rail (above toe-kick line)
         # Some builds place this rail at top of toe-kick, or flush with bottom. We'll do top of toe-kick
         rail_bottom = create_board(
             name=f"{name_prefix}_Frame_RailBottom",
-            width = (cab_width - 2 * face_frame_width),
-            height = face_frame_width,
-            thickness = frame_thick,
-            location = (0, 0, toe_kick_height + face_frame_width / 2),
-            parent = parent,
-            material = material_frame
+            width=(cab_width - 2 * face_frame_width),
+            height=face_frame_width,
+            thickness=frame_thick,
+            location=(0, 0, toe_kick_height + face_frame_width / 2),
+            parent=parent,
+            material=material_frame
         )
 
         # ------------------------------------------------------------------------
@@ -396,12 +396,12 @@ class CabinetFactory:
                 shelf_z = toe_kick_height + frac * (compartment_height)
                 shelf_obj = create_board(
                     name=f"{name_prefix}_Shelf_{i}",
-                    width = inner_width,
-                    height = inner_depth,
-                    thickness = carcass_thickness,
-                    location = (0, 0, shelf_z),
-                    parent = parent,
-                    material = material_carcass
+                    width=inner_width,
+                    height=inner_depth,
+                    thickness=carcass_thickness,
+                    location=(0, 0, shelf_z),
+                    parent=parent,
+                    material=material_carcass
                 )
 
         # ------------------------------------------------------------------------
@@ -409,284 +409,283 @@ class CabinetFactory:
         # ------------------------------------------------------------------------
         @staticmethod
         def _create_drawers(
-                        parent, name_prefix,
-                        cab_width, cab_height, cab_depth,
-                        drawer_count,
-                        carcass_thickness,
-                        door_frame_thickness,
-                        door_panel_thickness,
-                        face_frame_width,
-                        is_face_frame,
-                        toe_kick_height,
-                        material_door
-                ):
-                    """
+                parent, name_prefix,
+                cab_width, cab_height, cab_depth,
+                drawer_count,
+                carcass_thickness,
+                door_frame_thickness,
+                door_panel_thickness,
+                face_frame_width,
+                is_face_frame,
+                toe_kick_height,
+                material_door
+        ):
+            """
                     We create 'drawer_count' drawers, each with:
                     - A box (4 sides + bottom) for each drawer
                     - A 5-piece front (2 stiles, 2 rails, 1 panel)
                     We'll stack them vertically above the toe kick.
                     """
-                    # We'll assume a consistent vertical stack of drawers in the top half of the cabinet,
-                    # from e.g. toe_kick_height+some_offset up to near top.
-                    # This is simplified. In real builds, you might have a separate section for doors + drawers.
-                    total_drawer_zone = cab_height - toe_kick_height
-                    drawer_zone_start = toe_kick_height
-                    # Each drawer front might be about total_drawer_zone/drawer_count in height
-                    each_drawer_height = total_drawer_zone / drawer_count
+            # We'll assume a consistent vertical stack of drawers in the top half of the cabinet,
+            # from e.g. toe_kick_height+some_offset up to near top.
+            # This is simplified. In real builds, you might have a separate section for doors + drawers.
+            total_drawer_zone = cab_height - toe_kick_height
+            drawer_zone_start = toe_kick_height
+            # Each drawer front might be about total_drawer_zone/drawer_count in height
+            each_drawer_height = total_drawer_zone / drawer_count
 
-                    # Internal box dims (width a bit narrower than internal by e.g. slides):
-                    # If face frame, subtract 2*(face_frame_width)
-                    inside_width = cab_width - 2 * carcass_thickness
-                    if is_face_frame:
-                        inside_width -= 2 * face_frame_width
+            # Internal box dims (width a bit narrower than internal by e.g. slides):
+            # If face frame, subtract 2*(face_frame_width)
+            inside_width = cab_width - 2 * carcass_thickness
+            if is_face_frame:
+                inside_width -= 2 * face_frame_width
 
-                    inside_depth = cab_depth - carcass_thickness
-                    # Let's assume drawer box thickness is the same as carcass_thickness
+            inside_depth = cab_depth - carcass_thickness
+            # Let's assume drawer box thickness is the same as carcass_thickness
 
-                    for i in range(drawer_count):
-                        # Drawer i vertical middle
-                        y_mid = drawer_zone_start + (i + 0.5) * each_drawer_height
-                        # 1) Drawer box
-                        # We'll create the box as one piece for simplicity, but you can separate sides if needed
-                        box_name = f"{name_prefix}_DrawerBox_{i}"
-                        box_obj = create_board(
-                            name=box_name,
-                            width=inside_width * 0.95,  # leave some side clearance
-                            height=inside_depth * 0.95,  # short of full depth for clearance
-                            thickness=carcass_thickness * 0.5,  # just a placeholder thickness
-                            location=(0, 0, y_mid),
-                            parent=parent,
-                            material=material_door
-                        )
-                        # 2) Drawer Front (5-piece). We'll keep it simple: we only model it as a separate assembly
-                        # Assume overlay or flush with face frame. The height = each_drawer_height with small gap
-                        front_height = each_drawer_height * 0.9  # small gap
-                        front_width = cab_width if not is_face_frame else (cab_width - face_frame_width * 0.2)
-                        # We'll create stiles/rails/panel
-                        CabinetFactory._create_5piece_front(
-                            parent=parent,
-                            name_prefix=f"{name_prefix}_DrawerFront_{i}",
-                            width = front_width,
-                            height = front_height,
-                            frame_thickness = door_frame_thickness,
-                            panel_thickness = door_panel_thickness,
-                            center_x = 0,
-                            center_z = (y_mid),  # center
-                            location_depth = (cab_depth / 2))
-
+            for i in range(drawer_count):
+                # Drawer i vertical middle
+                y_mid = drawer_zone_start + (i + 0.5) * each_drawer_height
+                # 1) Drawer box
+                # We'll create the box as one piece for simplicity, but you can separate sides if needed
+                box_name = f"{name_prefix}_DrawerBox_{i}"
+                box_obj = create_board(
+                    name=box_name,
+                    width=inside_width * 0.95,  # leave some side clearance
+                    height=inside_depth * 0.95,  # short of full depth for clearance
+                    thickness=carcass_thickness * 0.5,  # just a placeholder thickness
+                    location=(0, 0, y_mid),
+                    parent=parent,
+                    material=material_door
+                )
+                # 2) Drawer Front (5-piece). We'll keep it simple: we only model it as a separate assembly
+                # Assume overlay or flush with face frame. The height = each_drawer_height with small gap
+                front_height = each_drawer_height * 0.9  # small gap
+                front_width = cab_width if not is_face_frame else (cab_width - face_frame_width * 0.2)
+                # We'll create stiles/rails/panel
+                CabinetFactory._create_5piece_front(
+                    parent=parent,
+                    name_prefix=f"{name_prefix}_DrawerFront_{i}",
+                    width=front_width,
+                    height=front_height,
+                    frame_thickness=door_frame_thickness,
+                    panel_thickness=door_panel_thickness,
+                    center_x=0,
+                    center_z=(y_mid),  # center
+                    location_depth=(cab_depth / 2))
 
         # ------------------------------------------------------------------------
         # Doors (5-piece)
         # ------------------------------------------------------------------------
         @staticmethod
         def _create_doors(
-                                parent, name_prefix,
-                                cab_width, cab_height, cab_depth,
-                                door_count,
-                                carcass_thickness,
-                                door_frame_thickness,
-                                door_panel_thickness,
-                                face_frame_width,
-                                is_face_frame,
-                                toe_kick_height,
-                                material_door
-                        ):
-                            """
+                parent, name_prefix,
+                cab_width, cab_height, cab_depth,
+                door_count,
+                carcass_thickness,
+                door_frame_thickness,
+                door_panel_thickness,
+                face_frame_width,
+                is_face_frame,
+                toe_kick_height,
+                material_door
+        ):
+            """
                             Creates 'door_count' 5-piece doors along the front.
                             If door_count=1, a single door. If 2, double doors.
                             For simplicity, place them from left to right, each covering half or portion of front.
                             """
-                            # We'll place them below the drawers (or total if no drawers).
-                            door_zone_top = cab_height
-                            # If we have drawers, let's guess they're stacked in top half. We'll put doors in bottom half.
-                            # This is simplistic, but a good example.
+            # We'll place them below the drawers (or total if no drawers).
+            door_zone_top = cab_height
+            # If we have drawers, let's guess they're stacked in top half. We'll put doors in bottom half.
+            # This is simplistic, but a good example.
 
-                            # We'll place them from left to right.
-                            # Each door covers (cab_width / door_count) wide in front, from toe_kick_height to near half the cabinet.
-                            door_height = door_zone_top - toe_kick_height
-                            each_door_width = cab_width / door_count
+            # We'll place them from left to right.
+            # Each door covers (cab_width / door_count) wide in front, from toe_kick_height to near half the cabinet.
+            door_height = door_zone_top - toe_kick_height
+            each_door_width = cab_width / door_count
 
-                            for i in range(door_count):
-                                door_center_x = -cab_width / 2 + each_door_width * (i + 0.5)
-                                door_name = f"{name_prefix}_Door_{i}"
+            for i in range(door_count):
+                door_center_x = -cab_width / 2 + each_door_width * (i + 0.5)
+                door_name = f"{name_prefix}_Door_{i}"
 
-                                # We'll create a 5-piece assembly
-                                CabinetFactory._create_5piece_front(
-                                    parent=parent,
-                                    name_prefix=door_name,
-                                    width=each_door_width * 0.95,  # small gap
-                                    height=door_height * 0.95,
-                                    frame_thickness=door_frame_thickness,
-                                    panel_thickness=door_panel_thickness,
-                                    center_x=door_center_x,
-                                    center_z=(toe_kick_height + door_height / 2),
-                                    location_depth=(cab_depth / 2),
-                                    material=material_door
-                                )
+                # We'll create a 5-piece assembly
+                CabinetFactory._create_5piece_front(
+                    parent=parent,
+                    name_prefix=door_name,
+                    width=each_door_width * 0.95,  # small gap
+                    height=door_height * 0.95,
+                    frame_thickness=door_frame_thickness,
+                    panel_thickness=door_panel_thickness,
+                    center_x=door_center_x,
+                    center_z=(toe_kick_height + door_height / 2),
+                    location_depth=(cab_depth / 2),
+                    material=material_door
+                )
 
         # ------------------------------------------------------------------------
         # 5-Piece Front (Door/Drawer)
         # ------------------------------------------------------------------------
         @staticmethod
         def _create_5piece_front(
-                                parent, name_prefix,
-                                width, height,
-                                frame_thickness,
-                                panel_thickness,
-                                center_x, center_z,
-                                location_depth,
-                                material
-                        ):
-                            """
+                parent, name_prefix,
+                width, height,
+                frame_thickness,
+                panel_thickness,
+                center_x, center_z,
+                location_depth,
+                material
+        ):
+            """
                             Creates a 5-piece style assembly (2 stiles, 2 rails, 1 center panel).
                             Positions at (center_x, location_depth, center_z) in parent's space.
                             This is used for both doors and drawer fronts.
                             """
 
-                            # We'll create an Empty to group them
-                            bpy.ops.object.empty_add(type='PLAIN_AXES', location=(center_x, location_depth, center_z))
-                            front_parent = bpy.context.object
-                            front_parent.name = f"{name_prefix}_5PieceParent"
-                            front_parent.parent = parent
+            # We'll create an Empty to group them
+            bpy.ops.object.empty_add(type='PLAIN_AXES', location=(center_x, location_depth, center_z))
+            front_parent = bpy.context.object
+            front_parent.name = f"{name_prefix}_5PieceParent"
+            front_parent.parent = parent
 
-                            # Stiles: vertical
-                            stile_width = frame_thickness
-                            stile_height = height
-                            # place left stile
-                            left_stile_x = -width / 2 + stile_width / 2
-                            left_stile = create_board(
-                                name=f"{name_prefix}_StileLeft",
-                                width = stile_width,
-                                height = stile_height,
-                                thickness = frame_thickness,
-                                location = (left_stile_x, 0, 0),
-                                parent = front_parent,
-                                material = material
-                            )
-                            # right stile
-                            right_stile_x = width / 2 - stile_width / 2
-                            right_stile = create_board(
-                                name=f"{name_prefix}_StileRight",
-                                width = stile_width,
-                                height = stile_height,
-                                thickness = frame_thickness,
-                                location = (right_stile_x, 0, 0),
-                                parent = front_parent,
-                                material = material
-                            )
+            # Stiles: vertical
+            stile_width = frame_thickness
+            stile_height = height
+            # place left stile
+            left_stile_x = -width / 2 + stile_width / 2
+            left_stile = create_board(
+                name=f"{name_prefix}_StileLeft",
+                width=stile_width,
+                height=stile_height,
+                thickness=frame_thickness,
+                location=(left_stile_x, 0, 0),
+                parent=front_parent,
+                material=material
+            )
+            # right stile
+            right_stile_x = width / 2 - stile_width / 2
+            right_stile = create_board(
+                name=f"{name_prefix}_StileRight",
+                width=stile_width,
+                height=stile_height,
+                thickness=frame_thickness,
+                location=(right_stile_x, 0, 0),
+                parent=front_parent,
+                material=material
+            )
 
-                            # Rails: horizontal
-                            rail_height = frame_thickness
-                            rail_width = width - 2 * stile_width
-                            # top rail
-                            top_rail_y = height / 2 - rail_height / 2
-                            top_rail = create_board(
-                                name=f"{name_prefix}_RailTop",
-                                width = rail_width,
-                                height = rail_height,
-                                thickness = frame_thickness,
-                                location = (0, 0, top_rail_y),
-                                parent = front_parent,
-                                material = material
-                            )
-                            # bottom rail
-                            bot_rail_y = -height / 2 + rail_height / 2
-                            bot_rail = create_board(
-                                name=f"{name_prefix}_RailBottom",
-                                width = rail_width,
-                                height = rail_height,
-                                thickness = frame_thickness,
-                                location = (0, 0, bot_rail_y),
-                                parent = front_parent,
-                                material = material
-                            )
+            # Rails: horizontal
+            rail_height = frame_thickness
+            rail_width = width - 2 * stile_width
+            # top rail
+            top_rail_y = height / 2 - rail_height / 2
+            top_rail = create_board(
+                name=f"{name_prefix}_RailTop",
+                width=rail_width,
+                height=rail_height,
+                thickness=frame_thickness,
+                location=(0, 0, top_rail_y),
+                parent=front_parent,
+                material=material
+            )
+            # bottom rail
+            bot_rail_y = -height / 2 + rail_height / 2
+            bot_rail = create_board(
+                name=f"{name_prefix}_RailBottom",
+                width=rail_width,
+                height=rail_height,
+                thickness=frame_thickness,
+                location=(0, 0, bot_rail_y),
+                parent=front_parent,
+                material=material
+            )
 
-                            # Center Panel
-                            # Typically about (rail_width) wide, (height - 2*frame_thickness) tall, thickness=panel_thickness
-                            panel_w = rail_width
-                            panel_h = height - 2 * frame_thickness
-                            panel_name = f"{name_prefix}_Panel"
-                            panel = create_board(
-                                name=panel_name,
-                                width=panel_w,
-                                height=panel_h,
-                                thickness=panel_thickness,
-                                location=(0, 0, 0),
-                                parent=front_parent,
-                                material=material
-                            )
-                            # Optionally we can shift the panel slightly backward to appear recessed:
-                            # panel.location.z = -0.002 # offset in local space if you want a recess
+            # Center Panel
+            # Typically about (rail_width) wide, (height - 2*frame_thickness) tall, thickness=panel_thickness
+            panel_w = rail_width
+            panel_h = height - 2 * frame_thickness
+            panel_name = f"{name_prefix}_Panel"
+            panel = create_board(
+                name=panel_name,
+                width=panel_w,
+                height=panel_h,
+                thickness=panel_thickness,
+                location=(0, 0, 0),
+                parent=front_parent,
+                material=material
+            )
+            # Optionally we can shift the panel slightly backward to appear recessed:
+            # panel.location.z = -0.002 # offset in local space if you want a recess
 
-                        # ------------------------------------------------------------------------
-                        # Countertop
-                        # ------------------------------------------------------------------------
+        # ------------------------------------------------------------------------
+        # Countertop
+        # ------------------------------------------------------------------------
         @staticmethod
         def _create_countertop(
-                                parent, name_prefix,
-                                cab_width, cab_depth,
-                                countertop_thickness,
-                                toe_kick_height,
-                                material_counter
-                        ):
-                            """
+                parent, name_prefix,
+                cab_width, cab_depth,
+                countertop_thickness,
+                toe_kick_height,
+                material_counter
+        ):
+            """
                             Creates a simple rectangular countertop above the cabinet.
                             Usually extends the full width & depth, or a slight overhang. We'll do a small overhang.
                             """
-                            overhang = 0.025  # ~1 inch overhang
-                            top_z = toe_kick_height + 0.9  # default cabinet height 0.9, but better to param it in the real code
-                            # If we want to measure the actual side panels for exact top, we would do so. We'll assume 0.9 for now.
-                            ctop_name = f"{name_prefix}_Countertop"
-                            ctop = create_board(
-                                name=ctop_name,
-                                width=(cab_width + 2 * overhang),
-                                height=(cab_depth + overhang),
-                                thickness=countertop_thickness,
-                                location=(0, 0, top_z + countertop_thickness / 2),
-                                parent=parent,
-                                material=material_counter)
-
+            overhang = 0.025  # ~1 inch overhang
+            top_z = toe_kick_height + 0.9  # default cabinet height 0.9, but better to param it in the real code
+            # If we want to measure the actual side panels for exact top, we would do so. We'll assume 0.9 for now.
+            ctop_name = f"{name_prefix}_Countertop"
+            ctop = create_board(
+                name=ctop_name,
+                width=(cab_width + 2 * overhang),
+                height=(cab_depth + overhang),
+                thickness=countertop_thickness,
+                location=(0, 0, top_z + countertop_thickness / 2),
+                parent=parent,
+                material=material_counter)
 
 
 # ----------------------------------------------------------------------------
 # Example usage in Blender
 # ----------------------------------------------------------------------------
 def main():
-        # Ensure we run inside Blender
-        if not bpy.context.scene:
-                print("❌ This script must be run inside Blender.")
-                return
+    # Ensure we run inside Blender
+    if not bpy.context.scene:
+        print("❌ This script must be run inside Blender.")
+        return
 
-                        # Sample creation of a base face-frame cabinet
-                CabinetFactory.create_cabinet(
-                            name_prefix="BaseCabFF",
-                            location = (0, 0, 0),
-                            cabinet_width = 0.9,  # 90cm ~ 35.4in
-                            cabinet_height = 0.9,  # standard 34.5in base height ignoring countertop thickness
-                            cabinet_depth = 0.6,  # ~24in
-                            is_face_frame = True,
-                            toe_kick_height = 0.1143,  # 4.5\"
-                            toe_kick_depth = 0.0762,  # 3\"
-                            shelf_count = 1,
-                            drawer_count = 1,
-                            door_count = 1,
-                        )
+        # Sample creation of a base face-frame cabinet
+        CabinetFactory.create_cabinet(
+            name_prefix="BaseCabFF",
+            location=(0, 0, 0),
+            cabinet_width=0.9,  # 90cm ~ 35.4in
+            cabinet_height=0.9,  # standard 34.5in base height ignoring countertop thickness
+            cabinet_depth=0.6,  # ~24in
+            is_face_frame=True,
+            toe_kick_height=0.1143,  # 4.5\"
+            toe_kick_depth=0.0762,  # 3\"
+            shelf_count=1,
+            drawer_count=1,
+            door_count=1,
+        )
 
-                # Another example: Frameless upper cabinet
-                CabinetFactory.create_cabinet(
-                            name_prefix="WallCabFrameless",
-                            location = (2, 0, 1),  # offset in X=2, Z=1
-                            cabinet_width = 0.8,
-                            cabinet_height = 0.7,
-                            cabinet_depth = 0.35,
-                            is_face_frame = False,
-                            toe_kick_height = 0,  # no toe-kick for uppers
-                            toe_kick_depth = 0,
-                            add_countertop = False,
-                            shelf_count = 2,
-                            drawer_count = 0,
-                                                                                                                                                       door_count = 2,
-                        )
+        # Another example: Frameless upper cabinet
+        CabinetFactory.create_cabinet(
+            name_prefix="WallCabFrameless",
+            location=(2, 0, 1),  # offset in X=2, Z=1
+            cabinet_width=0.8,
+            cabinet_height=0.7,
+            cabinet_depth=0.35,
+            is_face_frame=False,
+            toe_kick_height=0,  # no toe-kick for uppers
+            toe_kick_depth=0,
+            add_countertop=False,
+            shelf_count=2,
+            drawer_count=0,
+            door_count=2,
+        )
+
 
 if __name__ == "__main__":
-            main()
+    main()
