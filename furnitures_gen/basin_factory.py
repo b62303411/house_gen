@@ -1,6 +1,6 @@
 import bpy
 
-from cutout_util import CutoutUtil
+from furnitures_gen.cutout_util import CutoutUtil
 
 
 class BassinFactory:

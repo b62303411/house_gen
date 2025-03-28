@@ -1,3 +1,5 @@
+import logging
+
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.math.vector import Vector
@@ -65,7 +67,7 @@ class WallScanner:
             x += nx
             y += ny
             steps +=1
-        if steps > 3:
+        if steps >= 3:
             return True
 
         return False
@@ -73,7 +75,7 @@ class WallScanner:
     def is_within_bounds(self,x,y):
         return self.world.is_within_bounds(x,y)
 
-    def ping(self,x,y,d,target):
+    def ping(self,x,y,d):
         is_within_bounds = self.is_within_bounds(x,y)
         if not is_within_bounds:
             return False
@@ -105,20 +107,20 @@ class WallScanner:
         else:
             pass
 
-        while self.ping(x,y,d,target=4):
+        while self.ping(x,y,d):
             x -= dx
             y -= dy
             min_x = x
             min_y = y
         if min_x is None:
-            print(f"{x} {y}  {width} {height}")
+            logging.info(f"{x} {y}  {width} {height}")
         # Step 2: Move one step forward to set the actual starting point
         x += dx
         y += dy
         steps = 0
 
         # Step 3: Count steps moving forward until hitting another boundary
-        while self.ping(x,y,d,target=4):
+        while self.ping(x,y,d):
             x += dx
             y += dy
             steps += 1  # Count steps only in the forward direction

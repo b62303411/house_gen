@@ -1,9 +1,11 @@
 import math
 from decimal import Decimal
 
+from shapely import Polygon
+
 from floor_plan_reader.math.math_segments import combine_segments_decimal
-from floor_plan_reader.math.vector import Vector
-from shapely.geometry import Polygon
+from floor_plan_reader.vector import Vector
+
 
 class CollisionBox:
     def __init__(self, center_x, center_y, width, length, rotation):
@@ -274,6 +276,7 @@ class CollisionBox:
         x2 = cx + dx * half_len
         y2 = cy + dy * half_len
         return (x1, y1), (x2, y2)
+
     def get_ray_trace_points(self):
         direction = self.get_direction()
         half_length = self.length / 2.0
@@ -341,6 +344,7 @@ class CollisionBox:
         # Calculate the intersection area
         intersection = polygon_self.intersection(polygon_other)
         return intersection.area
+
     def calculate_corners(self):
         if self.corners is not None:
             return self.corners
@@ -360,7 +364,6 @@ class CollisionBox:
         top_right=position-left+back
         bottom_left = position+front+left
         bottom_right = position+front-left
-
 
         # Calculate corners without offsets
         top_left = (
@@ -405,6 +408,22 @@ class CollisionBox:
                     pixels.append((x, y))
         return pixels
 
+    def get_center_line(self):
+        """
+        Returns a 2D line segment for the box's center line:
+        segment start (x1, y1), segment end (x2, y2).
+        """
+        direction, _ = self.derive_direction_and_normal()
+        dx, dy = direction.direction  # e.g. (cosθ, sinθ)
+        half_len = self.length / 2.0
+
+        cx, cy = self.center_x, self.center_y
+        x1 = cx - dx * half_len
+        y1 = cy - dy * half_len
+        x2 = cx + dx * half_len
+        y2 = cy + dy * half_len
+
+        return (x1, y1), (x2, y2)
     def to_decimal(self, value):
         x = Decimal(value[0])
         y = Decimal(value[1])

@@ -4,12 +4,11 @@ import bpy
 import math
 from mathutils import Vector
 
-import bed_factory
-import chair_factory
+from furnitures_gen import chair_factory, bed_factory
 import table_factory
-from bath_thub_factory import BathThubFactory
-from bed_factory import BedFactory
-from chair_factory import ChairFactory
+from furnitures_gen.bath_thub_factory import BathThubFactory
+from furnitures_gen.bed_factory import BedFactory
+from furnitures_gen.chair_factory import ChairFactory
 from shower_factory import ShowerFactory
 from table_factory import TableFactory
 

@@ -504,8 +504,8 @@ class FloorplanVisualizer:
         pygame.quit()
 
 if __name__ == "__main__":
-    fa = FloorplanAnalyzer(door_template_path="floor_plans/door.png",window_template_path="floor_plans/window.png")
-    img, dark_mask = keep_dark_tones("floor_plans/fp2.png", dark_threshold=80)
+    fa = FloorplanAnalyzer(door_template_path="../floor_plans/door.png", window_template_path="../floor_plans/window.png")
+    img, dark_mask = keep_dark_tones("../floor_plans/fp2.png", dark_threshold=80)
 
     # 2) Save or visualize the result (for debugging)
     cv2.imwrite("dark_tones_only.png", dark_mask)

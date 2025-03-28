@@ -47,7 +47,7 @@ print("Current Working Directory:", os.getcwd())
 #print("Sys Path:", sys.path)
 import os
 
-script_dir = "E:\\workspace\\blender_house\\house_gen"
+script_dir = "/"
 print("Files in script directory:", os.listdir(script_dir))
 
 

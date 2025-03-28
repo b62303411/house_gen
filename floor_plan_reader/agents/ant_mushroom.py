@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 import random
 import numpy as np
@@ -120,7 +122,7 @@ def run_ant_simulation(
     # 6) Spawn ants at random "food" locations
     empty_pixels = np.argwhere(grid == 1)
     if len(empty_pixels) == 0:
-        print("No empty space found!")
+        logging.info("No empty space found!")
         return
 
     chosen_indices = random.sample(range(len(empty_pixels)), min(num_ants, len(empty_pixels)))

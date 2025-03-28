@@ -1,12 +1,15 @@
 import json
+import logging
+from collections import deque
 
 import cv2
 import numpy as np
 import pygame
 
+from floor_plan_reader.agents.ant_mushroom import Mushroom
+from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.simulation_view import SimulationView
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
@@ -22,12 +25,11 @@ f_small = font.Font(None, 12)
 class Simulation:
     def __init__(self):
 
-
+        self.running = True
         self.wf = WorldFactory()
         self.zombie_candidates = []
         self.world = None
-
-
+        self.solver = None
         self.view = SimulationView(self)
 
         self.width = 0
@@ -35,13 +37,30 @@ class Simulation:
         self.floorplan_surf = None
         self.img_gray_surface = None
         self.intersections = set()
+        self.jw = JsonWriter()
+        self.tasks = [
+            {
+                "name": "Save Blue Print",
+                "interval": 5000,  # 1 second
+                "accumulator": 0,
+                "command": self.save_blue_print
+            }
+        ]
 
+    def save_blue_print(self):
+        result = self.solver.build_lines_and_intersections(self.world.wall_segments)
+        self.intersections = result.get("intersections")
+
+        self.jw.build_floorplan_json(result, self.world.walls)
+
+    def get_blob_count(self):
+        return len(self.world.blobs)
     def is_wall(self, a, mx, my):
         if isinstance(a, Mushroom):
             if a.is_valid():
                 pass
             if a.is_valid() and a.collidepoint(mx, my):
-                print(a.id)
+                logging.debug(a.id)
                 selection_candidate = a
                 a.set_selected(True)
                 return True
@@ -88,16 +107,22 @@ class Simulation:
             agent = self.world.candidates.popleft()
             if isinstance(agent, Mushroom):
                 self.world.walls.add(agent)
+            if isinstance(agent, WallSegment):
+                self.world.wall_segments.add(agent)
             self.world.agents.add(agent)
 
 
     def init_world(self,image_path_filtered,threshold=200):
         img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
+
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
+        img_gray = cv2.bitwise_not(img_gray)
         g = (img_gray >= threshold).astype(np.uint8)
+
         self.wf.set_grid(g)
         self.world = self.wf.create_World()
+        self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
         self.floorplan_surf = pygame.Surface((self.width, self.height))
         for y in range(self.height):
@@ -107,6 +132,9 @@ class Simulation:
                 else:
                     self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
 
+    def stop(self):
+        self.running = False
+
     def run_ant_simulation(self,
                            image_path,
                            image_path_filtered,
@@ -114,20 +142,9 @@ class Simulation:
                            num_ants=20,
                            allow_revisit=False
                            ):
-        # 1) Load grayscale
-        img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        img_gray = cv2.bitwise_not(img_gray)
-        img_colour = cv2.imread(image_path)
-
-        # img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
-        self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
-        # 2) Create grid: 1=empty, 0=wall
-        g = (img_gray >= threshold).astype(np.uint8)
-        self.wf.set_grid(g)
         self.wf.set_num_ants(num_ants)
-        self.world = self.wf.create_World()
-        solver = IntersectionSolver(self.world)
-        self.height, self.width = self.world.grid.shape
+        # 1) Load grayscale
+        self.init_world(image_path)
 
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()
@@ -147,19 +164,19 @@ class Simulation:
                     self.floorplan_surf.set_at((x, y), (0, 0, 0))  # black => wall
 
         # 7) Zoom parameters
-        running = True
-        while running:
-            clock.tick(120)  # up to 30 FPS
+        self.running = True
+        while self.running:
+            dt=clock.tick(120)  # up to 30 FPS
 
             # --- Update ants (simple example) ---
             self.run()
             self.view.run()
 
-
-            result = solver.build_lines_and_intersections(self.world.wall_segments)
-            self.intersections = result.get("intersections")
-            jw = JsonWriter()
-            jw.build_floorplan_json(result, self.world.walls)
             self.view.draw()
+            for task in self.tasks:
+                task["accumulator"] += dt
+                if task["accumulator"] >= task["interval"]:
+                    task["command"]()
+                    task["accumulator"] = 0
         pygame.quit()
         print("All done!")

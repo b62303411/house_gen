@@ -2,11 +2,11 @@ import importlib
 
 import bpy
 
-import door_factory
+from furnitures_gen import door_factory
 
 importlib.reload(door_factory)
-from door_factory import DoorFactory
-from board_factory import BoardFactory
+from furnitures_gen.door_factory import DoorFactory
+from furnitures_gen.board_factory import BoardFactory
 from windows import WindowFactory
 from math import radians
 

@@ -5,13 +5,13 @@ import pygame
 
 class Arrow:
     def __init__(self, cx, cy, nx, ny, length, width, color):
-        self.width = width
-        self.length = length
+        self.width = int(width)
+        self.length = int(length)
         self.color = color
-        self.cx = cx
-        self.cy = cy
-        self.nx = nx
-        self.ny = ny
+        self.cx = int(cx)
+        self.cy = int(cy)
+        self.nx = int(nx)
+        self.ny = int(ny)
 
     def draw(self, screen, vp):
         cx, cy = self.cx, self.cy

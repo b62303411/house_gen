@@ -1,5 +1,4 @@
 import bpy
-import math
 import os
 import sys
 
@@ -47,15 +46,10 @@ import os
 script_dir = "E:\\workspace\\blender_house\\house_gen"
 print("Files in script directory:", os.listdir(script_dir))
 
-import bed_factory
-import frame_factory
 import importlib
-import materials
-import board_factory
-import windows
-import segment_factory
-import house_factory
-import bath_thub_factory
+from furnitures_gen import board_factory, bed_factory, bath_thub_factory, frame_factory, segment_factory, house_factory, \
+    windows, materials
+
 importlib.reload(materials)  # Force refresh
 importlib.reload(board_factory)
 importlib.reload(windows)
@@ -64,7 +58,7 @@ importlib.reload(house_factory)
 importlib.reload(frame_factory)
 importlib.reload(bed_factory)
 importlib.reload(bath_thub_factory)
-from scene_factory import SceneFactory
+from furnitures_gen.scene_factory import SceneFactory
 
 
 if __name__ == "__main__":

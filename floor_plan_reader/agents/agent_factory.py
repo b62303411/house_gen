@@ -4,11 +4,16 @@ from floor_plan_reader.agents.mushroom_agent import Mushroom
 
 
 class AgentFactory:
-    def create_mushroom(self, world,blob,x, y):
-        #self, world, blob, start_x, start_y, mush_id
-        mush = Mushroom(world,blob,x,y, Id_Util.get_id())
+
+    def __init__(self, world):
+        self.world = world
+
+    def create_mushroom(self,  blob, x, y):
+        # world, blob, start_x, start_y, mush_id
+        mush = Mushroom(self.world, blob,x, y, Id_Util.get_id())
         return mush
-    def create_blob(self, world,x, y):
-        blob = Blob(Id_Util.get_id(),world ,x, y)
+
+    def create_blob(self, x, y):
+        blob = Blob(Id_Util.get_id(), self.world, x, y)
 
         return blob

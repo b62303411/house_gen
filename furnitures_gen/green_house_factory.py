@@ -1,3 +1,10 @@
+import bpy
+
+from floor_plan_reader import math
+from house_factory import HouseFactory
+from walls import ROOM_DIMENSIONS, EXTERIOR_WALL_THICKNESS, INTERIOR_WALL_THICKNESS, WallFactory, define_room_layout
+
+
 @staticmethod
 def create_room_walls(room_name, x_offset, y_offset, height=2.7):
     """

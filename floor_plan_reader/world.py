@@ -1,3 +1,4 @@
+import logging
 from collections import deque
 from PIL import Image
 
@@ -6,15 +7,15 @@ import random
 
 from floor_plan_reader.agents.agent_factory import AgentFactory
 from floor_plan_reader.agents.ants import Ant
+from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.node import Node
-from floor_plan_reader.agents.wall_segment import WallSegment
 
 
 class World:
 
     def __init__(self):
-        self.af = AgentFactory()
+        self.af = AgentFactory(self)
         self.grid = None
         self.blob_grid = None
         self.occupied_wall = None
@@ -68,8 +69,8 @@ class World:
         if x - width // 2 >= 0 and x + width // 2 <= grid.shape[1] and \
                 y - height // 2 >= 0 and y + height // 2 <= grid.shape[0]:
             # Extract the 10x10 region
-            height=int(height)
-            width =int(width)
+            height = int(height)
+            width = int(width)
             h1 = int(y - height // 2)
             h2 = int(y + height // 2)
             w1 = int(x - width // 2)
@@ -84,9 +85,9 @@ class World:
             region_image = Image.fromarray(color_coded)
             name = f"{name_prefix}_{width}x{height}_{x}_{y}.png"
             region_image.save(name)
-            print(f"{width}x{height} region saved as '{name}'")
+            logging.info(f"{width}x{height} region saved as '{name}'")
         else:
-            print("The region is out of bounds.")
+            logging.info("The region is out of bounds.")
 
     def free(self, x, y):
         self.occupied[int(y), int(x)] = 0
@@ -100,8 +101,7 @@ class World:
             return wall_occupied or wall_part_occupied
         return True  # Out of bounds is occupied
 
-
-    def is_wall_occupied(self,x,y):
+    def is_wall_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
             occupided_value = self.occupied_wall[int(y), int(x)]
@@ -112,7 +112,7 @@ class World:
     def is_occupied(self, x, y):
         h, w = self.grid.shape
         if 0 <= x < w and 0 <= y < h:
-            occupided_value =  self.occupied[int(y), int(x)]
+            occupided_value = self.occupied[int(y), int(x)]
             i_val = int(occupided_value)
             return i_val != 0
         return True  # Out of bounds is occupied
@@ -167,16 +167,16 @@ class World:
     def create_blob(self, x, y):
         if self.is_within_bounds(x, y):
             if not self.is_blob(x, y):
-                blob = self.af.create_blob(self, x, y)
+                blob = self.af.create_blob(x, y)
                 self.set_blob(x, y, blob)
                 self.agents.add(blob)
                 self.blobs.add(blob)
                 return blob
 
-    def create_mushroom(self,blob, x, y):
+    def create_mushroom(self, blob, x, y):
         if self.is_within_bounds(x, y):
             if not self.is_occupied(x, y):
-                mush = self.af.create_mushroom(self,blob, x, y)
+                mush = self.af.create_mushroom(blob, x, y)
                 self.occupy(x, y, mush)
                 self.candidates.append(mush)
                 return mush
@@ -186,9 +186,11 @@ class World:
         return self.grid[y, x]
 
     def draw_at(self, point, value):
+
         x = int(point[0])
         y = int(point[1])
-        self.grid[y, x] = value
+        if self.is_within_bounds(x,y):
+            self.grid[y, x] = value
 
     def is_food_at(self, location):
         return self.is_food(int(location[0]), int(location[1]))
@@ -230,7 +232,7 @@ class World:
         # 6) Spawn ants at random empty locations
         empty_pixels = np.argwhere(self.grid == 0)
         if len(empty_pixels) == 0:
-            print("No empty space found!")
+            logging.info("No empty space found!")
             return
 
         chosen_indices = random.sample(range(len(empty_pixels)), min(self.num_ants, len(empty_pixels)))

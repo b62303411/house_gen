@@ -1,4 +1,5 @@
 import pygame
+from pyreadline3.console import BLACK
 
 # Initialize Pygame
 pygame.init()
@@ -20,14 +21,14 @@ class GameObject:
         self.selected = False
         self.rotation = 0  # 0, 90, 180, 270
 
-    def draw(self, screen):
+    def draw(self, screen, YELLOW=None):
         color = YELLOW if self.selected else self.color
         pygame.draw.rect(screen, color, self.rect)
 
     def is_hovered(self, mx, my):
         return self.rect.collidepoint(mx, my)
 
-    def snap_to_grid(self):
+    def snap_to_grid(self, GRID_SIZE=None):
         self.rect.x = round(self.rect.x / GRID_SIZE) * GRID_SIZE
         self.rect.y = round(self.rect.y / GRID_SIZE) * GRID_SIZE
 
