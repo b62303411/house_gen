@@ -1,7 +1,7 @@
 import math
 import bpy
 
-from furniture_factory import FurnitureFactory
+from furnitures_gen.furniture_factory import FurnitureFactory
 from house_factory import HouseFactory
 from materials import MaterialFactory
 from node_render import NodeRender
@@ -77,7 +77,7 @@ class SceneFactory:
     @staticmethod
     def create_plane_plan():
         #bpy.ops.mesh.primitive_plane_add(size=1)
-        obj = TexturedPlaneFactory.create_textured_plane("E:\\workspace\\blender_house\\house_gen\\w1024.jpg", "architecture plan")
+        obj = TexturedPlaneFactory.create_textured_plane("/w1024.jpg", "architecture plan")
         obj.name = "architecture plan"
         obj.location = (0.375159,-0.842076 ,0)
         # Correct scaling

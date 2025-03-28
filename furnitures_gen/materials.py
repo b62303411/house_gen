@@ -1,6 +1,6 @@
 import bpy
 
-from ceramic_material_factory import CeramicMaterialFactory
+from furnitures_gen.ceramic_material_factory import CeramicMaterialFactory
 from material_repo import MaterialRepo
 
 

@@ -2,10 +2,9 @@
 import importlib
 
 import bpy
-from mathutils import Vector
 
 import frame_factory
-from board_factory import BoardFactory
+from furnitures_gen.board_factory import BoardFactory
 importlib.reload(frame_factory)
 from frame_factory import FramingFactory
 class DoorFactory:

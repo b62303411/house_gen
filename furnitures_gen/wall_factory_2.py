@@ -3,7 +3,7 @@ import math
 import bpy
 from mathutils import Vector
 
-from board_factory import BoardFactory
+from furnitures_gen.board_factory import BoardFactory
 from walls import STUD_SPACING, STUD_WIDTH, STUD_THICKNESS
 from windows import WindowFactory
 

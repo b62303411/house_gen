@@ -1,5 +1,3 @@
-import bpy
-import math
 import os
 import sys
 
@@ -44,7 +42,7 @@ print("Current Working Directory:", os.getcwd())
 #print("Sys Path:", sys.path)
 import os
 
-script_dir = "E:\\workspace\\blender_house\\house_gen"
+script_dir = "/"
 print("Files in script directory:", os.listdir(script_dir))
 
 import importlib
@@ -53,12 +51,10 @@ import bpy
 
 import math
 
-import mathutils
 from mathutils import Vector
 
-import basin_factory
-import board_factory
-from basin_factory import BassinFactory
+from furnitures_gen import basin_factory
+from furnitures_gen.basin_factory import BassinFactory
 
 importlib.reload(basin_factory)
 

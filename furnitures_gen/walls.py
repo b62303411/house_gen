@@ -2,7 +2,6 @@ import bpy
 import math
 import os
 import sys
-from mathutils import Vector
 
 
 def get_script_dir():
@@ -25,9 +24,8 @@ if script_dir not in sys.path:
     
 import importlib
 import materials
-import board_factory
+from furnitures_gen import board_factory, segment_factory
 import windows
-import segment_factory
 
 importlib.reload(materials)  # Force refresh
 importlib.reload(board_factory)
@@ -36,10 +34,8 @@ importlib.reload(segment_factory)
 
 
 from materials import MaterialFactory
-from board_factory import BoardFactory
-from windows import WindowFactory
 
-from house_factory import HouseFactory
+from furnitures_gen.house_factory import HouseFactory
 # -------------------------------------------------------------------
 # CONSTANTS/DEFAULTS
 # -------------------------------------------------------------------

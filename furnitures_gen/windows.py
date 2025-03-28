@@ -1,9 +1,7 @@
 # -------------------------------------------------------------------
 # OPTIONAL WINDOW CREATION: Header, sill, jack studs
 # -------------------------------------------------------------------
-import bpy
-from mathutils import Vector
-from board_factory import *
+from furnitures_gen.board_factory import *
 class WindowFactory:
     @staticmethod
     def cut_window_opening(window,wall_structure, name_prefix, window_bottom_z,

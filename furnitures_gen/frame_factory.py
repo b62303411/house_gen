@@ -1,8 +1,7 @@
 # framing_factory.py
 
 import bpy
-from mathutils import Vector
-from board_factory import BoardFactory
+from furnitures_gen.board_factory import BoardFactory
 
 class FramingFactory:
     @staticmethod

@@ -4,13 +4,14 @@ from decimal import Decimal
 
 import numpy as np
 
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.id_util import Id_Util
 from floor_plan_reader.world_factory import WorldFactory
 
-from mushroom_agent import Mushroom
+
 
 
 

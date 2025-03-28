@@ -3,9 +3,9 @@ import math
 
 import bpy
 
-from furniture_factory import FurnitureFactory
-from materials import MaterialFactory
-from segment_factory import SegmentFactory
+from furnitures_gen.furniture_factory import FurnitureFactory
+from furnitures_gen.materials import MaterialFactory
+from furnitures_gen.segment_factory import SegmentFactory
 
 
 class NodeRender:

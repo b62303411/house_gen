@@ -1,15 +1,12 @@
 import importlib
-import math
 
 import bpy
 
-import frame_factory
-import furniture_factory
-import segment_factory
+from furnitures_gen import frame_factory, furniture_factory, segment_factory
 
-from furniture_factory import FurnitureFactory
+from furnitures_gen.furniture_factory import FurnitureFactory
 from materials import MaterialFactory
-from segment_factory import SegmentFactory
+from furnitures_gen.segment_factory import SegmentFactory
 
 importlib.reload(furniture_factory)
 importlib.reload(frame_factory)
