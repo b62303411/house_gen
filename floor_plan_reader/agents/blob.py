@@ -40,6 +40,13 @@ class Blob(Agent):
             self.cells.add(c)
         other.alive = False
 
+    def calculate_bounding_box(self):
+        cells = self.cells
+        min_x = min(cell.x for cell in cells)
+        max_x = max(cell.x for cell in cells)
+        min_y = min(cell.y for cell in cells)
+        max_y = max(cell.y for cell in cells)
+        self.bounding_box = BoundingBox(min_x, min_y, max_x, max_y)
     def germinate(self, g):
         coord_list = self.world.get_neighbors_8(g.x, g.y)
         for c in coord_list:
