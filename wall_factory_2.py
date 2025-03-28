@@ -1,8 +1,10 @@
 import math
 
+import bpy
 from mathutils import Vector
 
 from board_factory import BoardFactory
+from walls import STUD_SPACING, STUD_WIDTH, STUD_THICKNESS
 from windows import WindowFactory
 
 
@@ -164,7 +166,7 @@ class WallFactory:
                                                  )
             # move_to_collection(drywall_obj, wall_coll)
             drywall_obj.parent = wall_parent
-
+        spec = None
         # 4) WINDOW FRAMING (optional)
         if window_specs:
             for ws in window_specs:

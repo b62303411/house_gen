@@ -236,6 +236,9 @@ def define_room_layout(grid_width, grid_depth):
     return layout
 
 
+def build_entire_perimeter_example():
+    pass
+
 
 if __name__ == "__main__":
     # demo_wall_test()
