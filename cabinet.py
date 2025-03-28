@@ -404,11 +404,11 @@ class CabinetFactory:
                     material = material_carcass
                 )
 
-                # ------------------------------------------------------------------------
-                # Drawers (Box + 5-piece Front)
-                # ------------------------------------------------------------------------
-                @staticmethod
-                def _create_drawers(
+        # ------------------------------------------------------------------------
+        # Drawers (Box + 5-piece Front)
+        # ------------------------------------------------------------------------
+        @staticmethod
+        def _create_drawers(
                         parent, name_prefix,
                         cab_width, cab_height, cab_depth,
                         drawer_count,
@@ -421,11 +421,11 @@ class CabinetFactory:
                         material_door
                 ):
                     """
-                We create 'drawer_count' drawers, each with:
-                - A box (4 sides + bottom) for each drawer
-                - A 5-piece front (2 stiles, 2 rails, 1 panel)
-                We'll stack them vertically above the toe kick.
-                """
+                    We create 'drawer_count' drawers, each with:
+                    - A box (4 sides + bottom) for each drawer
+                    - A 5-piece front (2 stiles, 2 rails, 1 panel)
+                    We'll stack them vertically above the toe kick.
+                    """
                     # We'll assume a consistent vertical stack of drawers in the top half of the cabinet,
                     # from e.g. toe_kick_height+some_offset up to near top.
                     # This is simplified. In real builds, you might have a separate section for doors + drawers.
@@ -473,14 +473,13 @@ class CabinetFactory:
                             center_x = 0,
                             center_z = (y_mid),  # center
                             location_depth = (cab_depth / 2))
-                            # place front at cabinet front
-                                                                                                                    material = material_door)
 
-                        # ------------------------------------------------------------------------
-                        # Doors (5-piece)
-                        # ------------------------------------------------------------------------
-                        @staticmethod
-                        def _create_doors(
+
+        # ------------------------------------------------------------------------
+        # Doors (5-piece)
+        # ------------------------------------------------------------------------
+        @staticmethod
+        def _create_doors(
                                 parent, name_prefix,
                                 cab_width, cab_height, cab_depth,
                                 door_count,
@@ -525,11 +524,11 @@ class CabinetFactory:
                                     material=material_door
                                 )
 
-                        # ------------------------------------------------------------------------
-                        # 5-Piece Front (Door/Drawer)
-                        # ------------------------------------------------------------------------
-                        @staticmethod
-                        def _create_5piece_front(
+        # ------------------------------------------------------------------------
+        # 5-Piece Front (Door/Drawer)
+        # ------------------------------------------------------------------------
+        @staticmethod
+        def _create_5piece_front(
                                 parent, name_prefix,
                                 width, height,
                                 frame_thickness,
@@ -622,8 +621,8 @@ class CabinetFactory:
                         # ------------------------------------------------------------------------
                         # Countertop
                         # ------------------------------------------------------------------------
-                        @staticmethod
-                        def _create_countertop(
+        @staticmethod
+        def _create_countertop(
                                 parent, name_prefix,
                                 cab_width, cab_depth,
                                 countertop_thickness,
@@ -637,7 +636,6 @@ class CabinetFactory:
                             overhang = 0.025  # ~1 inch overhang
                             top_z = toe_kick_height + 0.9  # default cabinet height 0.9, but better to param it in the real code
                             # If we want to measure the actual side panels for exact top, we would do so. We'll assume 0.9 for now.
-
                             ctop_name = f"{name_prefix}_Countertop"
                             ctop = create_board(
                                 name=ctop_name,
@@ -646,20 +644,21 @@ class CabinetFactory:
                                 thickness=countertop_thickness,
                                 location=(0, 0, top_z + countertop_thickness / 2),
                                 parent=parent,
-                                material=material_counter
-                            )
+                                material=material_counter)
+
+
 
 # ----------------------------------------------------------------------------
 # Example usage in Blender
 # ----------------------------------------------------------------------------
 def main():
-                        # Ensure we run inside Blender
-                        if not bpy.context.scene:
-                            print("❌ This script must be run inside Blender.")
-                            return
+        # Ensure we run inside Blender
+        if not bpy.context.scene:
+                print("❌ This script must be run inside Blender.")
+                return
 
                         # Sample creation of a base face-frame cabinet
-                        CabinetFactory.create_cabinet(
+                CabinetFactory.create_cabinet(
                             name_prefix="BaseCabFF",
                             location = (0, 0, 0),
                             cabinet_width = 0.9,  # 90cm ~ 35.4in
@@ -673,8 +672,8 @@ def main():
                             door_count = 1,
                         )
 
-                        # Another example: Frameless upper cabinet
-                        CabinetFactory.create_cabinet(
+                # Another example: Frameless upper cabinet
+                CabinetFactory.create_cabinet(
                             name_prefix="WallCabFrameless",
                             location = (2, 0, 1),  # offset in X=2, Z=1
                             cabinet_width = 0.8,
