@@ -22,6 +22,9 @@ class Blob(Agent):
         self.walls = set()
         self.bounding_box = None
 
+    def __lt__(self, other):
+        # Compare based on the 'value' attribute
+        return self.blob_size() < other.blob_size()
     def is_food(self, x, y):
         return self.world.is_food(x, y)
 
@@ -31,10 +34,13 @@ class Blob(Agent):
     def blob_size(self):
         return len(self.cells)
 
+    def add_growth(self,cell):
+        self.growth.add(cell)
+
     def eat(self, other):
         for g in other.growth:
             if g not in self.cells:
-                self.growth.add(g)
+                self.add_growth(g)
         for c in other.cells:
             self.world.set_blob(c.x, c.y, self)
             self.cells.add(c)
@@ -56,7 +62,7 @@ class Blob(Agent):
                 if self.world.is_within_bounds(x, y):
                     if self.is_food(x, y):
                         if not self.world.is_blob(x, y):
-                            self.growth.add(candidate)
+                            self.add_growth(candidate)
                             self.cells.add(candidate)
                             self.world.set_blob(x, y, self)
                         else:

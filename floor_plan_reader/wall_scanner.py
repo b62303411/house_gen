@@ -67,7 +67,7 @@ class WallScanner:
             x += nx
             y += ny
             steps +=1
-        if steps > 3:
+        if steps >= 3:
             return True
 
         return False

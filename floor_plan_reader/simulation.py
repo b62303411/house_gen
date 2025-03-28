@@ -114,11 +114,15 @@ class Simulation:
 
     def init_world(self,image_path_filtered,threshold=200):
         img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
+
         if img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
+        img_gray = cv2.bitwise_not(img_gray)
         g = (img_gray >= threshold).astype(np.uint8)
+
         self.wf.set_grid(g)
         self.world = self.wf.create_World()
+        self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
         self.floorplan_surf = pygame.Surface((self.width, self.height))
         for y in range(self.height):
@@ -138,20 +142,9 @@ class Simulation:
                            num_ants=20,
                            allow_revisit=False
                            ):
-        # 1) Load grayscale
-        img_gray = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        img_gray = cv2.bitwise_not(img_gray)
-        img_colour = cv2.imread(image_path)
-
-        # img_gray_rgb = cv2.cvtColor(img_colour, cv2.COLOR_GRAY2RGB)
-        self.img_gray_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
-        # 2) Create grid: 1=empty, 0=wall
-        g = (img_gray >= threshold).astype(np.uint8)
-        self.wf.set_grid(g)
         self.wf.set_num_ants(num_ants)
-        self.world = self.wf.create_World()
-        self.solver = IntersectionSolver(self.world)
-        self.height, self.width = self.world.grid.shape
+        # 1) Load grayscale
+        self.init_world(image_path)
 
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()

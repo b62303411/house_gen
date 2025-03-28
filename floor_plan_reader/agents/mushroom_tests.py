@@ -4,12 +4,14 @@ from decimal import Decimal
 
 import numpy as np
 
+from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.cell import Cell
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.id_util import Id_Util
-from floor_plan_reader.wall_segment import WallSegment
+from floor_plan_reader.world_factory import WorldFactory
+
 from mushroom_agent import Mushroom
-from world_factory import WorldFactory
+
 
 
 class TestMushroomGrowth(unittest.TestCase):
@@ -20,8 +22,11 @@ class TestMushroomGrowth(unittest.TestCase):
         grid = np.zeros(grid_size, dtype=int)
         wf.set_grid(grid)
         self.world = wf.create_World()  # Mock world
-        self.mushroom = Mushroom(5, 5, self.world, 1)
+        self.blob = None
+        self.mushroom = Mushroom( self.world,self.blob ,5, 5, 1)
 
+    def create_wall(self,x,y):
+        self.mushroom = Mushroom(self.world, self.blob , x, y, 1)
     def test_test(self):
         self.mushroom.run()
 
@@ -78,7 +83,8 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertEqual(y, 5)
 
     def test_wall_detection_vertical_wall(self):
-        self.mushroom = Mushroom(4, 2, self.world, 1)
+        self.create_wall(4,2)
+
         self.world.grid[2:12, 4:7] = 1  # Horizontal wall (3 pixels thick, 4 pixels long)
         self.assertFalse(self.world.is_food(int(2), int(4)))
         self.assertTrue(self.world.is_food(int(4), int(4)))
@@ -88,9 +94,9 @@ class TestMushroomGrowth(unittest.TestCase):
         self.mushroom.run()
         self.assertLessEqual(self.mushroom.collision_box.width, 3)
         self.assertLessEqual(self.mushroom.collision_box.length, 10)
-        self.assertEqual(self.mushroom.state, "stem_growth")
+        self.assertEqual(self.mushroom.get_state(), "stem_growth")
         self.mushroom.run()
-        self.assertEqual(self.mushroom.state, "width_assessment")
+        self.assertEqual(self.mushroom.get_state(), "width_assessment")
         self.mushroom.run()
         # self.assertEqual(self.mushroom.state,"width_expansion")
         self.mushroom.run()
