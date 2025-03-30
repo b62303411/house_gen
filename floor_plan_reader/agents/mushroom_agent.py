@@ -36,7 +36,7 @@ class Mushroom(Agent):
         self.stem_points = set()
         self.crawl_points = set()
         self.collision_box_history = set()
-        self.branches = []
+        self.branches = set()
         self.wall_segment = None
         self.left_margin = None
         self.left_inside = None

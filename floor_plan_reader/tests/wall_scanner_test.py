@@ -73,6 +73,12 @@ class TestWallScanner(unittest.TestCase):
         self.assertTrue(self.simulation.world.is_occupied(29, 54))
         self.assertTrue(self.simulation.world.is_occupied(29, 55))
 
+        while n < 400:
+            n = n + 1
+            self.simulation.run()
+
+        pass
+
     def test_case_two(self):
 
         self.simulation = Simulation()
