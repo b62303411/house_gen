@@ -50,15 +50,26 @@ class TestWallScanner(unittest.TestCase):
         self.simulation.init_world(img_parser)
         self.simulation.world.create_blob(3,13)
         #From [1,5] to [58,8]
+        mush = None
         n = 0
-        while n < 310:
+        while n < 276:
             self.simulation.run()
             if(len(self.simulation.world.blobs)==1):
                 first_element = next(iter(self.simulation.world.blobs))
-                if(len(first_element.cells)==2252):
-                    print("")
+                cell_count = len(first_element.cells)
+                if(cell_count>100):
+                    mush = first_element.active_mush
+            if mush is not None and mush.get_state() == "fill_phase":
+                center = mush.get_center()
+                self.assertEqual((66.5,54.0) ,center)
+
+
             n = n + 1
         n = 0
+        self.assertEqual(mush.get_state() , "pruning")
+        self.assertTrue(self.simulation.world.is_occupied(29, 53))
+        self.assertTrue(self.simulation.world.is_occupied(29, 54))
+        self.assertTrue(self.simulation.world.is_occupied(29, 55))
 
     def test_case_two(self):
 

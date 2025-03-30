@@ -406,8 +406,7 @@ class CollisionBox:
         pixels = []
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
-                if self.is_point_inside(x + 0.5, y + 0.5):  # Pixel center check
-                    pixels.append((x, y))
+                pixels.append((x, y))
         return pixels
 
     def get_center_line(self):

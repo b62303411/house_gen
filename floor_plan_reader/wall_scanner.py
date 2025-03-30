@@ -125,6 +125,8 @@ class WallScanner:
     def walk_until_invalid(self,x, y, d):
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
+        last_valid_x = x
+        last_valid_y = y
         while self.ping(x, y, d):
             last_valid_x = x
             last_valid_y = y

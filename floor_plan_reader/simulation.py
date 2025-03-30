@@ -8,6 +8,7 @@ import pygame
 
 from floor_plan_reader.agents.ant_mushroom import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
+from floor_plan_reader.image_parser import ImageParser
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
 from floor_plan_reader.simulation_view import SimulationView
@@ -137,8 +138,11 @@ class Simulation:
                            allow_revisit=False
                            ):
         self.wf.set_num_ants(num_ants)
+        img_scanner = ImageParser()
+        img_scanner.init(image_path,threshold)
         # 1) Load grayscale
-        self.init_world(image_path)
+        self.init_world(img_scanner)
+        self.world.init_ants()
 
         # 3) Init Pygame with the *exact* dimensions as the image
         pygame.init()

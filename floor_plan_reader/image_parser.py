@@ -20,7 +20,7 @@ class ImageParser:
         return (img >= threshold).astype(np.uint8)
 
     def init(self, img_path, threshold):
-        self.img_gray = self.read_img()
+        self.img_gray = self.read_img(img_path)
         if self.img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {img_path}")
         self.img_gray = cv2.bitwise_not(self.img_gray)

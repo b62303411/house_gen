@@ -15,6 +15,7 @@ from floor_plan_reader.node import Node
 class World:
 
     def __init__(self):
+        self.num_ants = 0
         self.af = AgentFactory(self)
         self.grid = None
         self.blob_grid = None
