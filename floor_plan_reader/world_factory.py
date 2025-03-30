@@ -29,6 +29,7 @@ class WorldFactory:
         world = World()
         world.set_grid(self.grid)
         world.visited = np.zeros(self.grid_size, dtype=np.int32)
-        world.num_ants = self.num_ants
-        world.init_ants()
+
         return world
+
+

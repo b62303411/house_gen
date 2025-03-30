@@ -6,12 +6,13 @@ class MushAgentStateMachine:
     def process_state(self):
         if self.state == "ray_trace":
             self.mush.ray_trace_phase()
-            self.mush.fill_box()
+
             self.state = "recenter_phase"
         if self.state == "recenter_phase":
             if self.mush.recenter_phase():
                 self.state = "recenter_phase"
             else:
+                self.mush.fill_box()
                 self.state = "pruning"
         elif self.state == "pruning":
             self.mush.prunning_phase()

@@ -112,15 +112,9 @@ class Simulation:
             self.world.agents.add(agent)
 
 
-    def init_world(self,image_path_filtered,threshold=200):
-        img_gray = cv2.imread(image_path_filtered, cv2.IMREAD_GRAYSCALE)
-
-        if img_gray is None:
-            raise FileNotFoundError(f"Cannot load image: {image_path_filtered}")
-        img_gray = cv2.bitwise_not(img_gray)
-        g = (img_gray >= threshold).astype(np.uint8)
-
-        self.wf.set_grid(g)
+    def init_world(self,image):
+        img_gray = image.get_black_and_white()
+        self.wf.set_grid(img_gray)
         self.world = self.wf.create_World()
         self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape

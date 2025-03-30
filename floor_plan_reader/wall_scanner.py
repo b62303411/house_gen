@@ -32,6 +32,7 @@ class ScanResult:
         if width_sonde is None:
             width_sonde = self.get_from_dir(width_dir.opposite())
         self.width_sonde = width_sonde
+
         self.center = self.stem_sonde.get_center()
 
     def get_lenght(self):
@@ -42,10 +43,13 @@ class ScanResult:
 
     def get_dir(self):
         return self.stem_sonde.direction
+
     def is_valid(self):
-        lenght_valid = self.get_lenght()>2
+        lenght_valid = self.get_lenght() > 2
         width_valid = self.get_width() > 2 and self.get_width() < 15
         return lenght_valid and width_valid
+
+
 class WallScanner:
     def __init__(self, world):
         self.world = world
@@ -56,38 +60,53 @@ class WallScanner:
     def is_3_wide_food(self, cx, cy, direction):
         normal = direction.get_normal()
         nx, ny = normal.direction
-        x,y =cx,cy
-        while self.is_food(x,y):
+        x, y = cx, cy
+        while self.is_food(x, y):
             x -= nx
             y -= ny
-        x +=nx
-        y +=ny
-        steps=0
+        x += nx
+        y += ny
+        steps = 0
         while self.is_food(x, y):
             x += nx
             y += ny
-            steps +=1
+            steps += 1
         if steps >= 3:
             return True
 
         return False
 
-    def is_within_bounds(self,x,y):
-        return self.world.is_within_bounds(x,y)
+    def is_within_bounds(self, x, y):
+        return self.world.is_within_bounds(x, y)
 
-    def ping(self,x,y,d):
-        is_within_bounds = self.is_within_bounds(x,y)
+    def ping(self, x, y, d):
+        is_within_bounds = self.is_within_bounds(x, y)
         if not is_within_bounds:
             return False
-        is_food = self.is_cell_valid(x,y)
+        is_food = self.is_cell_valid(x, y)
 
-        is_wide_enough = self.is_3_wide_food(x,y,d)
+        is_wide_enough = self.is_3_wide_food(x, y, d)
         return is_food and is_wide_enough
 
-    def is_cell_valid(self,x,y):
+    def is_cell_valid(self, x, y):
         food = self.is_food(x, y)
-        occupided = self.world.is_wall_occupied(x,y)
+        occupided = self.world.is_wall_occupied(x, y)
         return food and not occupided
+
+        # 2) Walk backward to find the first boundary
+        #    We'll use a small helper function that returns
+        #    the last valid coordinate plus how many steps it walked.
+
+    def walk_until_invalid(self,x, y, d):
+        dx, dy = d.dx(), d.dy()
+        steps_walked = 0
+        while self.ping(x, y, d):
+            last_valid_x = x
+            last_valid_y = y
+            steps_walked += 1
+            x += dx
+            y += dy
+        return last_valid_x, last_valid_y, steps_walked
 
     def measure_extent(self, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
@@ -106,29 +125,19 @@ class WallScanner:
             min_y = y
         else:
             pass
+        d_reverse = d.copy()
+        d_reverse.scale(-1)
+        back_x, back_y, _ = self.walk_until_invalid(x, y, d_reverse)
 
-        while self.ping(x,y,d):
-            x -= dx
-            y -= dy
-            min_x = x
-            min_y = y
+        # 3) Walk forward from that backward boundary
+        #    to find the forward boundary
+        forward_x, forward_y, forward_steps = self.walk_until_invalid(back_x, back_y, d)
+
         if min_x is None:
             logging.info(f"{x} {y}  {width} {height}")
         # Step 2: Move one step forward to set the actual starting point
-        x += dx
-        y += dy
-        steps = 0
 
-        # Step 3: Count steps moving forward until hitting another boundary
-        while self.ping(x,y,d):
-            x += dx
-            y += dy
-            steps += 1  # Count steps only in the forward direction
-            max_x = x
-            max_y = y
-        if min_x is None or min_y is None:
-            pass
-        data = SondeData(steps, min_x, min_y, max_x, max_y)
+        data = SondeData(forward_steps, back_x, back_y, forward_x, forward_y)
         return data  # The total step count along this direction
 
     def scan_for_walls(self, x, y, directions=list(
@@ -137,6 +146,8 @@ class WallScanner:
         for d in directions:
             data = self.measure_extent(x, y, d)
             s = Sonde(d, data)
+
+
             results.add_sonde(d, s)
         results.calculate_result()
 

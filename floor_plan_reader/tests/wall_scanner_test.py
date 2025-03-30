@@ -5,6 +5,7 @@ import time
 import pygame
 
 from floor_plan_reader.display.view_point import ViewPoint
+from floor_plan_reader.image_parser import ImageParser
 from floor_plan_reader.simulation import Simulation
 
 import unittest
@@ -38,6 +39,26 @@ class TestWallScanner(unittest.TestCase):
             self.simulation.view.draw()
             time.sleep(0.5)
         logging.debug("Thread finished")
+
+    def test_complex(self):
+        self.simulation = Simulation()
+        file =  "blob_130x154_291_408.png"
+        image_path = f"..\\test_img\\{file}"
+        img_parser = ImageParser()
+        img = img_parser.read_img(image_path)
+        img_parser.set_two_color_img(img,200)
+        self.simulation.init_world(img_parser)
+        self.simulation.world.create_blob(3,13)
+        #From [1,5] to [58,8]
+        n = 0
+        while n < 310:
+            self.simulation.run()
+            if(len(self.simulation.world.blobs)==1):
+                first_element = next(iter(self.simulation.world.blobs))
+                if(len(first_element.cells)==2252):
+                    print("")
+            n = n + 1
+        n = 0
 
     def test_case_two(self):
 
@@ -105,46 +126,3 @@ class TestWallScanner(unittest.TestCase):
         self.assertTrue(result.is_valid())
 
 
-class TestWallScanner(unittest.TestCase):
-    def setUp(self):
-        self.wf = WorldFactory()
-
-    def test_blob(self):
-        file = "debug_169x15_552_337.png"
-        image_path = f"..\\test_img\\{file}"
-        self.wf.set_img(image_path)
-        self.world = self.wf.create_World()
-        center_x, center_y = 107, 7  # Center of a 10x10 grid
-        self.world.create_blob(center_x, center_y)
-        simulation = Simulation()
-        simulation.world = self.world
-        i = 0
-        while i < 10:
-            simulation.run()
-            i = i + 1
-        self.assertEqual(2, len(self.world.blobs))
-        first_element = sorted(self.world.blobs)[0]
-        self.assertEqual(76, first_element.blob_size())
-
-
-    def test_case_one(self):
-        file = "debug_169x15_552_337.png"
-        image_path = f"..\\test_img\\{file}"
-        # image = Image.open(image_path)
-        # image_array = np.array(image)
-        self.wf.set_img(image_path)
-        self.world = self.wf.create_World()
-        """
-            Perform tests on the 10x10 image array.
-            """
-        # Test 1: Check if the center pixel is green (0, 255, 0)
-        center_x, center_y = 107, 7  # Center of a 10x10 grid
-        # center_pixel = image_array[center_y, center_x]
-        # is_center_green = np.array_equal(center_pixel, [0, 255, 0])
-
-        # Test 2: Count the number of white (empty) and black (wall) pixels
-        # white_pixels = np.sum(np.all(image_array == [255, 255, 255], axis=-1))
-        # black_pixels = np.sum(np.all(image_array == [0, 0, 0], axis=-1))
-        scanner = WallScanner(self.world)
-        result = scanner.scan_for_walls(center_x, center_y)
-        self.assertTrue(result.is_valid())

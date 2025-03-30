@@ -326,6 +326,8 @@ class Mushroom(Agent):
         if result.is_valid():
             stem_length = result.get_lenght()
             width = result.get_width()
+            if(width ==2):
+                pass
             cx, cy = result.center
             dx, dy = result.get_dir().direction
             x, y = self.get_center()

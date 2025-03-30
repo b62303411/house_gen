@@ -28,8 +28,10 @@ class CollisionBox:
 
     def set_width(self,width):
         self.width = float(width)
+        self.corners=None
     def set_lenght(self,lenght):
         self.length = float(lenght)
+        self.corners=None
     def copy(self):
         """
         Return a new CollisionBox that is a copy of this one.
