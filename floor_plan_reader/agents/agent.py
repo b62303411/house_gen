@@ -4,6 +4,7 @@ import pygame
 class Agent:
     def __init__(self, agent_id):
         self.id = agent_id
+        self.alive = True
 
     def __eq__(self, other):
         """Check equality based on x and y values."""

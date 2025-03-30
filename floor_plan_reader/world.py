@@ -136,7 +136,9 @@ class World:
         return None
 
     def get_occupied_id(self, x, y):
-        return self.occupied[int(y), int(x)]
+        if self.is_within_bounds(x,y):
+            return self.occupied[int(y), int(x)]
+        return 0
 
     def collide_with_any(self, agent, x, y):
         for a in self.walls:
@@ -170,7 +172,7 @@ class World:
             if not self.is_blob(x, y):
                 blob = self.af.create_blob(x, y)
                 self.set_blob(x, y, blob)
-                self.agents.add(blob)
+                self.candidates.append(blob)
                 self.blobs.add(blob)
                 return blob
 
@@ -240,6 +242,7 @@ class World:
 
         for i, idx in enumerate(chosen_indices):
             py, px = empty_pixels[idx]
-            ant = Ant(px, py, i + 1, self)
+            ant = self.af.create_ant(px, py)
+
             self.agents.add(ant)
             self.visited[py, px] = ant.id

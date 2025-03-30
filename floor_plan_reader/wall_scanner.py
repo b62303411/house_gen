@@ -26,12 +26,12 @@ class ScanResult:
     def get_from_dir(self, dir):
         return self.sonde_dic.get(dir)
 
-
-    def to_global(self,u, v, origin, d_dir, n_dir):
+    def to_global(self, u, v, origin, d_dir, n_dir):
         return (
             origin[0] + u * d_dir.dx() + v * n_dir.dx(),
             origin[1] + u * d_dir.dy() + v * n_dir.dy()
         )
+
     def calculate_result(self):
         self.stem_sonde = self.get_longest()
         width_dir = self.stem_sonde.direction.get_normal()
@@ -40,8 +40,8 @@ class ScanResult:
             width_sonde = self.get_from_dir(width_dir.opposite())
         self.width_sonde = width_sonde
 
-        d_data=self.stem_sonde.data
-        n_data=self.width_sonde.data
+        d_data = self.stem_sonde.data
+        n_data = self.width_sonde.data
         d_direction = self.stem_sonde.direction
         n_direction = self.width_sonde.direction
         origin = self.stem_sonde.get_center()
@@ -105,30 +105,34 @@ class WallScanner:
     def is_within_bounds(self, x, y):
         return self.world.is_within_bounds(x, y)
 
-    def ping(self, x, y, d):
+    def ping(self, mush, x, y, d):
         is_within_bounds = self.is_within_bounds(x, y)
         if not is_within_bounds:
             return False
-        is_food = self.is_cell_valid(x, y)
+        is_food = self.is_cell_valid(mush, x, y)
 
         is_wide_enough = self.is_3_wide_food(x, y, d)
         return is_food and is_wide_enough
 
-    def is_cell_valid(self, x, y):
+    def is_cell_valid(self, mush, x, y):
         food = self.is_food(x, y)
-        occupided = self.world.is_wall_occupied(x, y)
-        return food and not occupided
+        value = self.world.get_occupied_id(x, y)
+        has_wall = self.world.is_wall_occupied(x, y)
+        free = value == 0 or value == mush.id
+        occupied = not free
+        value = food and not occupied and not has_wall
+        return value
 
         # 2) Walk backward to find the first boundary
         #    We'll use a small helper function that returns
         #    the last valid coordinate plus how many steps it walked.
 
-    def walk_until_invalid(self,x, y, d):
+    def walk_until_invalid(self, mush, x, y, d):
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
         last_valid_x = x
         last_valid_y = y
-        while self.ping(x, y, d):
+        while self.ping(mush, x, y, d):
             last_valid_x = x
             last_valid_y = y
             steps_walked += 1
@@ -136,12 +140,12 @@ class WallScanner:
             y += dy
         return last_valid_x, last_valid_y, steps_walked
 
-    def walk_until_invalid2(self, x, y, d):
+    def walk_until_invalid2(self, mush, x, y, d):
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
         last_valid_x = x
         last_valid_y = y
-        while self.is_cell_valid(x, y):
+        while self.is_cell_valid(mush, x, y):
             last_valid_x = x
             last_valid_y = y
             steps_walked += 1
@@ -149,7 +153,7 @@ class WallScanner:
             y += dy
         return last_valid_x, last_valid_y, steps_walked
 
-    def measure_extent(self, x, y, d):
+    def measure_extent(self, mush, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
        - First, crawl backward to find the start.
        - Then, count forward to find the total steps.
@@ -161,18 +165,18 @@ class WallScanner:
         max_x = None
         max_y = None
         # Step 1: Crawl backward until hitting a boundary
-        if self.is_cell_valid(x, y):
+        if self.is_cell_valid(mush, x, y):
             min_x = x
             min_y = y
         else:
             pass
         d_reverse = d.copy()
         d_reverse.scale(-1)
-        back_x, back_y, _ = self.walk_until_invalid(x, y, d_reverse)
+        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse)
 
         # 3) Walk forward from that backward boundary
         #    to find the forward boundary
-        forward_x, forward_y, forward_steps = self.walk_until_invalid(back_x, back_y, d)
+        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d)
 
         if min_x is None:
             logging.info(f"{x} {y}  {width} {height}")
@@ -181,20 +185,19 @@ class WallScanner:
         data = SondeData(forward_steps, back_x, back_y, forward_x, forward_y)
         return data  # The total step count along this direction
 
-    def scan_for_walls(self, x, y, directions=list(
+    def scan_for_walls(self, mush, x, y, directions=list(
         map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
         results = ScanResult()
         for d in directions:
-            data = self.measure_extent(x, y, d)
+            data = self.measure_extent(mush, x, y, d)
             s = Sonde(d, data)
-
 
             results.add_sonde(d, s)
         results.calculate_result()
 
         return results
 
-    def detect_bleed_along_collision_box(self,cb,  bleed_threshold=4):
+    def detect_bleed_along_collision_box(self, mush, cb, bleed_threshold=4):
         """
         Given a CollisionBox (cb), analyze each step along its stem to detect 1-pixel-thick bleeding in either
         normal direction. If the bleed persists without exceeding 1 pixel of thickness for at least `bleed_threshold`
@@ -223,16 +226,15 @@ class WallScanner:
         half_width = cb.width / 2.0
 
         for i in range(-resolution // 2, resolution // 2 + 1):
-            x = int(cx + i * dx+.5)
-            y = cy + i * dy
-
+            x = int(cx + i * dx + .5)
+            y = int(cy + i * dy + .5)
 
             normal_vector = Vector((ndx, ndy))
             left_vector = normal_vector.opposite()
 
             # Walk until invalid in both normal directions
-            _, _, left_depth = self.walk_until_invalid2(x, y, left_vector)
-            _, _, right_depth = self.walk_until_invalid2(x, y, normal_vector)
+            _, _, left_depth = self.walk_until_invalid2(mush, x, y, left_vector)
+            _, _, right_depth = self.walk_until_invalid2(mush, x, y, normal_vector)
             left_diff = int(abs(left_depth - half_width))
             right_diff = int(abs(right_depth - half_width))
             # Check if the bleed goes beyond the current half-width

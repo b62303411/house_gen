@@ -156,7 +156,7 @@ class Mushroom(Agent):
             self.co_axial_walls.add(obj)
 
     def absorb_bleading_out(self):
-        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self.collision_box)
+        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self,self.collision_box)
         self.division_points = division_points
         self.collision_box.set_width(new_cb.width)
         center = new_cb.get_center()
@@ -504,7 +504,7 @@ class Mushroom(Agent):
 
     def scan_for_walls(self, x, y, directions=list(
         map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
-        return self.wall_scanner.scan_for_walls(x, y, directions)
+        return self.wall_scanner.scan_for_walls(self,x, y, directions)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0

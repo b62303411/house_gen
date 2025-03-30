@@ -1,3 +1,4 @@
+from floor_plan_reader.agents.ants import Ant
 from floor_plan_reader.agents.blob import Blob
 from floor_plan_reader.id_util import IdUtil
 from floor_plan_reader.agents.mushroom_agent import Mushroom
@@ -17,3 +18,7 @@ class AgentFactory:
         blob = Blob(IdUtil.get_id(), self.world, x, y)
 
         return blob
+
+    def create_ant(self, px, py):
+        ant = Ant(px, py, IdUtil.get_id(), self.world)
+        return ant
