@@ -8,7 +8,7 @@ import random
 from floor_plan_reader.agents.agent_factory import AgentFactory
 from floor_plan_reader.agents.ants import Ant
 from floor_plan_reader.agents.wall_segment import WallSegment
-from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.id_util import IdUtil
 from floor_plan_reader.node import Node
 
 
@@ -160,7 +160,7 @@ class World:
         return results
 
     def create_wall_segment(self):
-        ws = WallSegment(Id_Util.get_id(), self)
+        ws = WallSegment(IdUtil.get_id(), self)
         self.candidates.append(ws)
         self.wall_segments.add(ws)
         return ws

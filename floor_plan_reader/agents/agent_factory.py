@@ -1,5 +1,5 @@
 from floor_plan_reader.agents.blob import Blob
-from floor_plan_reader.id_util import Id_Util
+from floor_plan_reader.id_util import IdUtil
 from floor_plan_reader.agents.mushroom_agent import Mushroom
 
 
@@ -10,10 +10,10 @@ class AgentFactory:
 
     def create_mushroom(self,  blob, x, y):
         # world, blob, start_x, start_y, mush_id
-        mush = Mushroom(self.world, blob,x, y, Id_Util.get_id())
+        mush = Mushroom(self.world, blob,x, y, IdUtil.get_id())
         return mush
 
     def create_blob(self, x, y):
-        blob = Blob(Id_Util.get_id(), self.world, x, y)
+        blob = Blob(IdUtil.get_id(), self.world, x, y)
 
         return blob
