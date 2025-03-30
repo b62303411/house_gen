@@ -1,4 +1,5 @@
 import logging
+import math
 
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
@@ -135,6 +136,19 @@ class WallScanner:
             y += dy
         return last_valid_x, last_valid_y, steps_walked
 
+    def walk_until_invalid2(self, x, y, d):
+        dx, dy = d.dx(), d.dy()
+        steps_walked = 0
+        last_valid_x = x
+        last_valid_y = y
+        while self.is_cell_valid(x, y):
+            last_valid_x = x
+            last_valid_y = y
+            steps_walked += 1
+            x += dx
+            y += dy
+        return last_valid_x, last_valid_y, steps_walked
+
     def measure_extent(self, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
        - First, crawl backward to find the start.
@@ -179,3 +193,79 @@ class WallScanner:
         results.calculate_result()
 
         return results
+
+    def detect_bleed_along_collision_box(self,cb,  bleed_threshold=4):
+        """
+        Given a CollisionBox (cb), analyze each step along its stem to detect 1-pixel-thick bleeding in either
+        normal direction. If the bleed persists without exceeding 1 pixel of thickness for at least `bleed_threshold`
+        points, adjust the box width and center accordingly. If any bleed exceeds 1 pixel in width at any point,
+        it's marked for potential wall division.
+
+        Args:
+            cb: CollisionBox instance
+            walk_until_invalid: function(x, y, direction) -> (last_x, last_y, steps)
+            bleed_threshold: Minimum number of consecutive bleed points to trigger boundary expansion
+
+        Returns:
+            new_cb: CollisionBox - updated with shifted center and expanded width if needed
+            division_points: List of (x, y) tuples where wall division is suggested
+        """
+        direction, normal = cb.derive_direction_and_normal()
+        dx, dy = direction.direction
+        ndx, ndy = normal.direction
+        cx, cy = cb.get_center()
+        half_len = cb.length / 2.0
+
+        resolution = int(cb.length)
+        left_bleed = 0
+        right_bleed = 0
+        division_points = []
+        half_width = cb.width / 2.0
+
+        for i in range(-resolution // 2, resolution // 2 + 1):
+            x = int(cx + i * dx+.5)
+            y = cy + i * dy
+
+
+            normal_vector = Vector((ndx, ndy))
+            left_vector = normal_vector.opposite()
+
+            # Walk until invalid in both normal directions
+            _, _, left_depth = self.walk_until_invalid2(x, y, left_vector)
+            _, _, right_depth = self.walk_until_invalid2(x, y, normal_vector)
+            left_diff = int(abs(left_depth - half_width))
+            right_diff = int(abs(right_depth - half_width))
+            # Check if the bleed goes beyond the current half-width
+            if left_diff > 1 or right_diff > 1:
+                division_points.append((x, y))
+            else:
+                if math.isclose(left_diff, 1.0, abs_tol=0.5):
+                    left_bleed += 1
+                if math.isclose(right_diff, 1.0, abs_tol=0.5):
+                    right_bleed += 1
+
+        # Adjust width and center if persistent 1-pixel bleed exists
+        shift_x = 0
+        shift_y = 0
+        width_adjustment = 0
+
+        if left_bleed >= bleed_threshold:
+            shift_x -= ndx * 0.5
+            shift_y -= ndy * 0.5
+            width_adjustment += 1
+        if right_bleed >= bleed_threshold:
+            shift_x += ndx * 0.5
+            shift_y += ndy * 0.5
+            width_adjustment += 1
+
+        if width_adjustment > 0:
+            new_center_x = cb.center_x + shift_x
+            new_center_y = cb.center_y + shift_y
+            new_width = cb.width + width_adjustment
+            from copy import deepcopy
+            new_cb = deepcopy(cb)
+            new_cb.set_position(new_center_x, new_center_y)
+            new_cb.set_width(new_width)
+            return new_cb, division_points
+
+        return cb, division_points

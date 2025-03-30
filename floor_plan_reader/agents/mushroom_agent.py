@@ -20,6 +20,7 @@ from floor_plan_reader.wall_scanner import WallScanner
 class Mushroom(Agent):
     def __init__(self, world, blob, start_x, start_y, mush_id):
         super().__init__(mush_id)
+        self.division_points = None
         self.perimeter = None
         self.wall_scanner = WallScanner(world)
         self.world = world
@@ -154,6 +155,12 @@ class Mushroom(Agent):
         if obj is not None and obj.is_on_same_axis_as(self):
             self.co_axial_walls.add(obj)
 
+    def absorb_bleading_out(self):
+        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self.collision_box)
+        self.division_points = division_points
+        self.collision_box.set_width(new_cb.width)
+        center = new_cb.get_center()
+        self.collision_box.set_position(center[0],center[1])
     def crawl(self, points):
         steps = 0
         opening_lenght = 0

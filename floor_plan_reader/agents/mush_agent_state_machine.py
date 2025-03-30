@@ -9,6 +9,7 @@ class MushAgentStateMachine:
             self.state = "fill_phase"
             return
         if self.state == "fill_phase":
+            self.mush.absorb_bleading_out()
             self.mush.fill_box()
             self.state = "pruning"
             return
