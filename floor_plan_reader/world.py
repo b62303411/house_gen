@@ -140,6 +140,10 @@ class World:
             return self.occupied[int(y), int(x)]
         return 0
 
+    def get_occupied_wall_id(self, x, y):
+        if self.is_within_bounds(x,y):
+            return self.occupied_wall[int(y), int(x)]
+        return 0
     def collide_with_any(self, agent, x, y):
         for a in self.walls:
             if a is not agent:

@@ -6,8 +6,9 @@ import cv2
 import numpy as np
 import pygame
 
-from floor_plan_reader.agents.ant_mushroom import Mushroom
+
 from floor_plan_reader.agents.blob import Blob
+from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.image_parser import ImageParser
 from floor_plan_reader.intersections_solver import IntersectionSolver

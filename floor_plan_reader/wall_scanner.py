@@ -1,79 +1,11 @@
 import logging
 import math
 
+from floor_plan_reader.scan_result import ScanResult
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.math.vector import Vector
-from sortedcontainers import SortedList
 
-
-class ScanResult:
-    def __init__(self):
-        self.sondes = SortedList()
-        self.sonde_dic = {}
-        self.stem_sonde = None
-        self.width_sonde = None
-        self.center = None
-
-    def add_sonde(self, direction, sonde):
-        self.sonde_dic[direction] = sonde
-        self.sonde_dic[direction.opposite()] = sonde
-        self.sondes.add(sonde)
-
-    def get_longest(self):
-        return self.sondes[-1]
-
-    def get_from_dir(self, dir):
-        return self.sonde_dic.get(dir)
-
-    def to_global(self, u, v, origin, d_dir, n_dir):
-        return (
-            origin[0] + u * d_dir.dx() + v * n_dir.dx(),
-            origin[1] + u * d_dir.dy() + v * n_dir.dy()
-        )
-
-    def calculate_result(self):
-        self.stem_sonde = self.get_longest()
-        width_dir = self.stem_sonde.direction.get_normal()
-        width_sonde = self.get_from_dir(width_dir)
-        if width_sonde is None:
-            width_sonde = self.get_from_dir(width_dir.opposite())
-        self.width_sonde = width_sonde
-
-        d_data = self.stem_sonde.data
-        n_data = self.width_sonde.data
-        d_direction = self.stem_sonde.direction
-        n_direction = self.width_sonde.direction
-        origin = self.stem_sonde.get_center()
-        min_d = Vector.project((d_data.min_x, d_data.min_y), origin, d_direction)
-        max_d = Vector.project((d_data.max_x, d_data.max_y), origin, d_direction)
-        min_n = Vector.project((n_data.min_x, n_data.min_y), origin, n_direction)
-        max_n = Vector.project((n_data.max_x, n_data.max_y), origin, n_direction)
-        corner_1 = self.to_global(min_d, min_n, origin, d_direction, n_direction)
-        corner_2 = self.to_global(min_d, max_n, origin, d_direction, n_direction)
-        corner_3 = self.to_global(max_d, min_n, origin, d_direction, n_direction)
-        corner_4 = self.to_global(max_d, max_n, origin, d_direction, n_direction)
-        center = self.to_global(
-            0.5 * (min_d + max_d),
-            0.5 * (min_n + max_n),
-            origin, d_direction, n_direction
-        )
-
-        self.center = center
-
-    def get_lenght(self):
-        return self.stem_sonde.get_magnitude()
-
-    def get_width(self):
-        return self.width_sonde.get_magnitude()
-
-    def get_dir(self):
-        return self.stem_sonde.direction
-
-    def is_valid(self):
-        lenght_valid = self.get_lenght() > 2
-        width_valid = self.get_width() > 2 and self.get_width() < 15
-        return lenght_valid and width_valid
 
 
 class WallScanner:
@@ -105,16 +37,16 @@ class WallScanner:
     def is_within_bounds(self, x, y):
         return self.world.is_within_bounds(x, y)
 
-    def ping(self, mush, x, y, d):
+    def ping(self, x, y, d, mush):
         is_within_bounds = self.is_within_bounds(x, y)
         if not is_within_bounds:
             return False
-        is_food = self.is_cell_valid(mush, x, y)
+        is_food = self.is_cell_valid(x, y, d, mush)
 
         is_wide_enough = self.is_3_wide_food(x, y, d)
         return is_food and is_wide_enough
 
-    def is_cell_valid(self, mush, x, y,d=None):
+    def is_cell_valid(self, x, y, d=None, mush=None):
         food = self.is_food(x, y)
         value = self.world.get_occupied_id(x, y)
         has_wall = self.world.is_wall_occupied(x, y)
@@ -127,22 +59,21 @@ class WallScanner:
         #    We'll use a small helper function that returns
         #    the last valid coordinate plus how many steps it walked.
 
-    def is_ok(self,mush,x,y,d):
-        return self.is_food(x,y)
+    def is_ok(self, x, y, d=None, mush=None):
+        return self.is_food(x, y)
 
     def walk_until_invalid(self, mush, x, y, d, ping):
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
         last_valid_x = x
         last_valid_y = y
-        while ping(mush, x, y, d):
+        while ping(x, y, d, mush):
             last_valid_x = x
             last_valid_y = y
             steps_walked += 1
             x += dx
             y += dy
         return last_valid_x, last_valid_y, steps_walked
-
 
     def measure_extent(self, mush, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
@@ -156,18 +87,18 @@ class WallScanner:
         max_x = None
         max_y = None
         # Step 1: Crawl backward until hitting a boundary
-        if self.is_cell_valid(mush, x, y):
+        if self.is_cell_valid(x, y, d, mush):
             min_x = x
             min_y = y
         else:
             pass
         d_reverse = d.copy()
         d_reverse.scale(-1)
-        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse,self.ping)
+        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse, self.ping)
 
         # 3) Walk forward from that backward boundary
         #    to find the forward boundary
-        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d,self.ping)
+        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d, self.ping)
 
         if min_x is None:
             logging.info(f"{x} {y}  {width} {height}")
@@ -225,8 +156,8 @@ class WallScanner:
 
             # Walk until invalid in both normal directions
             _, _, left_depth = self.walk_until_invalid(mush, x, y, left_vector, self.is_cell_valid)
-            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector,self.is_cell_valid)
-            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_food)
+            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_cell_valid)
+            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_ok)
             left_diff = int(abs(left_depth - half_width))
             right_diff = int(abs(right_depth - half_width))
             # Check if the bleed goes beyond the current half-width

@@ -21,12 +21,13 @@ class IntersectionSolver:
         # STEP 1: Build list of lines
 
         for i, seg in enumerate(collision_boxes):
-            cb = seg.collision_box
-            line_id = f"L{i + 1}"
-            seg_id = seg.id
-            (x1, y1), (x2, y2) = cb.get_center_line()
-            line_obj = LineString([(x1, y1), (x2, y2)])  # Shapely geometry
-            self.create_line(line_id, seg, (x1, y1), (x2, y2), line_obj)
+            cb = seg.collision_box_extended
+            if cb is not None:
+                line_id = f"L{i + 1}"
+                seg_id = seg.id
+                (x1, y1), (x2, y2) = cb.get_center_line()
+                line_obj = LineString([(x1, y1), (x2, y2)])  # Shapely geometry
+                self.create_line(line_id, seg, (x1, y1), (x2, y2), line_obj)
         merge_candidates =[]
         # STEP 2: Pairwise intersections
         intersections = set()

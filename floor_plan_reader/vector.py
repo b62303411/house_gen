@@ -93,3 +93,14 @@ class Vector:
     def __repr__(self):
         """String representation of the vector."""
         return f"Vector(direction={self.direction}, length={self.length})"
+
+    @staticmethod
+    def project(point, origin, direction):
+        """
+        Projects the vector (point - origin) onto 'direction' (assumed unit).
+        Returns a scalar distance (float).
+        """
+        vx = point[0] - origin[0]
+        vy = point[1] - origin[1]
+        # Dot product with the direction (dx, dy)
+        return vx * direction.dx() + vy * direction.dy()

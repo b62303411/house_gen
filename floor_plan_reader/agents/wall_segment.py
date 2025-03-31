@@ -5,6 +5,7 @@ import pygame
 from pygame import font
 
 from floor_plan_reader.agents.agent import Agent
+from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.pruning_util import PruningUtil
 
@@ -28,6 +29,7 @@ class WallSegment(Agent):
     def __init__(self, agent_id, world):
         super().__init__(agent_id)
         self.collision_box = None
+        self.collision_box_extended = None
         self.world = world
         self.scores = set()
         self.parts = set()
@@ -39,9 +41,11 @@ class WallSegment(Agent):
         self.openings = set()
         self.overlapping = set()
         self.nodes = set()
+        self.cb_drawer = BoundingBoxDrawer()
 
-    def add_node(self,node):
+    def add_node(self, node):
         self.nodes.add(node)
+
     def set_collision_box(self, cb):
         if isinstance(cb, CollisionBox):
             self.collision_box = cb.copy()
@@ -68,11 +72,12 @@ class WallSegment(Agent):
     def calculate_openings(self):
         pass
 
-    def merge_alighned(self,cb,p):
+    def merge_alighned(self, cb, p):
         if isinstance(cb, CollisionBox):
             cb = cb.merge_aligned(p.collision_box)
         return cb
-    def negotiate_phase(self):
+
+    def negotiate(self):
         cb = None
         for p in self.parts:
             ratio = p.get_covered_ratio()
@@ -81,9 +86,67 @@ class WallSegment(Agent):
             if cb is None:
                 cb = p.collision_box.copy()
             else:
-                cb = self.merge_alighned(cb,p)
+                cb = self.merge_alighned(cb, p)
 
         self.set_collision_box(cb)
+    def negotiate_phase(self):
+        self.negotiate()
+        error = False
+        for n in self.parts:
+            if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
+                error = True
+                break
+        if error:
+            self.state = "error"
+        else:
+            self.state = "prune"
+        return
+
+    def prune_phase(self):
+        pruned, against = PruningUtil.prune(self, self.world.wall_segments)
+        if pruned:
+            #    for p in self.parts:
+            #        p.wall_segment = against
+            #        against.add_part(p)
+            self.state = "dead"
+        else:
+            self.state = "normalize"
+
+    def calculate_extended_bounding_box(self):
+        h, w = self.world.get_shape()
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(h, w)
+        steps_backward = self.crawl(points_backward)
+        steps_forward = self.crawl(points_forward)
+        self.collision_box_extended = self.collision_box.copy()
+
+        if(steps_forward>0 or steps_backward >0):
+            extension = max(steps_backward,steps_forward)
+            l = self.collision_box_extended.length
+            self.collision_box_extended.set_lenght(l + extension)
+            if(steps_forward>steps_backward):
+                self.collision_box_extended.move_forward(extension/2)
+            else:
+                self.collision_box_extended.move_backward(extension / 2)
+
+        logging.info(f"steps b{steps_backward} steps f{steps_forward}")
+
+    def crawl(self, points):
+        steps = 0
+        measuring_extent = False
+        for p in points:
+            x = int(p[0])
+            y = int(p[1])
+            if self.world.is_food(x, y):
+                id = self.world.get_occupied_wall_id(x,y)
+                if id != self.id:
+                    measuring_extent = True
+                if measuring_extent:
+                    steps = steps + 1
+            else:
+                return steps
+        return steps
+
+
 
     def process_state(self):
 
@@ -94,44 +157,33 @@ class WallSegment(Agent):
                     if not n.collision_box.is_on_same_axis_as(i.collision_box):
                         wrongs.append(i)
                 logging.debug("error")
+            return
         if self.state == "negotiate":
             self.negotiate_phase()
-            error = False
-            for n in self.parts:
-                if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
-                    error = True
-                    break
-            if error:
-                self.state = "error"
-            else:
-                self.state = "prune"
+            return
         elif self.state == "prune":
-
-            pruned, against = PruningUtil.prune(self, self.world.wall_segments)
-            if pruned:
-                #    for p in self.parts:
-                #        p.wall_segment = against
-                #        against.add_part(p)
-                self.state = "dead"
-            else:
-                self.state = "normalize"
+            self.prune_phase()
+            return
         elif self.state == "normalize":
             self.normalize()
             self.state = "fill"
+            return
         elif self.state == "fill":
             self.fill_box()
-            self.state = "done"
+            self.state = "extend"
+            return
+        elif self.state == "extend":
+            self.calculate_extended_bounding_box()
+            self.state="done"
+            return
         elif self.state == "dead":
             for e in self.overlapping:
                 ratio = e.collision_box.calculate_overlap(self.collision_box)
-                area  = self.collision_box.get_area()
+                area = self.collision_box.get_area()
                 r = ratio / area
-                percent = r *100
+                percent = r * 100
                 print(f"{percent}%")
-
-
-
-
+            return
 
     def fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -233,33 +285,19 @@ class WallSegment(Agent):
     def get_center(self):
         return self.collision_box.get_center()
 
-    def draw_corners(self, screen, vp, corners, colour=(0, 255, 255), size=1):
-        corners_ = []
-
-        for c in corners:
-            cp = vp.convert(c[0], c[1])
-            corners_.append(cp)
-
-        pygame.draw.polygon(screen, colour, corners_, size)
+    def draw_corners(self, screen, vp, colour=(0, 255, 255), size=1):
+        self.cb_drawer.draw(self.collision_box, screen, vp, colour)
 
     def draw(self, screen, vp):
-
-        if self.alive:
-            colour = (255, 50, 200)
-        else:
-            colour = (255, 0, 200)
-        if self.state == "error":
-            colour = (255, 0, 0)
-        corners = self.corners()
 
         size = 1
         if self.is_selected():
             size = 3
 
-        self.draw_corners(screen, vp, corners, colour, size)
         colour = (0, 255, 0)
+        self.draw_corners(screen, vp, colour, size)
         for o in self.overlapping:
-            self.draw_corners(screen, vp, o.corners(), colour, 3)
+            self.cb_drawer.draw(o.collision_box, screen, vp, colour)
 
         x, y = self.get_center()
         x, y = vp.convert(x, y)
