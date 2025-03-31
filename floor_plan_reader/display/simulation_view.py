@@ -13,7 +13,7 @@ from floor_plan_reader.display.view_point import ViewPoint
 class SimulationView:
     def __init__(self,simulation):
         self.selected = None
-        self.popup = PopupMenu(self, 300, 200, 200, 150, title="Actions")
+        self.popup = PopupMenu(self, 300, 200, 200, 350, title="Actions")
         self.sw = StatusWindow(simulation, 10, 10, 100, 100)
         self.vp = ViewPoint()
         self.user_input = UserInput(self)
@@ -61,6 +61,10 @@ class SimulationView:
         self.simulation.save_boxes_to_json(boxes, "test.json")
         self.selected.crawl_phase()
         self.selected.print_box()
+
+    def run_blob(self):
+        blob = self.selected.blob
+        blob.print_blob()
 
     def evaluate_selected(self, mx, my):
         selection_candidate = None

@@ -1,6 +1,7 @@
 import pygame
 
 from floor_plan_reader.display.button import Button
+from floor_plan_reader.display.point import Point
 from floor_plan_reader.display.text_box import TextBox
 from floor_plan_reader.display.window import Window
 
@@ -13,9 +14,13 @@ class PopupMenu(Window):
         self.title = title
 
         # Simple single button
-        self.button_run_phase = Button(self, "Run Phase")
+        self.button_run_phase = Button(self, "Run Phase",Point(0,65))
+        self.button_run_blob = Button(self, "Blob Rerun",Point(0,10))
+
+        self.button_run_blob.on_button_click = self.run_blob
         self.text_box = TextBox(self, [], (0, 0))
         self.components.add(self.button_run_phase)
+        self.components.add(self.button_run_blob)
         self.components.add(self.text_box)
 
         # Basic fonts for text
@@ -23,6 +28,8 @@ class PopupMenu(Window):
         self.font = pygame.font.SysFont(None, 24)
         self.big_font = pygame.font.SysFont(None, 32)
 
+    def run_blob(self):
+        self.view.run_blob()
     def draw(self, surface):
         """Draw the pop-up and its button if visible."""
         if not self.visible:

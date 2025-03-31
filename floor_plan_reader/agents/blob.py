@@ -115,10 +115,7 @@ class Blob(Agent):
                     first_element = next(iter(self.free_slot))
                     self.create_mushroom(first_element.x, first_element.y)
                 if len(self.walls) > 15:
-                    # x, y, width = 20, height = 20
-                    x, y = self.bounding_box.get_center()
-                    width, height = self.bounding_box.get_shape()
-                    self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
+                    self.print_blob()
             else:
                 self.alive = False
             return
@@ -126,6 +123,11 @@ class Blob(Agent):
             for c in self.cells:
                 self.world.draw_at((c.x, c.y), 0)
             self.alive = False
+
+    def print_blob(self):
+        x, y = self.bounding_box.get_center()
+        width, height = self.bounding_box.get_shape()
+        self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
 
     def create_mushroom(self, x, y):
         c = Cell(x, y)

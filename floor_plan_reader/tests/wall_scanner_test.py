@@ -40,6 +40,45 @@ class TestWallScanner(unittest.TestCase):
             time.sleep(0.5)
         logging.debug("Thread finished")
 
+    def test_specific(self):
+        self.simulation = Simulation()
+        file =  "blob_43x42_688_354.png"
+        image_path = f"..\\test_img\\{file}"
+        img_parser = ImageParser()
+        img = img_parser.read_img(image_path)
+        img_parser.set_two_color_img(img, 200)
+        self.simulation.init_world(img_parser)
+        self.simulation.world.create_blob(3, 3)
+        # From [1,5] to [58,8]
+        mush = None
+        n = 0
+        while n < 276:
+            self.simulation.run()
+            if (len(self.simulation.world.blobs) == 1):
+                first_element = next(iter(self.simulation.world.blobs))
+                cell_count = len(first_element.cells)
+                if (cell_count > 100):
+                    mush = first_element.active_mush
+            if mush is not None and mush.get_state() == "fill_phase":
+                center = mush.get_center()
+                if mush.id == 2:
+                    self.assertEqual((38.5, 21.0), center)
+
+            n = n + 1
+        n = 0
+        self.simulation.run()
+        self.assertEqual(mush.get_state(), "pruning")
+        center = mush.get_center()
+        self.assertEqual((66.5, 54.5), center)
+        self.assertTrue(self.simulation.world.is_occupied(29, 53))
+        self.assertTrue(self.simulation.world.is_occupied(29, 54))
+        self.assertTrue(self.simulation.world.is_occupied(29, 55))
+
+        while n < 400:
+            n = n + 1
+            self.simulation.run()
+
+        pass
     def test_complex(self):
         self.simulation = Simulation()
         file =  "blob_130x154_291_408.png"

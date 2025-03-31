@@ -1,9 +1,6 @@
 import json
 import logging
-from collections import deque
 
-import cv2
-import numpy as np
 import pygame
 
 
@@ -13,7 +10,7 @@ from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.image_parser import ImageParser
 from floor_plan_reader.intersections_solver import IntersectionSolver
 from floor_plan_reader.json_writer import JsonWriter
-from floor_plan_reader.simulation_view import SimulationView
+from floor_plan_reader.display.simulation_view import SimulationView
 from floor_plan_reader.world_factory import WorldFactory
 from pygame import font
 
@@ -127,8 +124,9 @@ class Simulation:
         self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
         self.floorplan_surf = pygame.Surface((self.width, self.height))
-        img_colour = image.img_colour
-        self.img_colour_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
+        if image.img_colour is not None:
+            img_colour = image.img_colour
+            self.img_colour_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         for y in range(self.height):
             for x in range(self.width):
                 if self.world.grid[y, x] == 1:

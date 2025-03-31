@@ -72,10 +72,11 @@ class World:
             # Extract the 10x10 region
             height = int(height)
             width = int(width)
-            h1 = int(y - height // 2)
-            h2 = int(y + height // 2)
-            w1 = int(x - width // 2)
-            w2 = int(x + width // 2)
+            # Calculate the boundaries
+            h1 = max(0, y - height // 2)
+            h2 = min(grid.shape[0], y + height // 2)
+            w1 = max(0, x - width // 2)
+            w2 = min(grid.shape[1], x + width // 2)
             region = grid[h1:h2, w1:w2]
             shape = region.shape
             color_coded = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
