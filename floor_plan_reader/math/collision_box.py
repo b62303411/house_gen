@@ -2,7 +2,6 @@ import logging
 import math
 from decimal import Decimal
 
-import self
 from shapely import Polygon, LineString, Point
 
 from floor_plan_reader.math.math_segments import combine_segments_decimal
