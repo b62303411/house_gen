@@ -55,6 +55,10 @@ class Vector:
         """Calculate the dot product with another vector."""
         return self.direction[0] * other.direction[0] + self.direction[1] * other.direction[1]
 
+    def distance(self,other):
+        dx = self.direction[0] - other.direction[0]
+        dy = self.direction[1] - other.direction[1]
+        return math.sqrt(dx**2+dy**2)
     def angle_between(self, other):
         """Calculate the angle between this vector and another vector in radians."""
         dot_product = self.dot_product(other)
@@ -72,6 +76,8 @@ class Vector:
         vy = point[1] - origin[1]
         # Dot product with the direction (dx, dy)
         return vx * direction.dx() + vy * direction.dy()
+
+
 
     def opposite(self):
         """Return a new vector in the opposite direction without modifying the original."""

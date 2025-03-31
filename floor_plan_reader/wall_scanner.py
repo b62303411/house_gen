@@ -7,7 +7,6 @@ from floor_plan_reader.sonde_data import SondeData
 from floor_plan_reader.math.vector import Vector
 
 
-
 class WallScanner:
     def __init__(self, world):
         self.world = world
@@ -153,11 +152,17 @@ class WallScanner:
 
             normal_vector = Vector((ndx, ndy))
             left_vector = normal_vector.opposite()
+            min_x, min_y, left_steps = self.walk_until_invalid(mush, x, y, left_vector, self.is_cell_valid)
 
-            # Walk until invalid in both normal directions
-            _, _, left_depth = self.walk_until_invalid(mush, x, y, left_vector, self.is_cell_valid)
-            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_cell_valid)
-            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_ok)
+            max_x, max_y, right_steps = self.walk_until_invalid(mush, min_x, min_y, normal_vector, self.is_cell_valid)
+
+            candidate_width = right_steps
+
+            center = Vector((cx, cy))
+            left = Vector((min_x, min_y))
+            right = Vector((max_x, max_y))
+            left_depth = center.distance(left)
+            right_depth = center.distance(right)
             left_diff = int(abs(left_depth - half_width))
             right_diff = int(abs(right_depth - half_width))
             # Check if the bleed goes beyond the current half-width
