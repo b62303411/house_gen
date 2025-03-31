@@ -88,6 +88,28 @@ class Vector:
     def dy(self):
         return self.direction[1]
 
+    def distance_from_point_on_normal(self, point):
+        """
+        Computes the perpendicular distance from a given `point` (Vector)
+        to the line passing through `self` in the direction of this vector.
+
+        This uses projection onto the normal of the vector's direction.
+        """
+        # Step 1: Get the normal of this vector
+        normal = self.get_normal()
+        if normal is None:
+            raise ValueError("Cannot compute normal for zero-length vector.")
+
+        # Step 2: Normalize the normal vector
+        normal.length = normal.calculate_length()
+        normal.normalize()
+
+        # Step 3: Vector from self to point
+        to_point = point - self
+
+        # Step 4: Project onto the normal and return the absolute value
+        return abs(to_point.dot_product(normal))
+
     def __add__(self, other):
         """Add another vector to this vector."""
         return Vector((self.direction[0] + other.direction[0], self.direction[1] + other.direction[1]))

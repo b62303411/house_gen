@@ -1,6 +1,7 @@
 import logging
 import math
 
+from floor_plan_reader.display.point import Point
 from floor_plan_reader.scan_result import ScanResult
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
@@ -157,14 +158,19 @@ class WallScanner:
             max_x, max_y, right_steps = self.walk_until_invalid(mush, min_x, min_y, normal_vector, self.is_cell_valid)
 
             candidate_width = right_steps
-
+            left_point = Point(min_x, min_y)
+            right_point = Point(max_x, max_y)
             center = Vector((cx, cy))
-            left = Vector((min_x, min_y))
-            right = Vector((max_x, max_y))
-            left_depth = center.distance(left)
-            right_depth = center.distance(right)
-            left_diff = int(abs(left_depth - half_width))
-            right_diff = int(abs(right_depth - half_width))
+            center.distance_from_point_on_normal(right_point)
+            direction_vector = cb.get_direction()
+
+
+            left_dist = direction_vector.distance_from_point_on_normal(left_point)
+            right_dist = direction_vector.distance_from_point_on_normal(right_point)
+
+
+            left_diff = int(abs(left_dist - half_width))
+            right_diff = int(abs(right_dist - half_width))
             # Check if the bleed goes beyond the current half-width
             if left_diff > 1 or right_diff > 1:
                 division_points.append((x, y))
