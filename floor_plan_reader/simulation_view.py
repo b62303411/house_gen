@@ -86,12 +86,12 @@ class SimulationView:
         # Scale the floorplan based on zoom_factor
         new_w = int(width * self.vp.zoom_factor)
         new_h = int(height * self.vp.zoom_factor)
-        floorplan_scaled = pygame.transform.smoothscale(self.simulation.floorplan_surf, (new_w, new_h))
-        #img = pygame.transform.smoothscale(self.simulation.img_gray_surface, (new_w, new_h))
+        #floorplan_scaled = pygame.transform.smoothscale(self.simulation.floorplan_surf, (new_w, new_h))
+        img = pygame.transform.smoothscale(self.simulation.img_colour_surface, (new_w, new_h))
 
         # Blit the scaled floorplan at (0,0)
         # screen.blit(floorplan_scaled, vp.get_center())
-        self.screen.blit(floorplan_scaled, self.vp.get_center())
+        self.screen.blit(img, self.vp.get_center())
         # Draw ants (scaled)
         for agent in self.simulation.world.agents:
             if agent.alive:

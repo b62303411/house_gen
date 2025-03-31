@@ -38,6 +38,7 @@ class Simulation:
         self.height = None
         self.floorplan_surf = None
         self.img_gray_surface = None
+        self.img_colour_surface = None
         self.intersections = set()
         self.jw = JsonWriter()
         self.tasks = [
@@ -125,6 +126,8 @@ class Simulation:
         self.solver = IntersectionSolver(self.world)
         self.height, self.width = self.world.grid.shape
         self.floorplan_surf = pygame.Surface((self.width, self.height))
+        img_colour = image.img_colour
+        self.img_colour_surface = pygame.surfarray.make_surface(img_colour.swapaxes(0, 1))
         for y in range(self.height):
             for x in range(self.width):
                 if self.world.grid[y, x] == 1:
