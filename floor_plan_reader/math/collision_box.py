@@ -1,10 +1,12 @@
+import logging
 import math
 from decimal import Decimal
 
-from shapely import Polygon
+import self
+from shapely import Polygon, LineString, Point
 
 from floor_plan_reader.math.math_segments import combine_segments_decimal
-from floor_plan_reader.vector import Vector
+from floor_plan_reader.math.vector import Vector
 
 
 class CollisionBox:
@@ -17,6 +19,7 @@ class CollisionBox:
         self.default_direction = (1, 0)
         self.corners = None
         self.direction = None
+        self.center_line = None
 
     def __eq__(self, other):
         if not isinstance(other, CollisionBox):
@@ -545,3 +548,17 @@ class CollisionBox:
         # Normalize angle to nearest 45 degrees
         angle_deg = round(angle_deg / 45) * 45
         return angle_deg % 360
+
+    def get_center_line_string(self):
+        if self.center_line is None:
+            (x1, y1), (x2, y2) = self.get_center_line()
+            end1 = Point(x1, y1)
+            end2 = Point(x2,y2)
+            self.center_line = LineString([end1, end2])
+        return self.center_line
+
+    def distance_from_center_line(self, point):
+        line = self.get_center_line_string()
+        p = Point(point.x, point.y)
+        logging.debug(f"{p.x}")
+        return p.distance(line)

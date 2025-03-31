@@ -7,6 +7,10 @@ class Vector:
         self.direction = direction
         self.length = 1
 
+    @staticmethod
+    def make_from(other):
+        return Vector(other.direction)
+
     def copy(self):
         return Vector(self.direction)
 
@@ -88,7 +92,39 @@ class Vector:
     def dy(self):
         return self.direction[1]
 
+    def distance_to_line(self, point, line_point):
+        """
+        Calculate the perpendicular distance from a point to an infinite line.
+        Handles zero-length vectors by returning point-to-point distance.
+        """
+        # Handle zero-length vector case
+        if self.calculate_length() == 0:
+            return math.hypot(point[0] - line_point[0],
+                              point[1] - line_point[1])
+
+        # Get normal vector
+        normal = self.get_normal()
+        if normal is None:
+            return math.hypot(point[0] - line_point[0],
+                              point[1] - line_point[1])
+
+        # Normalize the normal vector
+        normal_length = normal.calculate_length()
+        if normal_length == 0:
+            return math.hypot(point[0] - line_point[0],
+                              point[1] - line_point[1])
+
+        normal.direction = (normal.direction[0] / normal_length,
+                            normal.direction[1] / normal_length)
+
+        # Vector from line_point to our point
+        vx = point[0] - line_point[0]
+        vy = point[1] - line_point[1]
+
+        # Project onto normal gives perpendicular distance
+        return abs(vx * normal.direction[0] + vy * normal.direction[1])
     def distance_from_point_on_normal(self, point):
+        point = Vector((point.x,point.y))
         """
         Computes the perpendicular distance from a given `point` (Vector)
         to the line passing through `self` in the direction of this vector.
@@ -110,6 +146,8 @@ class Vector:
         # Step 4: Project onto the normal and return the absolute value
         return abs(to_point.dot_product(normal))
 
+    def distance_to_line_segment(self, point, segment_start, segment_end):
+        pass
     def __add__(self, other):
         """Add another vector to this vector."""
         return Vector((self.direction[0] + other.direction[0], self.direction[1] + other.direction[1]))

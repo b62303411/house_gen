@@ -160,25 +160,21 @@ class WallScanner:
             candidate_width = right_steps
             left_point = Point(min_x, min_y)
             right_point = Point(max_x, max_y)
-            center = Vector((cx, cy))
-            center.distance_from_point_on_normal(right_point)
-            direction_vector = cb.get_direction()
 
+            left_dist = cb.distance_from_center_line(left_point)
+            right_dist = cb.distance_from_center_line(right_point)
 
-            left_dist = direction_vector.distance_from_point_on_normal(left_point)
-            right_dist = direction_vector.distance_from_point_on_normal(right_point)
-
-
-            left_diff = int(abs(left_dist - half_width))
-            right_diff = int(abs(right_dist - half_width))
-            # Check if the bleed goes beyond the current half-width
-            if left_diff > 1 or right_diff > 1:
-                division_points.append((x, y))
-            else:
-                if math.isclose(left_diff, 1.0, abs_tol=0.5):
-                    left_bleed += 1
-                if math.isclose(right_diff, 1.0, abs_tol=0.5):
-                    right_bleed += 1
+            if left_dist > half_width or right_dist > half_width:
+                left_diff = int(abs(left_dist - half_width))
+                right_diff = int(abs(right_dist - half_width))
+                # Check if the bleed goes beyond the current half-width
+                if left_diff > 1 or right_diff > 1:
+                    division_points.append((x, y))
+                else:
+                    if math.isclose(left_diff, 1.0, abs_tol=0.5):
+                        left_bleed += 1
+                    if math.isclose(right_diff, 1.0, abs_tol=0.5):
+                        right_bleed += 1
 
         # Adjust width and center if persistent 1-pixel bleed exists
         shift_x = 0

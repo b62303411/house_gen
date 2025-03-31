@@ -1,6 +1,6 @@
 from sortedcontainers import SortedList
 
-from floor_plan_reader.vector import Vector
+from floor_plan_reader.math.vector import Vector
 
 
 class ScanResult:
