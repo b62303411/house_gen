@@ -4,6 +4,7 @@ import numpy as np
 
 class ImageParser:
     def __init__(self):
+        self.img_colour = None
         self.img_gray = None
         self._img_gray_filtered = None
 
@@ -20,6 +21,7 @@ class ImageParser:
         return (img >= threshold).astype(np.uint8)
 
     def init(self, img_path, threshold):
+        self.img_colour = cv2.imread(img_path)
         self.img_gray = self.read_img(img_path)
         if self.img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {img_path}")

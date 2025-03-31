@@ -114,7 +114,7 @@ class WallScanner:
         is_wide_enough = self.is_3_wide_food(x, y, d)
         return is_food and is_wide_enough
 
-    def is_cell_valid(self, mush, x, y):
+    def is_cell_valid(self, mush, x, y,d=None):
         food = self.is_food(x, y)
         value = self.world.get_occupied_id(x, y)
         has_wall = self.world.is_wall_occupied(x, y)
@@ -127,12 +127,15 @@ class WallScanner:
         #    We'll use a small helper function that returns
         #    the last valid coordinate plus how many steps it walked.
 
-    def walk_until_invalid(self, mush, x, y, d):
+    def is_ok(self,mush,x,y,d):
+        return self.is_food(x,y)
+
+    def walk_until_invalid(self, mush, x, y, d, ping):
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
         last_valid_x = x
         last_valid_y = y
-        while self.ping(mush, x, y, d):
+        while ping(mush, x, y, d):
             last_valid_x = x
             last_valid_y = y
             steps_walked += 1
@@ -140,18 +143,6 @@ class WallScanner:
             y += dy
         return last_valid_x, last_valid_y, steps_walked
 
-    def walk_until_invalid2(self, mush, x, y, d):
-        dx, dy = d.dx(), d.dy()
-        steps_walked = 0
-        last_valid_x = x
-        last_valid_y = y
-        while self.is_cell_valid(mush, x, y):
-            last_valid_x = x
-            last_valid_y = y
-            steps_walked += 1
-            x += dx
-            y += dy
-        return last_valid_x, last_valid_y, steps_walked
 
     def measure_extent(self, mush, x, y, d):
         """Measure extent along a given direction vector (dx, dy) properly.
@@ -172,11 +163,11 @@ class WallScanner:
             pass
         d_reverse = d.copy()
         d_reverse.scale(-1)
-        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse)
+        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse,self.ping)
 
         # 3) Walk forward from that backward boundary
         #    to find the forward boundary
-        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d)
+        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d,self.ping)
 
         if min_x is None:
             logging.info(f"{x} {y}  {width} {height}")
@@ -233,8 +224,9 @@ class WallScanner:
             left_vector = normal_vector.opposite()
 
             # Walk until invalid in both normal directions
-            _, _, left_depth = self.walk_until_invalid2(mush, x, y, left_vector)
-            _, _, right_depth = self.walk_until_invalid2(mush, x, y, normal_vector)
+            _, _, left_depth = self.walk_until_invalid(mush, x, y, left_vector, self.is_cell_valid)
+            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector,self.is_cell_valid)
+            _, _, right_depth = self.walk_until_invalid(mush, x, y, normal_vector, self.is_food)
             left_diff = int(abs(left_depth - half_width))
             right_diff = int(abs(right_depth - half_width))
             # Check if the bleed goes beyond the current half-width
