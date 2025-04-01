@@ -71,6 +71,10 @@ class Mushroom(Agent):
     def run(self):
         self.process_state()
 
+    def re_compute(self):
+        self.free()
+        self.state_machine.state = "ray_trace"
+
     def get_cells(self):
         return self.root_cells
     def get_state(self):
@@ -91,9 +95,10 @@ class Mushroom(Agent):
             # lets take over smaller wall
             points_forward, points_backward = self.get_extended_ray_trace_points()
             if self.bulldose(points_backward):
-                logging.info("yea")
+                self.grow()
+
             if self.bulldose(points_forward):
-                logging.info("yea")
+                self.grow()
 
     def bulldose(self, points):
         for p in points:
@@ -103,7 +108,7 @@ class Mushroom(Agent):
             wall = self.world.get_wall(x, y)
             if wall is not None:
                 if wall.get_width() < self.get_width():
-                    wall.free()
+                    wall.re_compute()
                     return True
         return False
 
@@ -297,7 +302,7 @@ class Mushroom(Agent):
         self.measure_margin()
 
     def prunning_phase(self):
-        if self.center_on_food():
+        if self.center_on_food() and self.is_valid():
             pass
         else:
             self.kill()
@@ -308,23 +313,15 @@ class Mushroom(Agent):
             self.world.free(r.x, r.y)
 
     def is_valid(self):
-        valid = self.collision_box.length > 3
-        valid = self.collision_box.width > 3 and valid
-        valid = self.collision_box.length > self.collision_box.width and valid
+        valid_l = self.collision_box.length > 2
+        valid_w = self.collision_box.width > 2
+        valid_shape = self.collision_box.length > self.collision_box.width
         x, y = self.get_center()
         on_food = self.world.is_food(x, y)
         if not on_food:
             return False
-        corners = self.corners()
-        invalid_corners = 0
-        for c in corners:
-            x = c[0]
-            y = c[1]
-            if not self.world.is_food(x, y):
-                invalid_corners += 1
-        if invalid_corners > 2:
-            valid = True
-        return valid
+
+        return valid_l and valid_w and valid_shape and on_food
 
     def recenter_phase(self):
         rm = self.right_margin
@@ -408,7 +405,9 @@ class Mushroom(Agent):
 
     def get_direction(self):
         return self.collision_box.get_direction()
-
+    def grow(self):
+        self.performe_ray_trace()
+        self.fill_box()
     def stem_growth_phase(self):
         """Grow a stem along the longest axis."""
         x, y = self.get_center()

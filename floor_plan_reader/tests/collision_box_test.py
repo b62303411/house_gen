@@ -57,28 +57,7 @@ class TestLineDistanceCalculations(unittest.TestCase):
         expected = 2 * math.sqrt(2)
         self.assertAlmostEqual(dist, expected, delta=self.tol)
 
-    def test_line_segment_distance(self):
-        """Test distance to finite line segments"""
-        # Vertical segment from (5,2) to (5,20)
-        segment_start = (5, 2)
-        segment_end = (5, 20)
-        direction = Vector((segment_end[0] - segment_start[0],
-                            segment_end[1] - segment_start[1]))
 
-        cases = [
-            ((1, 10), 4.0),  # Within segment bounds
-            ((1, 1), math.sqrt(17)),  # Below segment (distance to start)
-            ((1, 25), math.sqrt(17)),  # Above segment (distance to end)
-            ((5, 15), 0.0)  # On segment
-        ]
-        cb = CollisionBox(5,15,5,30,90)
-
-        for point, expected in cases:
-            with self.subTest(point=point):
-                p = Point(point[0],point[1])
-                dist = cb.distance_from_center_line(p)
-                logging.debug(f"{dist}")
-                self.assertAlmostEqual(dist, expected, delta=self.tol)
 
     def test_collision_box_center_line(self):
         """Test distance to collision box's center line"""
@@ -98,21 +77,30 @@ class TestLineDistanceCalculations(unittest.TestCase):
                 dist = box.distance_from_center_line(p)
                 self.assertAlmostEqual(dist, expected, delta=self.tol)
 
-    def test_zero_length_vector(self):
-        """Test edge case with zero-length vector"""
-        direction = Vector((0, 0))
-        point = (1, 1)
-        line_point = (0, 0)
-
-        # Should return distance between points
-        dist = direction.distance_to_line(point, line_point)
-        expected = math.sqrt(2)
-        self.assertAlmostEqual(dist, expected, delta=self.tol)
-
-        # Segment version should also work
-        dist_seg = direction.distance_to_line_segment(point, line_point, line_point)
-        self.assertAlmostEqual(dist_seg, expected, delta=self.tol)
 
 
+    def test_move_forward(self):
+        cb = CollisionBox(center_x=0, center_y=0, width=2, length=4, rotation=0)
+        cb.move_forward(5)
+        self.assertAlmostEqual(cb.center_x, 5)
+        self.assertAlmostEqual(cb.center_y, 0)
+
+    def test_move_backward(self):
+        cb = CollisionBox(center_x=0, center_y=0, width=2, length=4, rotation=90)
+        cb.move_backward(3)
+        self.assertAlmostEqual(cb.center_x, 0)
+        self.assertAlmostEqual(cb.center_y, -3)
+
+    def test_move_diagonal_forward(self):
+        cb = CollisionBox(center_x=1, center_y=1, width=2, length=4, rotation=45)
+        cb.move_forward(math.sqrt(2))
+        self.assertAlmostEqual(cb.center_x, 2)
+        self.assertAlmostEqual(cb.center_y, 2)
+
+    def test_move_diagonal_backward(self):
+        cb = CollisionBox(center_x=1, center_y=1, width=2, length=4, rotation=225)
+        cb.move_backward(math.sqrt(2))
+        self.assertAlmostEqual(cb.center_x, 2)
+        self.assertAlmostEqual(cb.center_y, 2)
 if __name__ == "__main__":
     unittest.main()

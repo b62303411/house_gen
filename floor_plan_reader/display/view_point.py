@@ -39,3 +39,7 @@ class ViewPoint:
 
     def get_center(self):
         return self.offset_x * self.zoom_factor, self.offset_y * self.zoom_factor
+
+    def set_position(self, center):
+        self.offset_x = center[0]
+        self.offset_y = center[1]

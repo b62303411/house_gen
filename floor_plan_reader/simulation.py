@@ -3,7 +3,6 @@ import logging
 
 import pygame
 
-
 from floor_plan_reader.agents.blob import Blob
 from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
@@ -19,12 +18,10 @@ f = font.Font(None, 36)  # Use default font with size 36
 f_small = font.Font(None, 12)
 
 
-
-
-
 class Simulation:
     def __init__(self):
 
+        self._line_dic = None
         self.running = True
         self.wf = WorldFactory()
         self.zombie_candidates = []
@@ -38,6 +35,7 @@ class Simulation:
         self.img_gray_surface = None
         self.img_colour_surface = None
         self._intersections = set()
+        self._lines = set()
         self.jw = JsonWriter()
         self.tasks = [
             {
@@ -47,16 +45,21 @@ class Simulation:
                 "command": self.save_blue_print
             }
         ]
+
     def get_intersections(self):
         return self._intersections
+
     def save_blue_print(self):
         result = self.solver.build_lines_and_intersections(self.world.wall_segments)
 
         self._intersections = result.get("intersections")
-
+        self._lines = result.get("lines")
+        self._line_dic = {}
+        for l in self._lines:
+            self._line_dic[l.id]=l
         for i in self._intersections:
             (ix, iy) = i.point
-            blob = self.world.get_blob(ix,iy)
+            blob = self.world.get_blob(ix, iy)
             if blob is not None:
                 blob.add_intersection(i)
 
@@ -64,6 +67,7 @@ class Simulation:
 
     def get_blob_count(self):
         return len(self.world.blobs)
+
     def is_wall(self, a, mx, my):
         if isinstance(a, Mushroom):
             if a.is_valid():
@@ -86,13 +90,11 @@ class Simulation:
         with open(filename, "w") as f:
             json.dump(data, f, indent=2)
 
-
     def get_agent_count(self):
         return len(self.world.agents)
 
     def get_wall_segment_count(self):
         return len(self.world.wall_segments)
-
 
     def run(self):
         agents = self.world.agents.copy()
@@ -118,14 +120,12 @@ class Simulation:
                 self.world.walls.add(agent)
             if isinstance(agent, WallSegment):
                 self.world.wall_segments.add(agent)
-            if isinstance(agent,Blob):
+            if isinstance(agent, Blob):
                 self.world.blobs.add(agent)
-
 
             self.world.agents.add(agent)
 
-
-    def init_world(self,image):
+    def init_world(self, image):
         img_gray = image.get_black_and_white()
         self.wf.set_grid(img_gray)
         self.world = self.wf.create_World()
@@ -154,7 +154,7 @@ class Simulation:
                            ):
         self.wf.set_num_ants(num_ants)
         img_scanner = ImageParser()
-        img_scanner.init(image_path,threshold)
+        img_scanner.init(image_path, threshold)
         # 1) Load grayscale
         self.init_world(img_scanner)
         self.world.init_ants()
@@ -179,7 +179,7 @@ class Simulation:
         # 7) Zoom parameters
         self.running = True
         while self.running:
-            dt=clock.tick(120)  # up to 30 FPS
+            dt = clock.tick(120)  # up to 30 FPS
 
             # --- Update ants (simple example) ---
             self.run()

@@ -1,9 +1,26 @@
 import pygame
 
 from floor_plan_reader.display.button import Button
+from floor_plan_reader.display.intersectionview import IntersectionView
 from floor_plan_reader.display.point import Point
 from floor_plan_reader.display.text_box import TextBox
+from floor_plan_reader.display.view_point import ViewPoint
 from floor_plan_reader.display.window import Window
+
+
+class Converter:
+    def __init__(self, bounding_box, snap_x, snap_y, convert):
+        self.bounding_box = bounding_box
+        self.snap_x = snap_x
+        self.snap_y = snap_y
+        self.zoom = 4
+        self.convert = convert
+
+    def convert_(self, x, y):
+        return self.convert(self.bounding_box, x, y, self.zoom, self.snap_x, self.snap_y)
+
+    def convert_tuple(self, point):
+        return self.convert_(point[0], point[1])
 
 
 class PopupMenu(Window):
@@ -50,22 +67,81 @@ class PopupMenu(Window):
         surface.blit(title_text, title_rect)
 
         # --- Zoom/Scale the surface ---
+        blob = selected.blob
+        blob.calculate_bounding_box()
+        snapshot = blob.get_snapshot()
+        position = (50, 100)
+        snap_x = self.rect.x + position[0]
+        snap_y = self.rect.y + position[1]
+        self.draw_snapshot(surface, snapshot, position)
 
-        snapshot = selected.blob.get_snapshot()
-        self.draw_snapshot(surface,snapshot)
+        snapshot = blob.get_occupied_snapshot()
+        self.draw_snapshot(surface, snapshot, position)
 
-        snapshot = selected.blob.get_occupied_snapshot()
-        self.draw_snapshot(surface, snapshot)
+        intersections = blob.get_intersections()
+        center = blob.get_center()
+        blob.calculate_bounding_box()
 
-    def draw_snapshot(self,surface,snapshot):
+        bounding_box = blob.get_corners()
+        walls = blob.get_walls()
+        segments = set()
+        for w in walls:
+            if w.wall_segment is not None:
+                segments.add(w.wall_segment)
+
+        self.draw_segments(surface, segments, bounding_box, snap_x, snap_y)
+
+        self.draw_intersections(surface, intersections, bounding_box, snap_x, snap_y)
+
+    def convert(self, bounding_box, x, y, zoom, p_x, p_y):
+        dx, dy = x - bounding_box.min_x, y - bounding_box.min_y
+        sx, sy = dx * zoom, dy * zoom
+        return sx + p_x, sy + p_y
+
+    def draw_segments(self, surface, segments, bounding_box, snap_x, snap_y):
+        conv = Converter(bounding_box, snap_x, snap_y, self.convert)
+        for s in segments:
+            if s.collision_box_extended is not None:
+                cb = s.collision_box_extended
+                line = cb.get_center_line_string()
+                x1, y1, x2, y2 = line.bounds
+                sx1, sy1 = conv.convert_(x1, y1)
+                sx2, sy2 = conv.convert_(x2, y2)
+                pygame.draw.line(surface, (255, 255, 0), (sx1, sy1), (sx2, sy2), 3)
+
+    def draw_intersections(self, surface, intersections, bounding_box, snap_x, snap_y):
+
+        conv = Converter(bounding_box, snap_x, snap_y, self.convert)
+        v = IntersectionView()
+        # w, h = blob.get_shape()
+        vp = ViewPoint()
+        vp.zoom_factor = 4
+
+        for i in intersections:
+            (ix, iy) = i.point
+            ex, ey = conv.convert_(ix, iy)
+            pygame.draw.circle(surface, (0, 255, 255), (ex, ey), 6)
+            for l in i.lines:
+                if l in self.view.simulation._line_dic:
+                    line = self.view.simulation._line_dic[l]
+                    start = conv.convert_tuple(line.start_point)
+                    end = conv.convert_tuple(line.end_point)
+                    pygame.draw.line(surface, (255, 0, 0), start, end)
+
+        center = (snap_x, snap_y)
+        # center = (-center[0] + position[0] + self.rect.x, -center[1] + position[1] + self.rect.y)
+        vp.set_position(center)
+        v.draw_intersections(surface, vp, intersections, (0, 255, 0))
+
+    def draw_snapshot(self, surface, snapshot, position):
         surface_blob = pygame.surfarray.make_surface(snapshot.swapaxes(0, 1))
-        zoom_factor = 2  # magnify by 4x
+        zoom_factor = 4  # magnify by 4x
         scaled_width = surface_blob.get_width() * zoom_factor
         scaled_height = surface_blob.get_height() * zoom_factor
 
         zoomed_surface = pygame.transform.scale(surface_blob, (scaled_width, scaled_height))
 
-        surface.blit(zoomed_surface, (self.rect.x + 50, self.rect.y + 100))
+        surface.blit(zoomed_surface, (self.rect.x + position[0], self.rect.y + position[1]))
 
     def handle_event(self, event, on_button_click=None):
         for c in self.components:

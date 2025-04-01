@@ -275,6 +275,7 @@ class CollisionBox:
         return self.calculate_overlap_ratio(other) > 0.1
         # return other.is_point_inside(self.center_x, self.center_y)
 
+
     def get_center_line(cb):
         """
         Returns ((x1, y1), (x2, y2)) for the center line of a CollisionBox
@@ -302,23 +303,24 @@ class CollisionBox:
         return points
 
     def move_forward(self, lenght):
-        dir = self.get_direction()
-        dir.scale(lenght)
-        self.move(dir)
+        dir_ = self.get_direction()
+        dir_.scale(lenght)
+        self.move(dir_)
 
     def move_backward(self, lenght):
-        dir = self.get_direction().opposite()
-        dir.scale(lenght)
-        self.move(dir)
+        dir_ = self.get_direction().opposite()
+        dir_.scale(lenght)
+        self.move(dir_)
 
-    def move(self, dir):
+    def move(self, dir_):
         c = self.get_center_as_vector()
-        new_c = c + dir
+        new_c = c + dir_
         self.set_position(new_c.dx(), new_c.dy())
 
+
     def get_normal(self):
-        dir = self.get_direction()
-        return dir.get_normal()
+        dir_ = self.get_direction()
+        return dir_.get_normal()
 
     def get_extended_ray_trace_points(self, max_x, max_y):
         if self.points_forward is None or self.points_forward is None:
@@ -363,6 +365,8 @@ class CollisionBox:
         self.corners = None
         self.points_forward = None
         self.points_backward = None
+        self.polygon = None
+        self.center_line = None
 
     def calculate_overlap_ratio(self, other):
         overlap = self.calculate_overlap(other)

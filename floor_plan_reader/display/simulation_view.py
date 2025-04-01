@@ -3,7 +3,7 @@ from collections import deque
 
 import pygame
 
-from floor_plan_reader.display.intersection import Intersection
+from floor_plan_reader.display.intersectionview import IntersectionView
 from floor_plan_reader.display.popup_menu import PopupMenu
 from floor_plan_reader.display.status_window import StatusWindow
 from floor_plan_reader.display.user_input import UserInput
@@ -14,13 +14,13 @@ from floor_plan_reader.intersections_solver import IntersectionSolver
 class SimulationView:
     def __init__(self,simulation):
         self.selected = None
-        self.popup = PopupMenu(self, 300, 200, 200, 350, title="Actions")
+        self.popup = PopupMenu(self, 300, 200, 500, 350, title="Actions")
         self.sw = StatusWindow(simulation, 10, 10, 100, 100)
         self.vp = ViewPoint()
         self.user_input = UserInput(self)
         self.screen = None
         self.simulation=simulation
-        self.intersections_view = Intersection(self.simulation)
+        self.intersections_view = IntersectionView(self.simulation)
         self.selected = None
         self.selections = set()
         self.mouse_actions = deque()

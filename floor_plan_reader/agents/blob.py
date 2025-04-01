@@ -33,7 +33,8 @@ class Blob(Agent):
 
     def get_walls(self):
         return self._walls.copy()
-
+    def get_intersections(self):
+        return self._intersections
     def get_wall_count(self):
         return len(self._walls)
 
@@ -42,7 +43,12 @@ class Blob(Agent):
 
     def blob_size(self):
         return len(self.cells)
-
+    def get_center(self):
+        return self.bounding_box.get_center()
+    def get_corners(self):
+        return self.bounding_box
+    def get_shape(self):
+        return self.bounding_box.get_shape()
     def add_growth(self, cell):
         self.growth.add(cell)
 
@@ -139,16 +145,16 @@ class Blob(Agent):
             self.alive = False
 
     def print_blob(self):
-        x, y = self.bounding_box.get_center()
+        x, y = self.get_center()
         width, height = self.bounding_box.get_shape()
         self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
 
     def get_snapshot(self):
-        x, y = self.bounding_box.get_center()
+        x, y = self.get_center()
         width, height = self.bounding_box.get_shape()
         return self.world.get_grid_snapwhot(x, y, width, height)
     def get_occupied_snapshot(self):
-        x, y = self.bounding_box.get_center()
+        x, y = self.get_center()
         width, height = self.bounding_box.get_shape()
         return self.world.get_occupied_snapshot(x, y, width, height)
 

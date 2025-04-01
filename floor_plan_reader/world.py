@@ -80,7 +80,7 @@ class World:
 
         # Create an RGB gradient (example: from blue (0,0,255) to red (255,0,0))
         r = (norm * 255).astype(np.uint8)
-        g = np.zeros_like(r)
+        g = region % 255
         b = (255 - r).astype(np.uint8)
 
         # 2) Fill the color_coded array in place

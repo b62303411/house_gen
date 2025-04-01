@@ -42,6 +42,7 @@ class WallSegment(Agent):
         self.overlapping = set()
         self.nodes = set()
         self.cb_drawer = BoundingBoxDrawer()
+        self.wall_dic = {}
 
     def add_node(self, node):
         self.nodes.add(node)
@@ -51,6 +52,7 @@ class WallSegment(Agent):
             self.collision_box = cb.copy()
 
     def add_part(self, part):
+        self.wall_dic[part.id] = part
         self.parts.add(part)
         self.state = "negotiate"
 
@@ -89,6 +91,7 @@ class WallSegment(Agent):
                 cb = self.merge_alighned(cb, p)
 
         self.set_collision_box(cb)
+
     def negotiate_phase(self):
         self.negotiate()
         error = False
@@ -114,39 +117,53 @@ class WallSegment(Agent):
 
     def calculate_extended_bounding_box(self):
         h, w = self.world.get_shape()
-        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w,h)
-        steps_backward = self.crawl(points_backward)
-        steps_forward = self.crawl(points_forward)
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w, h)
+        steps_backward,bx,by = self.crawl(points_backward)
+        steps_forward,fx,fy = self.crawl(points_forward)
         self.collision_box_extended = self.collision_box.copy()
 
-        if(steps_forward>0 or steps_backward >0):
-            extension = max(steps_backward,steps_forward)
+        if steps_forward > 1 or steps_backward > 1:
+            extension = steps_backward+steps_forward
             l = self.collision_box_extended.length
-            self.collision_box_extended.set_lenght(l + extension)
-            if(steps_forward>steps_backward):
-                self.collision_box_extended.move_forward(extension/2)
+            self.collision_box_extended.set_lenght(l + extension+2)
+            if steps_forward > steps_backward:
+                (bx1, by1), (bx2, by2) = self.collision_box_extended.get_center_line()
+                self.collision_box_extended.move_forward(abs(steps_backward-steps_forward)/2)
+                (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
+                id_start = self.world.get_occupied_id(x1,y1)
+                id_end = self.world.get_occupied_id(x2, y2)
+                if id_start in self.wall_dic and id_end in self.wall_dic:
+                    if steps_forward > 1 or steps_backward > 1:
+                        logging.info("error")
+
             else:
-                self.collision_box_extended.move_backward(extension / 2)
+                self.collision_box_extended.move_backward(abs(steps_backward-steps_forward)/2)
+                (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
+                id_start = self.world.get_occupied_id(x1, y1)
+                id_end = self.world.get_occupied_id(x2, y2)
+                if id_start in self.wall_dic and id_end in self.wall_dic:
+                    if steps_forward > 1 or steps_backward > 1:
+                        logging.info("error")
 
         logging.info(f"steps b{steps_backward} steps f{steps_forward}")
 
     def crawl(self, points):
         steps = 0
+        x,y = 0,0
         measuring_extent = False
         for p in points:
             x = int(p[0])
             y = int(p[1])
             if self.world.is_food(x, y):
-                id = self.world.get_occupied_wall_id(x,y)
+                id = self.world.get_occupied_wall_id(x, y)
                 if id != self.id:
                     measuring_extent = True
                 if measuring_extent:
                     steps = steps + 1
             else:
-                return steps
-        return steps
+                return steps ,x,y
 
-
+        return steps,x,y
 
     def process_state(self):
 
@@ -174,7 +191,7 @@ class WallSegment(Agent):
             return
         elif self.state == "extend":
             self.calculate_extended_bounding_box()
-            self.state="done"
+            self.state = "done"
             return
         elif self.state == "dead":
             for e in self.overlapping:
