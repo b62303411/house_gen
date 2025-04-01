@@ -121,7 +121,15 @@ class Blob(Agent):
                 if self.get_wall_count() > 15:
                     self.print_blob()
             else:
-                self.alive = False
+                self.status="done"
+            return
+        elif self.status == "done":
+            self.alive = False
+            walls = self.walls.copy()
+            for w in walls:
+                if not w.alive:
+                    self.walls.remove(w)
+
             return
         elif self.status == "cleanup":
             for c in self.cells:
