@@ -93,6 +93,9 @@ class Blob(Agent):
     def calculate_bounding_box(self):
         self.bounding_box = BoundingBox.from_cells(self.cells)
 
+    def add_intersection(self, i):
+        self._intersections.add(i)
+
     def run(self):
         if self.status == "born":
             self.status = "grow"
@@ -140,6 +143,15 @@ class Blob(Agent):
         width, height = self.bounding_box.get_shape()
         self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
 
+    def get_snapshot(self):
+        x, y = self.bounding_box.get_center()
+        width, height = self.bounding_box.get_shape()
+        return self.world.get_grid_snapwhot(x, y, width, height)
+    def get_occupied_snapshot(self):
+        x, y = self.bounding_box.get_center()
+        width, height = self.bounding_box.get_shape()
+        return self.world.get_occupied_snapshot(x, y, width, height)
+
     def purge_dead_walls(self):
         walls = self._walls.copy()
         for w in walls:
@@ -164,17 +176,17 @@ class Blob(Agent):
         self.active_mush = self.world.create_mushroom(self, x, y)
         self._walls.add(self.active_mush)
 
-    def draw_cells(self,screen,vp,cells,colour):
+    def draw_cells(self, screen, vp, cells, colour):
         for cell in cells:
             sx, sy = vp.convert(cell.x, cell.y)
             pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
+
     def draw(self, screen, vp):
         if self.status == "done":
             return
         colour = (200, 0, 0)
         if self.status != "mush":
-            self.draw_cells(screen,vp,self.cells,colour)
+            self.draw_cells(screen, vp, self.cells, colour)
         else:
             colour = (0, 255, 0)
-            self.draw_cells(screen,vp,self.free_slot,colour)
-
+            self.draw_cells(screen, vp, self.free_slot, colour)

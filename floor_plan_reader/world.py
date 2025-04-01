@@ -62,10 +62,38 @@ class World:
         self.blob_grid = np.zeros(self.grid.shape, dtype=np.uint64)
         self.occupied_wall = np.zeros(self.grid.shape, dtype=np.uint64)
 
-    def print_snapshot(self, x, y, width=20, height=20, name_prefix="region"):
+    def get_occupied_snapshot(self,x,y,width,height):
+        grid = self.occupied
+        return self.get_snapshot(x, y, width, height, grid,self.encode_occupied)
+    def get_grid_snapwhot(self,x,y,width,height):
+        grid = self.grid
+        return self.get_snapshot(x,y,width,height,grid,self.encode_grid)
+
+    def encode_grid(self,color_coded,region,width,height):
+        color_coded[region == 1] = [255, 255, 255]
+        center_x, center_y = width // 2, height // 2
+        color_coded[center_y, center_x] = [0, 255, 0]
+    def encode_occupied(self,color_coded,region,width,height):
+        min_id = np.min(region)
+        max_id = np.max(region)
+        norm = (region - min_id) / (max_id - min_id)  # floats in [0..1]
+
+        # Create an RGB gradient (example: from blue (0,0,255) to red (255,0,0))
+        r = (norm * 255).astype(np.uint8)
+        g = np.zeros_like(r)
+        b = (255 - r).astype(np.uint8)
+
+        # 2) Fill the color_coded array in place
+        # color_coded expected shape is [H, W, 3]
+        color_coded[..., 0] = r  # Red channel
+        color_coded[..., 1] = g  # Green channel
+        color_coded[..., 2] = b  # Blue channel
+
+    def get_snapshot(self, x, y, width, height, grid,encode):
+        color_coded = None
         x = int(x)
         y = int(y)
-        grid = self.grid
+
         # Ensure the region is within the image boundaries
         if x - width // 2 >= 0 and x + width // 2 <= grid.shape[1] and \
                 y - height // 2 >= 0 and y + height // 2 <= grid.shape[0]:
@@ -80,16 +108,23 @@ class World:
             region = grid[h1:h2, w1:w2]
             shape = region.shape
             color_coded = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
-            color_coded[region == 1] = [255, 255, 255]
-            center_x, center_y = width // 2, height // 2
-            color_coded[center_y, center_x] = [0, 255, 0]
+            encode(color_coded,region,width,height)
             # 4) Save the extracted region as an image file
-            region_image = Image.fromarray(color_coded)
+            return color_coded
+        else:
+            logging.info("The region is out of bounds.")
+        return color_coded
+
+    def print_snapshot(self, x, y, width=20, height=20, name_prefix="region"):
+        x = int(x)
+        y = int(y)
+        # Ensure the region is within the image boundaries
+        color_coded = self.get_grid_snapwhot(x,y,width,height)
+        region_image = Image.fromarray(color_coded)
+        if region_image is not None:
             name = f"{name_prefix}_{width}x{height}_{x}_{y}.png"
             region_image.save(name)
             logging.info(f"{width}x{height} region saved as '{name}'")
-        else:
-            logging.info("The region is out of bounds.")
 
     def free(self, x, y):
         self.occupied[int(y), int(x)] = 0
@@ -137,21 +172,22 @@ class World:
         return None
 
     def get_occupied_id(self, x, y):
-        if self.is_within_bounds(x,y):
+        if self.is_within_bounds(x, y):
             return self.occupied[int(y), int(x)]
         return 0
 
     def get_occupied_wall_id(self, x, y):
-        if self.is_within_bounds(x,y):
+        if self.is_within_bounds(x, y):
             return self.occupied_wall[int(y), int(x)]
         return 0
+
     def collide_with_any(self, agent, x, y):
         return False
-        #for a in self.blobs:
+        # for a in self.blobs:
         #    if a is not agent:
         #        if a.collidepoint(x, y):
         #            return True
-        #return False
+        # return False
 
     def occupy_wall(self, x, y, wall):
         h, l = self.occupied.shape
@@ -190,14 +226,16 @@ class World:
                 self.candidates.append(mush)
                 return mush
         return None
-    def get_wall(self,x,y):
-        wall_id = self.get_occupied_wall_id(x,y)
+
+    def get_wall(self, x, y):
+        wall_id = self.get_occupied_wall_id(x, y)
         if wall_id == 0:
             return None
         for w in self.walls:
             if w.id == wall_id:
                 return w
         return None
+
     def get_grid_value(self, x, y):
         return self.grid[y, x]
 
@@ -205,7 +243,7 @@ class World:
 
         x = int(point[0])
         y = int(point[1])
-        if self.is_within_bounds(x,y):
+        if self.is_within_bounds(x, y):
             self.grid[y, x] = value
 
     def is_food_at(self, location):

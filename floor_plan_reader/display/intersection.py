@@ -2,10 +2,11 @@ import pygame
 
 
 class Intersection:
-    def __init__(self,simulation):
+    def __init__(self, simulation):
         self.simulation = simulation
+
     def draw(self, screen, vp):
-        for p in self.simulation.intersections:
+        for p in self.simulation.get_intersections():
             (ix, iy) = p.point
 
             # Transform/scale
