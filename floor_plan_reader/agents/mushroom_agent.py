@@ -71,6 +71,8 @@ class Mushroom(Agent):
     def run(self):
         self.process_state()
 
+    def get_cells(self):
+        return self.root_cells
     def get_state(self):
         return self.state_machine.state
 

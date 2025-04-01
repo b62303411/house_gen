@@ -20,6 +20,7 @@ class SimulationView:
         self.user_input = UserInput(self)
         self.screen = None
         self.simulation=simulation
+        self.intersections_view = Intersection(self.simulation)
         self.selected = None
         self.selections = set()
         self.mouse_actions = deque()
@@ -69,7 +70,7 @@ class SimulationView:
         blob.purge_dead_walls()
         segments = set()
         for w in blob.get_walls():
-            if w.wall_segment is not None:
+            if w.alive and w.wall_segment is not None:
                 w.wall_segment.calculate_extended_bounding_box()
                 segments.add(w.wall_segment)
         s.build_lines_and_intersections(segments)
@@ -116,8 +117,10 @@ class SimulationView:
         self.sw.draw(self.screen)
 
         self.handle_visible_pupup()
+
+        self.intersections_view.draw(self.screen, self.vp)
+
         # Draw the pop-up
         self.popup.draw(self.screen)
-        i = Intersection(self.simulation)
-        i.draw(self.screen, self.vp)
+
         pygame.display.flip()

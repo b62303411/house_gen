@@ -20,6 +20,8 @@ class Blob(Agent):
         self.len_start = 0
         self.active_mush = None
         self._walls = set()
+        self._dead_walls = set()
+        self._intersections = set()
         self.bounding_box = None
 
     def __lt__(self, other):
@@ -31,10 +33,12 @@ class Blob(Agent):
 
     def get_walls(self):
         return self._walls.copy()
+
     def get_wall_count(self):
         return len(self._walls)
+
     def is_blob(self, x, y):
-        return self.world.is_blob(x,y)
+        return self.world.is_blob(x, y)
 
     def blob_size(self):
         return len(self.cells)
@@ -121,15 +125,10 @@ class Blob(Agent):
                 if self.get_wall_count() > 15:
                     self.print_blob()
             else:
-                self.status="done"
+                self.status = "done"
             return
         elif self.status == "done":
-            self.alive = False
-            walls = self.walls.copy()
-            for w in walls:
-                if not w.alive:
-                    self.walls.remove(w)
-
+            self.purge_dead_walls()
             return
         elif self.status == "cleanup":
             for c in self.cells:
@@ -140,34 +139,42 @@ class Blob(Agent):
         x, y = self.bounding_box.get_center()
         width, height = self.bounding_box.get_shape()
         self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
+
     def purge_dead_walls(self):
-        copy = self._walls.copy()
-        for w in copy:
+        walls = self._walls.copy()
+        for w in walls:
             if not w.alive:
                 self._walls.remove(w)
+                self._dead_walls.add(w)
+
     def full_reset(self):
         copy = self._walls.copy()
         for w in copy:
             w.kill()
-            for c in w.cells:
+            cells = w.get_cells()
+            for c in cells:
                 self.free_slot.add(c)
             self._walls.remove(w)
         self.alive = True
         self.status = "mush"
+
     def create_mushroom(self, x, y):
         c = Cell(x, y)
         self.free_slot.remove(c)
         self.active_mush = self.world.create_mushroom(self, x, y)
         self._walls.add(self.active_mush)
 
+    def draw_cells(self,screen,vp,cells,colour):
+        for cell in cells:
+            sx, sy = vp.convert(cell.x, cell.y)
+            pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
     def draw(self, screen, vp):
+        if self.status == "done":
+            return
         colour = (200, 0, 0)
         if self.status != "mush":
-            for cell in self.cells:
-                sx, sy = vp.convert(cell.x, cell.y)
-                pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
+            self.draw_cells(screen,vp,self.cells,colour)
         else:
             colour = (0, 255, 0)
-            for cell in self.free_slot:
-                sx, sy = vp.convert(cell.x, cell.y)
-                pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
+            self.draw_cells(screen,vp,self.free_slot,colour)
+
