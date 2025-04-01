@@ -39,6 +39,7 @@ class PopupMenu(Window):
         selected = self.view.selected
         state = selected.get_state()
         text = []
+        text.append(f"blob id:{selected.blob.id}")
         text.append(f"{selected.id}:{state}")
         if selected.wall_segment is not None:
             text.append(f"state seg:{selected.wall_segment.state}")

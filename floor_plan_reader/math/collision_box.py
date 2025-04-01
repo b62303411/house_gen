@@ -20,6 +20,9 @@ class CollisionBox:
         self.corners = None
         self.direction = None
         self.center_line = None
+        self.points_forward = None
+        self.points_backward = None
+        self.polygon = None
 
     def __eq__(self, other):
         if not isinstance(other, CollisionBox):
@@ -32,11 +35,11 @@ class CollisionBox:
 
     def set_width(self, width):
         self.width = float(width)
-        self.corners = None
+        self.reset_cache()
 
     def set_lenght(self, lenght):
         self.length = float(lenght)
-        self.corners = None
+        self.reset_cache()
 
     def copy(self):
         """
@@ -91,20 +94,20 @@ class CollisionBox:
     def area_of_triangle(self, A, B, C):
         return abs((A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1])) / 2.0)
 
+    def get_polygon(self):
+        if self.polygon is None:
+            corners = self.calculate_corners()
+            self.polygon = Polygon(corners)  # Create the polygon
+        return self.polygon
+
     def is_point_inside(self, x, y):
-        corners = self.calculate_corners()
-        A, B, C, D = corners
-        P = (x, y)
-
-        rect_area = self.area_of_triangle(A, B, C) + self.area_of_triangle(A, C, D)
-        area_sum = (
-                self.area_of_triangle(P, A, B) +
-                self.area_of_triangle(P, B, C) +
-                self.area_of_triangle(P, C, D) +
-                self.area_of_triangle(P, D, A)
-        )
-
-        return abs(rect_area - area_sum) < 1e-5
+        poly = self.get_polygon()
+        minx, miny, maxx, maxy = poly.bounds
+        if x < minx or x > maxx or y < miny or y > maxy:
+            return False
+        point = Point(x,y)
+        poly = self.get_polygon()
+        return poly.contains(point)
 
     def line_equation(self, p1, p2, tol=1e-9):
         """
@@ -319,37 +322,48 @@ class CollisionBox:
         return dir.get_normal()
 
     def get_extended_ray_trace_points(self, max_x, max_y):
-        direction = self.get_direction().direction
-        half_length = self.length / 2.0
+        if self.points_forward is None or self.points_forward is None:
+            direction = self.get_direction().direction
+            half_length = self.length / 2.0
 
-        points_forward = []
-        points_backward = []
-        # Start points just outside the rectangle at both ends
-        start_forward_x = self.center_x + direction[0] * half_length
-        start_forward_y = self.center_y + direction[1] * half_length
-        start_backward_x = self.center_x - direction[0] * half_length
-        start_backward_y = self.center_y - direction[1] * half_length
+            points_forward = []
+            points_backward = []
+            # Start points just outside the rectangle at both ends
+            start_forward_x = self.center_x + direction[0] * half_length
+            start_forward_y = self.center_y + direction[1] * half_length
+            start_backward_x = self.center_x - direction[0] * half_length
+            start_backward_y = self.center_y - direction[1] * half_length
 
-        # Forward iteration
-        current_x, current_y = start_forward_x + direction[0], start_forward_y + direction[1]
-        while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
-            points_forward.append((current_x, current_y))
-            current_x += direction[0]
-            current_y += direction[1]
+            # Forward iteration
+            current_x, current_y = start_forward_x + direction[0], start_forward_y + direction[1]
+            while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
+                points_forward.append((current_x, current_y))
+                current_x += direction[0]
+                current_y += direction[1]
 
-        # Backward iteration
-        current_x, current_y = start_backward_x - direction[0], start_backward_y - direction[1]
-        while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
-            points_backward.append((current_x, current_y))
-            current_x -= direction[0]
-            current_y -= direction[1]
+            # Backward iteration
+            current_x, current_y = start_backward_x - direction[0], start_backward_y - direction[1]
+            while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
+                points_backward.append((current_x, current_y))
+                current_x -= direction[0]
+                current_y -= direction[1]
+            if len(points_backward) > 0 :
+                self.points_backward=points_backward
+                self.points_forward=points_forward
+            else:
+                pass
 
-        return points_forward, points_backward
+        return self.points_forward, self.points_backward
 
     def set_position(self, x, y):
         self.center_x = x
         self.center_y = y
+        self.reset_cache()
+
+    def reset_cache(self):
         self.corners = None
+        self.points_forward = None
+        self.points_backward = None
 
     def calculate_overlap_ratio(self, other):
         overlap = self.calculate_overlap(other)

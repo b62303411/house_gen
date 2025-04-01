@@ -146,11 +146,12 @@ class World:
             return self.occupied_wall[int(y), int(x)]
         return 0
     def collide_with_any(self, agent, x, y):
-        for a in self.walls:
-            if a is not agent:
-                if a.collidepoint(x, y):
-                    return True
         return False
+        #for a in self.blobs:
+        #    if a is not agent:
+        #        if a.collidepoint(x, y):
+        #            return True
+        #return False
 
     def occupy_wall(self, x, y, wall):
         h, l = self.occupied.shape
@@ -189,7 +190,14 @@ class World:
                 self.candidates.append(mush)
                 return mush
         return None
-
+    def get_wall(self,x,y):
+        wall_id = self.get_occupied_wall_id(x,y)
+        if wall_id == 0:
+            return None
+        for w in self.walls:
+            if w.id == wall_id:
+                return w
+        return None
     def get_grid_value(self, x, y):
         return self.grid[y, x]
 

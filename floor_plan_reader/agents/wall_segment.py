@@ -114,7 +114,7 @@ class WallSegment(Agent):
 
     def calculate_extended_bounding_box(self):
         h, w = self.world.get_shape()
-        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(h, w)
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w,h)
         steps_backward = self.crawl(points_backward)
         steps_forward = self.crawl(points_forward)
         self.collision_box_extended = self.collision_box.copy()

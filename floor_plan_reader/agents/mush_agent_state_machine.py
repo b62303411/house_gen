@@ -11,8 +11,11 @@ class MushAgentStateMachine:
         if self.state == "fill_phase":
             self.mush.absorb_bleading_out()
             self.mush.fill_box()
-            self.state = "pruning"
+            self.state = "hey_neighbour"
             return
+        if self.state == "hey_neighbour":
+            self.mush.hey_neighbour()
+            self.state = "pruning"
         if self.state == "recenter_phase":
             if self.mush.recenter_phase():
                 self.state = "recenter_phase"

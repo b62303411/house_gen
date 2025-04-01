@@ -53,9 +53,11 @@ class Mushroom(Agent):
         return bool(a) != bool(b)
 
     def is_outer_wall(self):
-        if self.left_inside is not None and self.right_inside is not None:
-            return self.xor_bool(self.left_inside, self.right_inside)
-        return False
+        return self.collision_box.width > 4
+
+        # if self.left_inside is not None and self.right_inside is not None:
+        #    return self.xor_bool(self.left_inside, self.right_inside)
+        # return False
 
     def set_position(self, x, y):
         self.collision_box.set_position(x, y)
@@ -77,6 +79,35 @@ class Mushroom(Agent):
 
     def is_centered(self):
         return abs(self.left_margin - self.right_margin) > 2
+
+    def free(self):
+        for r in self.root_cells:
+            self.world.free(r.x, r.y)
+
+    def hey_neighbour(self):
+        if self.is_outer_wall():
+            # lets take over smaller wall
+            points_forward, points_backward = self.get_extended_ray_trace_points()
+            if self.bulldose(points_backward):
+                logging.info("yea")
+            if self.bulldose(points_forward):
+                logging.info("yea")
+
+    def bulldose(self, points):
+        for p in points:
+            x, y = p[0], p[1]
+            if not self.world.is_food(x, y):
+                return False
+            wall = self.world.get_wall(x, y)
+            if wall is not None:
+                if wall.get_width() < self.get_width():
+                    wall.free()
+                    return True
+        return False
+
+    def get_extended_ray_trace_points(self):
+        h, w = self.world.get_shape()
+        return self.collision_box.get_extended_ray_trace_points( w,h)
 
     def try_to_center(self):
         lm = None
@@ -112,6 +143,9 @@ class Mushroom(Agent):
         dx = lm - lm_d
         dy = rm - rm_d
         logging.debug(f"dx:{dx} dy:{dy}")
+
+    def transition_to_renegotiate(self):
+        self.state_machine.sate = "renegotiate"
 
     def process_state(self):
         self.state_machine.process_state()
@@ -156,11 +190,12 @@ class Mushroom(Agent):
             self.co_axial_walls.add(obj)
 
     def absorb_bleading_out(self):
-        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self,self.collision_box)
+        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self, self.collision_box)
         self.division_points = division_points
         self.collision_box.set_width(new_cb.width)
         center = new_cb.get_center()
-        self.collision_box.set_position(center[0],center[1])
+        self.collision_box.set_position(center[0], center[1])
+
     def crawl(self, points):
         steps = 0
         opening_lenght = 0
@@ -199,7 +234,7 @@ class Mushroom(Agent):
 
     def crawl_phase(self):
         h, w = self.world.get_shape()
-        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(h, w)
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w,h)
         self.crawl_points = set()
         self.crawl_points.update(points_forward)
         self.crawl_points.update(points_backward)
@@ -308,7 +343,7 @@ class Mushroom(Agent):
         return False
 
     def overlap_phase(self):
-        mushrooms = self.blob.walls
+        mushrooms = self.blob.get_walls()
         for m in mushrooms:
             if m != self and m.alive and m.is_valid():
                 if self.collision_box.is_parallel_to(m.collision_box):
@@ -327,13 +362,16 @@ class Mushroom(Agent):
     def corners(self):
         return self.collision_box.calculate_corners()
 
+    def get_width(self):
+        return self.collision_box.width
+
     def performe_ray_trace(self):
         """Determine the longest axis."""
         result = self.ray_trace_from_center()
         if result.is_valid():
             stem_length = result.get_lenght()
             width = result.get_width()
-            if(width ==2):
+            if (width == 2):
                 pass
             cx, cy = result.center
             dx, dy = result.get_dir().direction
@@ -504,7 +542,7 @@ class Mushroom(Agent):
 
     def scan_for_walls(self, x, y, directions=list(
         map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
-        return self.wall_scanner.scan_for_walls(self,x, y, directions)
+        return self.wall_scanner.scan_for_walls(self, x, y, directions)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0
@@ -563,22 +601,9 @@ class Mushroom(Agent):
 
     def draw(self, screen, vp):
 
-        for cell in self.root_cells:
-            sx, sy = vp.convert(cell.x, cell.y)
-            if cell.is_root:
-                colour = (100, 200, 160)
-            elif cell.is_stem:
-                colour = (200, 0, 0)
-            else:
-                if self.is_outer_wall():
-                    colour = (0, 0, 100)
-                else:
-                    colour = (25, 25, 255)
-            if self.selected:
-                colour = (255, 0, 0)
-            pygame.draw.rect(screen, colour, pygame.Rect(sx, sy, 1, 1))
-
-        self.draw_cells(self.core_cells, screen, vp)
+        if self.get_state() != "done":
+            self.draw_cells(self.root_cells, screen, vp)
+            self.draw_cells(self.core_cells, screen, vp)
 
         if self.alive:
             if self.is_outer_wall():
@@ -669,4 +694,4 @@ class Mushroom(Agent):
         self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
 
     def create_blob(self, x, y):
-        self.world.create_blob(x,y)
+        self.world.create_blob(x, y)

@@ -8,6 +8,7 @@ from floor_plan_reader.display.popup_menu import PopupMenu
 from floor_plan_reader.display.status_window import StatusWindow
 from floor_plan_reader.display.user_input import UserInput
 from floor_plan_reader.display.view_point import ViewPoint
+from floor_plan_reader.intersections_solver import IntersectionSolver
 
 
 class SimulationView:
@@ -64,7 +65,17 @@ class SimulationView:
 
     def run_blob(self):
         blob = self.selected.blob
+        s = IntersectionSolver(blob.world)
+        blob.purge_dead_walls()
+        segments = set()
+        for w in blob.get_walls():
+            if w.wall_segment is not None:
+                w.wall_segment.calculate_extended_bounding_box()
+                segments.add(w.wall_segment)
+        s.build_lines_and_intersections(segments)
+
         blob.print_blob()
+        blob.full_reset()
 
     def evaluate_selected(self, mx, my):
         selection_candidate = None

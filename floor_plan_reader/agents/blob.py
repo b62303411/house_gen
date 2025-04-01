@@ -19,7 +19,7 @@ class Blob(Agent):
 
         self.len_start = 0
         self.active_mush = None
-        self.walls = set()
+        self._walls = set()
         self.bounding_box = None
 
     def __lt__(self, other):
@@ -29,6 +29,10 @@ class Blob(Agent):
     def is_food(self, x, y):
         return self.world.is_food(x, y)
 
+    def get_walls(self):
+        return self._walls.copy()
+    def get_wall_count(self):
+        return len(self._walls)
     def is_blob(self, x, y):
         return self.world.is_blob(x,y)
 
@@ -114,7 +118,7 @@ class Blob(Agent):
                 if self.active_mush is None or self.active_mush.get_state() == 'done' or self.active_mush.alive == False:
                     first_element = next(iter(self.free_slot))
                     self.create_mushroom(first_element.x, first_element.y)
-                if len(self.walls) > 15:
+                if self.get_wall_count() > 15:
                     self.print_blob()
             else:
                 self.alive = False
@@ -128,12 +132,25 @@ class Blob(Agent):
         x, y = self.bounding_box.get_center()
         width, height = self.bounding_box.get_shape()
         self.world.print_snapshot(x, y, width + 2, height + 2, "blob")
-
+    def purge_dead_walls(self):
+        copy = self._walls.copy()
+        for w in copy:
+            if not w.alive:
+                self._walls.remove(w)
+    def full_reset(self):
+        copy = self._walls.copy()
+        for w in copy:
+            w.kill()
+            for c in w.cells:
+                self.free_slot.add(c)
+            self._walls.remove(w)
+        self.alive = True
+        self.status = "mush"
     def create_mushroom(self, x, y):
         c = Cell(x, y)
         self.free_slot.remove(c)
         self.active_mush = self.world.create_mushroom(self, x, y)
-        self.walls.add(self.active_mush)
+        self._walls.add(self.active_mush)
 
     def draw(self, screen, vp):
         colour = (200, 0, 0)
