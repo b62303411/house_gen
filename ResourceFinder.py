@@ -21,6 +21,14 @@ class ResourceFinder:
 
     def get(self, resource_name):
         """
+           Build the absolute path to a resource file by name, with debug info.
+           """
+        print(f"[ResourceFinder] Requested resource: '{resource_name}'")
+        print(f"[ResourceFinder] Resource directory: '{self.resource_dir}'")
+
+        resource_path = os.path.join(self.resource_dir, resource_name)
+        print(f"[ResourceFinder] Full path to look for: '{resource_path}'")
+        """
         Build the absolute path to a resource file by name.
         Example: get('w1024.jpg') --> 'E:/.../resources/w1024.jpg'
         """
