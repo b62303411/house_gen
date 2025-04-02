@@ -77,6 +77,7 @@ class Mushroom(Agent):
 
     def get_cells(self):
         return self.root_cells
+
     def get_state(self):
         return self.state_machine.state
 
@@ -114,7 +115,7 @@ class Mushroom(Agent):
 
     def get_extended_ray_trace_points(self):
         h, w = self.world.get_shape()
-        return self.collision_box.get_extended_ray_trace_points( w,h)
+        return self.collision_box.get_extended_ray_trace_points(w, h)
 
     def try_to_center(self):
         lm = None
@@ -241,20 +242,21 @@ class Mushroom(Agent):
 
     def crawl_phase(self):
         h, w = self.world.get_shape()
-        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w,h)
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w, h)
         self.crawl_points = set()
         self.crawl_points.update(points_forward)
         self.crawl_points.update(points_backward)
         self.crawl(points_forward)
         self.crawl(points_backward)
         wall = None
+        walls = set()
         if self.wall_segment is not None:
-            wall = self.wall_segment
+            walls.add(self.wall_segment)
         for coaxial in self.co_axial_walls:
             if coaxial.wall_segment is not None:
-                wall = coaxial.wall_segment
+                walls.add(coaxial.wall_segment)
 
-        if wall is None:
+        if len(walls) == 0:
             wall = self.world.create_wall_segment()
             self.wall_segment = wall
             wall.add_part(self)
@@ -262,6 +264,20 @@ class Mushroom(Agent):
                 coaxial.wall_segment = wall
                 wall.add_part(coaxial)
         else:
+            # elect a wall
+            winner = None
+            max_lenght = -1
+            for w in walls:
+                max_lenght = max(w.get_score(), max_lenght)
+            for w in walls:
+                if w.get_score() == max_lenght:
+                    winner = w
+                    break
+            for w in walls:
+                if w.id != winner.id:
+                    winner.merge(w)
+                    w.kill()
+            wall = winner
             if self.wall_segment is None:
                 self.wall_segment = wall
                 wall.add_part(self)
@@ -405,9 +421,11 @@ class Mushroom(Agent):
 
     def get_direction(self):
         return self.collision_box.get_direction()
+
     def grow(self):
         self.performe_ray_trace()
         self.fill_box()
+
     def stem_growth_phase(self):
         """Grow a stem along the longest axis."""
         x, y = self.get_center()

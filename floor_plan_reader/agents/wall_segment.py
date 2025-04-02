@@ -7,7 +7,11 @@ from pygame import font
 from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
+from floor_plan_reader.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
+
+
+
 
 
 class Scores:
@@ -44,6 +48,9 @@ class WallSegment(Agent):
         self.cb_drawer = BoundingBoxDrawer()
         self.wall_dic = {}
 
+    def __hash__(self):
+        return hash(self.id)
+
     def add_node(self, node):
         self.nodes.add(node)
 
@@ -65,6 +72,13 @@ class WallSegment(Agent):
                 return True
         return False
 
+    def merge(self, seg):
+        for p in seg.parts:
+            p.wall_scanner = self
+            self.add_part(p)
+        for n in seg.nodes:
+            self.add_node(n)
+
     def set_position(self, x, y):
         self.collision_box.set_position(x, y)
 
@@ -72,7 +86,54 @@ class WallSegment(Agent):
         pass
 
     def calculate_openings(self):
-        pass
+        boxes = []
+        for p in self.parts:
+            boxes.append(p.collision_box)
+        count = len(boxes)
+        logging.info(f"{count}")
+        if count < 2:
+            logging.debug("too small")
+            return
+
+        direction, _ = boxes[0].derive_direction_and_normal()
+        dx, dy = direction.direction
+
+        def project(box):
+            cx, cy = box.get_center()
+            return cx * dx + cy * dy
+
+        boxes_sorted = sorted(boxes, key=project)
+
+        # Calculate center of the full wall
+        wall_center_x = sum(b.get_center()[0] for b in boxes) / len(boxes)
+        wall_center_y = sum(b.get_center()[1] for b in boxes) / len(boxes)
+
+        for i in range(len(boxes_sorted) - 1):
+            box_a = boxes_sorted[i]
+            box_b = boxes_sorted[i + 1]
+
+            _, end_a = box_a.get_center_line()
+            start_b, _ = box_b.get_center_line()
+
+            # Distance between boxes projected on wall axis
+            ox = start_b[0] - end_a[0]
+            oy = start_b[1] - end_a[1]
+            gap = ox * dx + oy * dy
+
+            if gap > 0.1:  # small tolerance
+                # Midpoint of opening
+                mid_x = (start_b[0] + end_a[0]) / 2
+                mid_y = (start_b[1] + end_a[1]) / 2
+
+                # Project midpoint to get signed distance from wall center
+                relative_cx = (mid_x - wall_center_x) * dx + (mid_y - wall_center_y) * dy
+                cx = round(relative_cx, 3)
+                width = round(gap, 3)
+                o = Opening(cx, width)
+                if o in self.openings:
+                    pass
+                else:
+                    self.openings.add(o)
 
     def merge_alighned(self, cb, p):
         if isinstance(cb, CollisionBox):
@@ -118,26 +179,26 @@ class WallSegment(Agent):
     def calculate_extended_bounding_box(self):
         h, w = self.world.get_shape()
         points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w, h)
-        steps_backward,bx,by = self.crawl(points_backward)
-        steps_forward,fx,fy = self.crawl(points_forward)
+        steps_backward, bx, by = self.crawl(points_backward)
+        steps_forward, fx, fy = self.crawl(points_forward)
         self.collision_box_extended = self.collision_box.copy()
 
         if steps_forward > 1 or steps_backward > 1:
-            extension = steps_backward+steps_forward
+            extension = steps_backward + steps_forward
             l = self.collision_box_extended.length
-            self.collision_box_extended.set_lenght(l + extension+2)
+            self.collision_box_extended.set_lenght(l + extension + 2)
             if steps_forward > steps_backward:
                 (bx1, by1), (bx2, by2) = self.collision_box_extended.get_center_line()
-                self.collision_box_extended.move_forward(abs(steps_backward-steps_forward)/2)
+                self.collision_box_extended.move_forward(abs(steps_backward - steps_forward) / 2)
                 (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
-                id_start = self.world.get_occupied_id(x1,y1)
+                id_start = self.world.get_occupied_id(x1, y1)
                 id_end = self.world.get_occupied_id(x2, y2)
                 if id_start in self.wall_dic and id_end in self.wall_dic:
                     if steps_forward > 1 or steps_backward > 1:
                         logging.info("error")
 
             else:
-                self.collision_box_extended.move_backward(abs(steps_backward-steps_forward)/2)
+                self.collision_box_extended.move_backward(abs(steps_backward - steps_forward) / 2)
                 (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
                 id_start = self.world.get_occupied_id(x1, y1)
                 id_end = self.world.get_occupied_id(x2, y2)
@@ -149,7 +210,7 @@ class WallSegment(Agent):
 
     def crawl(self, points):
         steps = 0
-        x,y = 0,0
+        x, y = 0, 0
         measuring_extent = False
         for p in points:
             x = int(p[0])
@@ -161,9 +222,9 @@ class WallSegment(Agent):
                 if measuring_extent:
                     steps = steps + 1
             else:
-                return steps ,x,y
+                return steps, x, y
 
-        return steps,x,y
+        return steps, x, y
 
     def process_state(self):
 
@@ -191,6 +252,10 @@ class WallSegment(Agent):
             return
         elif self.state == "extend":
             self.calculate_extended_bounding_box()
+            self.state = "opening"
+            return
+        elif self.state == "opening":
+            self.calculate_openings()
             self.state = "done"
             return
         elif self.state == "dead":
@@ -326,6 +391,9 @@ class WallSegment(Agent):
             x, y = vp.convert(x, y)
             text_surface = self.f.render(f"s: {score:.{2}f}", True, (15, 255, 0))
             screen.blit(text_surface, (x, y))  # Position (x=10, y=10)
+
+    def get_score(self):
+        return len(self.parts)
 
     def get_collision_box(self):
         return self.collision_box

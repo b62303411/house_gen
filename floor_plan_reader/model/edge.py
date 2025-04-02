@@ -7,11 +7,15 @@ class Edge:
         self.stud_type = "2x6"
 
     def get_json(self):
+        if len(self.line.seg.parts)>1:
+            self.line.seg.calculate_openings()
         str_value = {"id": f"Ext_{self.node_a.id}_{self.node_b.id}",
                      "start_node": self.node_a.id, "end_node": self.node_b.id,
                      "wall_type": "exterior",
                      "stud_type": self.stud_type,
-                     "height": self.wall_height}
+                     "height": self.wall_height,
+                     "openings": [opening.to_json(15) for opening in self.line.seg.openings]
+                     }
         return str_value
 
     def getHash(self):
@@ -19,3 +23,6 @@ class Edge:
 
     def __hash__(self):
         return self.getHash()
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()

@@ -58,6 +58,7 @@ class Simulation:
         self._line_dic = {}
         for l in self._lines:
             self._line_dic[l.id] = l
+            l.seg.calculate_openings()
         for i in self._intersections:
             (ix, iy) = i.point
             blob = self.world.get_blob(ix, iy)

@@ -2,386 +2,706 @@
   "nodes": [
     {
       "id": "N1",
-      "x": 40.166666666666664,
-      "y": 31.1
+      "x": 15.233333333333333,
+      "y": 31.066666666666666
     },
     {
       "id": "N2",
-      "x": 15.233333333333333,
+      "x": 6.066666666666666,
       "y": 31.066666666666666
     },
     {
       "id": "N3",
-      "x": 40.166666666666664,
-      "y": 39.96666666666667
-    },
-    {
-      "id": "N4",
       "x": 28.966666666666665,
       "y": 40.03333333333333
     },
     {
-      "id": "N5",
-      "x": 31.6,
-      "y": 15.733333333333333
-    },
-    {
-      "id": "N6",
-      "x": 31.6,
-      "y": 12.266666666666667
-    },
-    {
-      "id": "N7",
+      "id": "N4",
       "x": 22.566666666666666,
       "y": 31.066666666666666
     },
     {
-      "id": "N8",
+      "id": "N5",
       "x": 28.966666666666665,
       "y": 31.066666666666666
     },
     {
-      "id": "N9",
-      "x": 47.1,
+      "id": "N6",
+      "x": 47.06666666666667,
       "y": 31.1
     },
     {
-      "id": "N10",
+      "id": "N7",
+      "x": 47.06666666666667,
+      "y": 22.433333333333334
+    },
+    {
+      "id": "N8",
+      "x": 31.6,
+      "y": 12.266666666666667
+    },
+    {
+      "id": "N9",
       "x": 31.6,
       "y": 12.233333333333333
     },
     {
+      "id": "N10",
+      "x": 6.066666666666666,
+      "y": 19.8
+    },
+    {
       "id": "N11",
-      "x": 31.6,
-      "y": 22.5
+      "x": 40.166666666666664,
+      "y": 31.1
     },
     {
       "id": "N12",
       "x": 40.166666666666664,
-      "y": 15.733333333333333
+      "y": 39.96666666666667
     },
     {
       "id": "N13",
-      "x": 40.166666666666664,
-      "y": 12.266666666666667
-    },
-    {
-      "id": "N14",
-      "x": 40.166666666666664,
-      "y": 12.233333333333333
-    },
-    {
-      "id": "N15",
-      "x": 40.166666666666664,
-      "y": 22.5
-    },
-    {
-      "id": "N16",
       "x": 31.6,
-      "y": 5.466666666666667
-    },
-    {
-      "id": "N17",
-      "x": 40.166666666666664,
-      "y": 5.466666666666667
-    },
-    {
-      "id": "N18",
-      "x": 6.066666666666666,
-      "y": 19.8
-    },
-    {
-      "id": "N19",
-      "x": 47.06666666666667,
       "y": 22.466666666666665
     },
     {
-      "id": "N20",
-      "x": 31.6,
-      "y": 9.733333333333333
-    },
-    {
-      "id": "N21",
-      "x": 31.6,
-      "y": 18.3
-    },
-    {
-      "id": "N22",
-      "x": 36.03333333333333,
-      "y": 12.266666666666667
-    },
-    {
-      "id": "N23",
+      "id": "N14",
       "x": 19.733333333333334,
       "y": 31.066666666666666
     },
     {
-      "id": "N24",
+      "id": "N15",
+      "x": 40.13333333333333,
+      "y": 12.266666666666667
+    },
+    {
+      "id": "N16",
+      "x": 36.03333333333333,
+      "y": 12.266666666666667
+    },
+    {
+      "id": "N17",
+      "x": 40.13333333333333,
+      "y": 12.233333333333333
+    },
+    {
+      "id": "N18",
       "x": 36.03333333333333,
       "y": 12.233333333333333
     },
     {
-      "id": "N25",
-      "x": 6.066666666666666,
-      "y": 23.7
-    },
-    {
-      "id": "N26",
+      "id": "N19",
       "x": 17.8,
       "y": 25.666666666666668
     },
     {
-      "id": "N27",
-      "x": 28.966666666666665,
-      "y": 0.43333333333333335
-    },
-    {
-      "id": "N28",
-      "x": 34.9,
-      "y": 5.466666666666667
-    },
-    {
-      "id": "N29",
-      "x": 33.0,
-      "y": 18.3
-    },
-    {
-      "id": "N30",
-      "x": 40.13333333333333,
-      "y": 0.43333333333333335
-    },
-    {
-      "id": "N31",
-      "x": 34.9,
-      "y": 0.43333333333333335
-    },
-    {
-      "id": "N32",
-      "x": 31.6,
-      "y": 7.566666666666665
-    },
-    {
-      "id": "N33",
-      "x": 21.933333333333334,
-      "y": 31.066666666666666
-    },
-    {
-      "id": "N34",
-      "x": 21.933333333333334,
-      "y": 25.666666666666668
-    },
-    {
-      "id": "N35",
+      "id": "N20",
       "x": 12.633333333333333,
       "y": 19.8
     },
     {
-      "id": "N36",
+      "id": "N21",
+      "x": 40.13333333333333,
+      "y": 22.466666666666665
+    },
+    {
+      "id": "N22",
+      "x": 6.066666666666666,
+      "y": 23.666666666666668
+    },
+    {
+      "id": "N23",
+      "x": 31.6,
+      "y": 18.3
+    },
+    {
+      "id": "N24",
+      "x": 31.6,
+      "y": 15.7
+    },
+    {
+      "id": "N25",
+      "x": 21.86666666666667,
+      "y": 19.8
+    },
+    {
+      "id": "N26",
+      "x": 31.6,
+      "y": 5.466666666666667
+    },
+    {
+      "id": "N27",
+      "x": 31.6,
+      "y": 9.733333333333333
+    },
+    {
+      "id": "N28",
+      "x": 28.966666666666665,
+      "y": 0.43333333333333335
+    },
+    {
+      "id": "N29",
+      "x": 40.13333333333333,
+      "y": 0.43333333333333335
+    },
+    {
+      "id": "N30",
+      "x": 40.13333333333333,
+      "y": 5.466666666666667
+    },
+    {
+      "id": "N31",
+      "x": 40.13333333333333,
+      "y": 15.7
+    },
+    {
+      "id": "N32",
+      "x": 34.9,
+      "y": 0.43333333333333335
+    },
+    {
+      "id": "N33",
+      "x": 33.0,
+      "y": 18.3
+    },
+    {
+      "id": "N34",
+      "x": 21.9,
+      "y": 31.066666666666666
+    },
+    {
+      "id": "N35",
       "x": 17.8,
       "y": 22.5
     },
     {
+      "id": "N36",
+      "x": 31.6,
+      "y": 7.566666666666665
+    },
+    {
       "id": "N37",
-      "x": 15.233333333333333,
-      "y": 22.5
+      "x": 21.9,
+      "y": 25.666666666666668
     },
     {
       "id": "N38",
-      "x": 21.933333333333334,
-      "y": 22.5
+      "x": 34.9,
+      "y": 5.466666666666667
     },
     {
       "id": "N39",
       "x": 15.233333333333333,
-      "y": 22.266666666666666
+      "y": 22.5
     },
     {
       "id": "N40",
-      "x": 15.466666666666669,
+      "x": 21.9,
       "y": 22.5
     },
     {
       "id": "N41",
+      "x": 31.6,
+      "y": 15.891911977096022
+    },
+    {
+      "id": "N42",
+      "x": 15.233333333333333,
+      "y": 22.266666666666666
+    },
+    {
+      "id": "N43",
+      "x": 15.466666666666669,
+      "y": 22.5
+    },
+    {
+      "id": "N44",
       "x": 15.433333333333334,
       "y": 22.466666666666665
     }
   ],
   "edges": [
     {
-      "id": "Ext_N1_N3",
+      "id": "Ext_N1_N2",
       "start_node": "N1",
-      "end_node": "N3",
+      "end_node": "N2",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 4.744466666666667,
+          "bottom_z": 1,
+          "width": 6.233333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -5.888866666666667,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 7.208333333333333,
+          "bottom_z": 1,
+          "width": 2.6,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -7.058333333333334,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.125,
+          "bottom_z": 1,
+          "width": 2.533333333333333,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N5_N6",
+      "id": "Ext_N4_N2",
+      "start_node": "N4",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 4.744466666666667,
+          "bottom_z": 1,
+          "width": 6.233333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -5.888866666666667,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 7.208333333333333,
+          "bottom_z": 1,
+          "width": 2.6,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -7.058333333333334,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.125,
+          "bottom_z": 1,
+          "width": 2.533333333333333,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N5_N2",
       "start_node": "N5",
-      "end_node": "N6",
+      "end_node": "N2",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 4.744466666666667,
+          "bottom_z": 1,
+          "width": 6.233333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -5.888866666666667,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 7.208333333333333,
+          "bottom_z": 1,
+          "width": 2.6,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -7.058333333333334,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.125,
+          "bottom_z": 1,
+          "width": 2.533333333333333,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N2_N7",
-      "start_node": "N2",
+      "id": "Ext_N3_N5",
+      "start_node": "N3",
+      "end_node": "N5",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.48333333333333334,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N6_N7",
+      "start_node": "N6",
       "end_node": "N7",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.03333333333333333,
+          "bottom_z": 1,
+          "width": 1.8666666666666667,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N2_N8",
-      "start_node": "N2",
+      "id": "Ext_N9_N8",
+      "start_node": "N9",
       "end_node": "N8",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.8666666666666667,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -2.3888666666666665,
+          "bottom_z": 1,
+          "width": 1.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 2.0778000000000003,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N4_N8",
-      "start_node": "N4",
-      "end_node": "N8",
+      "id": "Ext_N10_N2",
+      "start_node": "N10",
+      "end_node": "N2",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.85,
+          "bottom_z": 1,
+          "width": 1.9666666666666666,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N1_N9",
-      "start_node": "N1",
-      "end_node": "N9",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N5_N10",
-      "start_node": "N5",
-      "end_node": "N10",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N11_N10",
+      "id": "Ext_N11_N6",
       "start_node": "N11",
-      "end_node": "N10",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N5_N12",
-      "start_node": "N5",
-      "end_node": "N12",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N13_N6",
-      "start_node": "N13",
       "end_node": "N6",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.15,
+          "bottom_z": 1,
+          "width": 1.2333333333333334,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N13_N12",
-      "start_node": "N13",
+      "id": "Ext_N11_N12",
+      "start_node": "N11",
       "end_node": "N12",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.4166666666666667,
+          "bottom_z": 1,
+          "width": 1.9333333333333333,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N10_N14",
-      "start_node": "N10",
-      "end_node": "N14",
+      "id": "Ext_N13_N7",
+      "start_node": "N13",
+      "end_node": "N7",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 1.9,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N12_N14",
-      "start_node": "N12",
-      "end_node": "N14",
+      "id": "Ext_N13_N9",
+      "start_node": "N13",
+      "end_node": "N9",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.8666666666666667,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -2.3888666666666665,
+          "bottom_z": 1,
+          "width": 1.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 2.0778000000000003,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N15_N14",
+      "id": "Ext_N15_N8",
       "start_node": "N15",
-      "end_node": "N14",
+      "end_node": "N8",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N11_N15",
-      "start_node": "N11",
-      "end_node": "N15",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N11_N16",
-      "start_node": "N11",
-      "end_node": "N16",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N17_N15",
-      "start_node": "N17",
-      "end_node": "N15",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N17_N16",
-      "start_node": "N17",
-      "end_node": "N16",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N9_N19",
+      "id": "Ext_N9_N17",
       "start_node": "N9",
-      "end_node": "N19",
+      "end_node": "N17",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N11_N19",
-      "start_node": "N11",
-      "end_node": "N19",
+      "id": "Ext_N15_N17",
+      "start_node": "N15",
+      "end_node": "N17",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -3.8111333333333333,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.9666666666666667,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 3.5221999999999998,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -6.933333333333334,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 6.366666666666666,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N24_N22",
-      "start_node": "N24",
-      "end_node": "N22",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N18_N25",
+      "id": "Ext_N18_N16",
       "start_node": "N18",
-      "end_node": "N25",
+      "end_node": "N16",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N20_N10",
+      "start_node": "N20",
+      "end_node": "N10",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 2.7333333333333334,
+          "bottom_z": 1,
+          "width": 2.933333333333333,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N21_N17",
+      "start_node": "N21",
+      "end_node": "N17",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -3.8111333333333333,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.9666666666666667,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 3.5221999999999998,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -6.933333333333334,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 6.366666666666666,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N25_N10",
+      "start_node": "N25",
+      "end_node": "N10",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 2.7333333333333334,
+          "bottom_z": 1,
+          "width": 2.933333333333333,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N13_N26",
+      "start_node": "N13",
+      "end_node": "N26",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.8666666666666667,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -2.3888666666666665,
+          "bottom_z": 1,
+          "width": 1.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 2.0778000000000003,
+          "bottom_z": 1,
+          "width": 2.1,
+          "height": 1.3
+        }
+      ]
     },
     {
       "id": "Ext_N29_N21",
@@ -389,111 +709,266 @@
       "end_node": "N21",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -3.8111333333333333,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.9666666666666667,
+          "bottom_z": 1,
+          "width": 1.2,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 3.5221999999999998,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -6.933333333333334,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 6.366666666666666,
+          "bottom_z": 1,
+          "width": 4.066666666666666,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N30_N15",
+      "id": "Ext_N29_N28",
+      "start_node": "N29",
+      "end_node": "N28",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N30_N26",
       "start_node": "N30",
-      "end_node": "N15",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N30_N27",
-      "start_node": "N30",
-      "end_node": "N27",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N28_N31",
-      "start_node": "N28",
-      "end_node": "N31",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N34_N26",
-      "start_node": "N34",
       "end_node": "N26",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N34_N33",
-      "start_node": "N34",
-      "end_node": "N33",
+      "id": "Ext_N31_N24",
+      "start_node": "N31",
+      "end_node": "N24",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N35_N18",
+      "id": "Ext_N33_N23",
+      "start_node": "N33",
+      "end_node": "N23",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N35_N19",
       "start_node": "N35",
-      "end_node": "N18",
+      "end_node": "N19",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N36_N26",
-      "start_node": "N36",
-      "end_node": "N26",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N2_N37",
-      "start_node": "N2",
-      "end_node": "N37",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N37_N36",
+      "id": "Ext_N37_N19",
       "start_node": "N37",
-      "end_node": "N36",
+      "end_node": "N19",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": []
     },
     {
-      "id": "Ext_N38_N33",
+      "id": "Ext_N37_N34",
+      "start_node": "N37",
+      "end_node": "N34",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N38_N32",
       "start_node": "N38",
-      "end_node": "N33",
+      "end_node": "N32",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -0.03333333333333333,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N38_N37",
-      "start_node": "N38",
-      "end_node": "N37",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432
-    },
-    {
-      "id": "Ext_N2_N39",
-      "start_node": "N2",
+      "id": "Ext_N1_N39",
+      "start_node": "N1",
       "end_node": "N39",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.5666666666666667,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N39_N40",
+      "id": "Ext_N39_N35",
       "start_node": "N39",
-      "end_node": "N40",
+      "end_node": "N35",
       "wall_type": "exterior",
       "stud_type": "2x6",
-      "height": 2.7432
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 2.183333333333333,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 0.15,
+          "bottom_z": 1,
+          "width": 0.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -1.95,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 1.1778000000000002,
+          "bottom_z": 1,
+          "width": 0.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.9222,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N40_N34",
+      "start_node": "N40",
+      "end_node": "N34",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N40_N39",
+      "start_node": "N40",
+      "end_node": "N39",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 2.183333333333333,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 0.15,
+          "bottom_z": 1,
+          "width": 0.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -1.95,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 1.1778000000000002,
+          "bottom_z": 1,
+          "width": 0.9333333333333333,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -0.9222,
+          "bottom_z": 1,
+          "width": 0.1,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N1_N42",
+      "start_node": "N1",
+      "end_node": "N42",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.5666666666666667,
+          "bottom_z": 1,
+          "width": 0.9,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N42_N43",
+      "start_node": "N42",
+      "end_node": "N43",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
     }
   ],
   "furnitures": []

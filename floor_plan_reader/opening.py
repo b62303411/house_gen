@@ -2,18 +2,28 @@ import pygame
 
 
 class Opening:
-    def __init__(self, id,parent,cb):
-        self.id= id
-        self.parent = parent
-        self.collision_box = cb
+    def __init__(self, center_x, width):
+        self.type = "window"
+        self.center_x = center_x
+        self.bottom_z = 1
+        self.width = width
+        self.height = 1.3
 
-    def get_center(self):
-        return self.collision_box.get_center()
+    def __hash__(self):
+        return hash(int(self.center_x))
 
-    def get_world_center(self):
-        x1, y1 = self.collision_box.get_center()
-        x2, y2 =self.parent.collision_box.get_center()
-        return (x1+x2,y1+y2)
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
+
+    def to_json(self,pixel_per_meter = 15):
+        json_str = {
+            'type': self.type,
+            'center_x': self.center_x/pixel_per_meter,
+            'bottom_z': self.bottom_z,
+            'width': (self.width/pixel_per_meter)/2,
+            'height': self.height
+        }
+        return json_str
 
     def corners(self):
         return self.collision_box.calculate_corners()
