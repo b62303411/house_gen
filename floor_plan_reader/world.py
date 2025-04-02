@@ -1,15 +1,17 @@
 import logging
 from collections import deque
+from itertools import count
+
 from PIL import Image
 
 import numpy as np
 import random
 
 from floor_plan_reader.agents.agent_factory import AgentFactory
-from floor_plan_reader.agents.ants import Ant
 from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.id_util import IdUtil
-from floor_plan_reader.node import Node
+from floor_plan_reader.model.edge import Edge
+from floor_plan_reader.model.node import Node
 
 
 class World:
@@ -22,7 +24,7 @@ class World:
         self.occupied_wall = None
         self.visited = None
         self.candidates = deque()
-
+        self.node_seq = count(start=1)
         self.occupied = None
         self.walls = set()
         self.agents = set()
@@ -30,6 +32,7 @@ class World:
         self.zombies = []
         self.blobs = set()
         self.nodes = {}
+        self.edges = {}
 
     def has_node(self, node):
         return node.getHash() in self.nodes.keys()
@@ -37,18 +40,29 @@ class World:
     def create_node(self, position):
         x = position[0]
         y = position[1]
-        xi = int(x)
-        yi = int(y)
-        hash_ = hash((xi, yi))
+        n = Node((x, y))
+        hash_ = n.__hash__()
         if hash_ in self.nodes.keys():
             return self.nodes.get(hash_)
         else:
             n = Node((x, y))
+            n.id = f"N{next(self.node_seq)}"
             self.add_node(n)
             return n
 
     def add_node(self, node):
-        self.nodes[node.getHash()] = node
+        self.nodes[node.__hash__()] = node
+
+    def create_edge(self, node_a, node_b, line):
+        if node_a is None or node_b is None:
+            logging.error("node error")
+            return
+        n = Edge(node_a, node_b, line)
+        if n.__hash__() in self.edges.keys():
+            return self.edges.get(n.__hash__())
+        else:
+            self.edges[n.__hash__()] = n
+            return n
 
     def get_neighbors_8(self, x, y):
         """Returns all 8 neighboring coordinates."""
@@ -62,18 +76,20 @@ class World:
         self.blob_grid = np.zeros(self.grid.shape, dtype=np.uint64)
         self.occupied_wall = np.zeros(self.grid.shape, dtype=np.uint64)
 
-    def get_occupied_snapshot(self,x,y,width,height):
+    def get_occupied_snapshot(self, x, y, width, height):
         grid = self.occupied
-        return self.get_snapshot(x, y, width, height, grid,self.encode_occupied)
-    def get_grid_snapwhot(self,x,y,width,height):
-        grid = self.grid
-        return self.get_snapshot(x,y,width,height,grid,self.encode_grid)
+        return self.get_snapshot(x, y, width, height, grid, self.encode_occupied)
 
-    def encode_grid(self,color_coded,region,width,height):
+    def get_grid_snapwhot(self, x, y, width, height):
+        grid = self.grid
+        return self.get_snapshot(x, y, width, height, grid, self.encode_grid)
+
+    def encode_grid(self, color_coded, region, width, height):
         color_coded[region == 1] = [255, 255, 255]
         center_x, center_y = width // 2, height // 2
         color_coded[center_y, center_x] = [0, 255, 0]
-    def encode_occupied(self,color_coded,region,width,height):
+
+    def encode_occupied(self, color_coded, region, width, height):
         min_id = np.min(region)
         max_id = np.max(region)
         norm = (region - min_id) / (max_id - min_id)  # floats in [0..1]
@@ -89,7 +105,7 @@ class World:
         color_coded[..., 1] = g  # Green channel
         color_coded[..., 2] = b  # Blue channel
 
-    def get_snapshot(self, x, y, width, height, grid,encode):
+    def get_snapshot(self, x, y, width, height, grid, encode):
         color_coded = None
         x = int(x)
         y = int(y)
@@ -108,7 +124,7 @@ class World:
             region = grid[h1:h2, w1:w2]
             shape = region.shape
             color_coded = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
-            encode(color_coded,region,width,height)
+            encode(color_coded, region, width, height)
             # 4) Save the extracted region as an image file
             return color_coded
         else:
@@ -119,7 +135,7 @@ class World:
         x = int(x)
         y = int(y)
         # Ensure the region is within the image boundaries
-        color_coded = self.get_grid_snapwhot(x,y,width,height)
+        color_coded = self.get_grid_snapwhot(x, y, width, height)
         region_image = Image.fromarray(color_coded)
         if region_image is not None:
             name = f"{name_prefix}_{width}x{height}_{x}_{y}.png"

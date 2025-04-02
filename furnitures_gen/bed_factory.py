@@ -1,4 +1,19 @@
+import os
+import sys
+
 import bpy
+
+# Determine the absolute directory of this script
+script_path = os.path.realpath(__file__) if "__file__" in locals() or "__file__" in globals() else None
+if script_path:
+    script_dir = os.path.dirname(script_path)
+    # Add the script's directory to sys.path (if not already present)
+    if script_dir not in sys.path:
+        sys.path.append(script_dir)
+    # Also add the parent directory (for sibling packages/modules)
+    parent_dir = os.path.dirname(script_dir)
+    if parent_dir not in sys.path:
+        sys.path.append(parent_dir)
 from materials import MaterialFactory
 import math
 import bmesh

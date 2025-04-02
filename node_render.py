@@ -3,6 +3,7 @@ import math
 
 import bpy
 
+from ResourceFinder import get_finder
 from furnitures_gen.furniture_factory import FurnitureFactory
 from furnitures_gen.materials import MaterialFactory
 from furnitures_gen.segment_factory import SegmentFactory
@@ -61,9 +62,7 @@ class NodeRender:
 
     @staticmethod
     def load_floorplan_json(filepath):
-        """Load the floor plan data (nodes, edges) from a JSON file."""
-        with open(filepath, 'r') as f:
-            data = json.load(f)
+        data = get_finder().load_json(filepath)
         return data
 
     @staticmethod
@@ -74,7 +73,7 @@ class NodeRender:
     @staticmethod
     def build_from_data():
         # Example usage:
-        filepath = "E:/workspace/blender_house/house_gen/house_test.json"
+        filepath = "resources/experiment_floorplan.json"
         floorplan_data = NodeRender.load_floorplan_json(filepath)
         NodeRender.build_house_from_data(floorplan_data)
 

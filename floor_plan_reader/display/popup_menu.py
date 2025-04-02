@@ -121,12 +121,32 @@ class PopupMenu(Window):
             (ix, iy) = i.point
             ex, ey = conv.convert_(ix, iy)
             pygame.draw.circle(surface, (0, 255, 255), (ex, ey), 6)
+            # Define a font
+            font = pygame.font.SysFont("Arial", 16)  # (font_name, size)
+            text_surface = font.render(f"{i.id}", True, (255, 255, 255))
+            text_rect = text_surface.get_rect(center=(ex, ey))
+            half_width = text_rect.width // 2
+            # Add some padding around the text
+            padding = 8
+            background_rect = pygame.Rect(
+                text_rect.left - padding,
+                text_rect.top - padding,
+                text_rect.width + 2 * padding,
+                text_rect.height + 2 * padding
+            )
+
+            # Draw the background rect (optional rounded corners)
+            pygame.draw.rect(surface, (0, 0, 0), background_rect, border_radius=4)  # Black background
+
+            surface.blit(text_surface, (ex-half_width, ey-half_width))
             for l in i.lines:
                 if l in self.view.simulation._line_dic:
                     line = self.view.simulation._line_dic[l]
                     start = conv.convert_tuple(line.start_point)
                     end = conv.convert_tuple(line.end_point)
                     pygame.draw.line(surface, (255, 0, 0), start, end)
+                    text_surface = font.render(f"{l}", True, (255, 255, 255))
+                    surface.blit(text_surface, ((start[0]+end[0])/2, (start[1]+end[1])/2))
 
         center = (snap_x, snap_y)
         # center = (-center[0] + position[0] + self.rect.x, -center[1] + position[1] + self.rect.y)

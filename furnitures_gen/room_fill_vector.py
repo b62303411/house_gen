@@ -152,7 +152,7 @@ def detect_lines_and_rectangles(
     return original_color
 
 def main():
-    image_path = "../w1024.jpg"  # Adjust to your floor plan
+    image_path = "../resources/w1024.jpg"  # Adjust to your floor plan
     # Detect and draw lines (no fill) on top of the original image
     result = detect_lines_and_rectangles(
         image_path,

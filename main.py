@@ -26,22 +26,22 @@ def get_script_dir():
 
     return script_dir
 
+
 script_dir = get_script_dir()
 if script_dir not in sys.path:
     sys.path.append(script_dir)
-    sys.path.append("E:\workspace\blender_house\house_gen") 
+    sys.path.append("E:\\workspace\\blender_house\\house_gen")
 
-print("Updated script_dir:", script_dir) 
+print("Updated script_dir:", script_dir)
 # Debugging: Print sys.path to check if it's added
-#print("Updated sys.path:", sys.path)
-
+# print("Updated sys.path:", sys.path)
 
 
 print("Python Executable:", sys.executable)
 print("Python Version:", sys.version)
 print("Current Working Directory:", os.getcwd())
-#print("Sys Path:", sys.path)
-import os
+# print("Sys Path:", sys.path)
+
 
 script_dir = "E:\\workspace\\blender_house\\house_gen"
 print("Files in script directory:", os.listdir(script_dir))
@@ -59,7 +59,6 @@ importlib.reload(frame_factory)
 importlib.reload(bed_factory)
 importlib.reload(bath_thub_factory)
 from furnitures_gen.scene_factory import SceneFactory
-
 
 if __name__ == "__main__":
     SceneFactory.build_scene()

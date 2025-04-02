@@ -13,9 +13,6 @@ class MaterialFactory:
     def create_procedural_ceramic_material():
         return CeramicMaterialFactory.create_bath_ceramic()
 
-
-
-
     @staticmethod
     def apply_material(obj, material):
         """Applies material to an object if provided."""

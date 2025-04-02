@@ -1,5 +1,6 @@
 import json
 import logging
+from itertools import count
 
 import pygame
 
@@ -51,19 +52,26 @@ class Simulation:
 
     def save_blue_print(self):
         result = self.solver.build_lines_and_intersections(self.world.wall_segments)
-
+        self.world.nodes
         self._intersections = result.get("intersections")
         self._lines = result.get("lines")
         self._line_dic = {}
         for l in self._lines:
-            self._line_dic[l.id]=l
+            self._line_dic[l.id] = l
         for i in self._intersections:
             (ix, iy) = i.point
             blob = self.world.get_blob(ix, iy)
             if blob is not None:
                 blob.add_intersection(i)
+        nodes = list(self.world.nodes.values())
+        edges = list(self.world.edges.values())
+        data = {
+            "nodes": nodes,
+            "edges": edges
+        }
 
-        self.jw.build_floorplan_json(result, self.world.walls)
+        if len(edges) > 10:
+            self.jw.build_floorplan_json(data, self.world.walls)
 
     def get_blob_count(self):
         return len(self.world.blobs)

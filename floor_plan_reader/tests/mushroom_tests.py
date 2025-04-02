@@ -172,7 +172,7 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertAlmostEqual(merged.center_y, 15)
 
     def test_merge_vertical_aligned_json(self):
-        filename = "E:\\workspace\\blender_house\\house_gen\\test.json"
+        filename = "/resources/test.json"
         world = self.world
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts
@@ -218,7 +218,7 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertNotAlmostEquals(corners[1][0], corners[3][0])
 
     def test_merge_vertical_aligned_json2(self):
-        filename = "E:\\workspace\\blender_house\\house_gen\\test.json"
+        filename = "/resources/test.json"
         world = self.world
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts

@@ -1,5 +1,8 @@
 import bpy
 
+from ResourceFinder import get_finder
+
+
 class TexturedPlaneFactory:
     @staticmethod
     def create_textured_plane(image_path, plane_name="TexturedPlane", plane_size=1):
@@ -24,7 +27,7 @@ class TexturedPlaneFactory:
 
         # Add Image Texture Node
         tex_node = mat.node_tree.nodes.new(type="ShaderNodeTexImage")
-        tex_node.image = bpy.data.images.load(image_path)
+        tex_node.image = get_finder().load_image(image_path)
 
         # Add a New Principled BSDF Node
         bsdf = mat.node_tree.nodes.new(type="ShaderNodeBsdfPrincipled")
