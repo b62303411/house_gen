@@ -13,6 +13,10 @@ class Edge:
             e.opening.add(o.copy())
         return e
 
+    def calculate_opening(self):
+        for o in self.line.seg.openings:
+            self.opening.add(o.copy())
+
     def convert_to_scale(self, meter_per_pixel):
         if len(self.line.seg.parts) > 1:
             self.line.seg.calculate_openings()
@@ -34,7 +38,7 @@ class Edge:
                      "wall_type": "exterior",
                      "stud_type": self.stud_type,
                      "height": self.wall_height,
-                     "openings": [opening.to_json() for opening in self.line.seg.openings]
+                     "openings": [o.to_json() for o in self.opening]
                      }
         return str_value
 

@@ -1,4 +1,5 @@
 import importlib
+import os
 
 import bpy
 import math
@@ -21,6 +22,17 @@ class FurnitureFactory:
     prototype_collection = None
     furniture_collection = None
 
+    def import_from_blend(blend_path, object_names):
+        blend_abs_path = os.path.abspath(blend_path)
+        object_dir = blend_abs_path + ""
+
+        for obj_name in object_names:
+            bpy.ops.wm.append(
+                filepath=os.path.join(object_dir, obj_name),
+                directory=object_dir,
+                filename=obj_name
+            )
+            print(f"✅ Imported {obj_name} from {blend_path}")
     @staticmethod
     def create_furniture_collection():
         """Creates a dedicated collection for prototypes if it doesn't exist."""

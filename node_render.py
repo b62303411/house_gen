@@ -1,5 +1,6 @@
 import json
 import math
+import os
 
 import bpy
 
@@ -27,6 +28,9 @@ class NodeRender:
                 nodes_lookup=nodes_lookup,
                 parent_obj=house_parent
             )
+            id_str = edge.get('id')
+            output_path = os.path.abspath(f"{id_str}.blend")
+            bpy.ops.wm.save_as_mainfile(filepath=output_path)
     @staticmethod
     def build_house_from_data(data):
         # Create an Empty to hold all walls
@@ -73,7 +77,7 @@ class NodeRender:
     @staticmethod
     def build_from_data():
         # Example usage:
-        filepath = "experiment_floorplan.json"
+        #filepath = "experiment_floorplan.json"
         filepath = "corrected_floorplan.json"
         floorplan_data = NodeRender.load_floorplan_json(filepath)
         NodeRender.build_house_from_data(floorplan_data)

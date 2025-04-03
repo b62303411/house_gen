@@ -66,7 +66,7 @@ class SceneFactory:
 
     @staticmethod
     def create_from_json():
-        FurnitureFactory.create_furniture_prototypes()
+        #FurnitureFactory.create_furniture_prototypes()
         NodeRender.build_from_data()
 
     # Function to create a marker (empty object) at a given position

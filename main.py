@@ -62,3 +62,4 @@ from furnitures_gen.scene_factory import SceneFactory
 
 if __name__ == "__main__":
     SceneFactory.build_scene()
+

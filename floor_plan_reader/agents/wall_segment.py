@@ -1,17 +1,17 @@
 import logging
+import math
 from decimal import Decimal
 
 import pygame
 from pygame import font
+from shapely import Point, LineString
 
 from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.model.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
-
-
-
+from shapely.affinity import rotate
 
 
 class Scores:
@@ -85,55 +85,75 @@ class WallSegment(Agent):
     def calculate_if_external(self):
         pass
 
-    def calculate_openings(self):
-        boxes = []
+    def dot2(self, ax, ay, bx, by):
+        """2D dot product."""
+        return ax * bx + ay * by
+
+    def length2(self, ax, ay):
+        """2D vector length."""
+        return math.sqrt(ax * ax + ay * ay)
+
+    def get_sorted_lines(self):
+        class Sortable:
+            def __init__(self, line, dist):
+                self.dist = dist
+                self.line = line
+
+            def __lt__(self, other):
+                return self.dist < other.dist
+
+        a_list = []
+        center_line = self.collision_box.get_center_line_string()
+        bounds = center_line.bounds
+        start = Point(bounds[0], bounds[1])
         for p in self.parts:
-            boxes.append(p.collision_box)
-        count = len(boxes)
-        logging.info(f"{count}")
-        if count < 2:
-            logging.debug("too small")
+            candidate = p.collision_box.get_center_line_string()
+            c_bounds = center_line.bounds
+            start_i = Point(c_bounds[0], c_bounds[1])
+            end_i = Point(c_bounds[2], c_bounds[3])
+            sd = start.distance(start_i)
+            ed = start.distance(end_i)
+
+            if sd > ed:
+                corrected_line = LineString(ed, sd)
+                s = Sortable(corrected_line, ed)
+                a_list.append(s)
+            else:
+                s = Sortable(candidate, sd)
+                a_list.append(s)
+        a_list.sort()
+        sorted = []
+        for s in a_list:
+            sorted.append(s.line)
+        return sorted
+
+    def calculate_openings(self):
+        if len(self.parts) < 2:
             return
+        center_lines = self.get_sorted_lines()
 
-        direction, _ = boxes[0].derive_direction_and_normal()
-        dx, dy = direction.direction
+        center = self.get_center()
+        center_p = Point(center)
+        for i in range(len(center_lines) - 1):
+            # End of line i
+            end_i = center_lines[i].coords[-1]
 
-        def project(box):
-            cx, cy = box.get_center()
-            return cx * dx + cy * dy
+            # Start of line i+1
+            start_i1 = center_lines[i + 1].coords[0]
+            end = Point(end_i)
+            start = Point(start_i1)
 
-        boxes_sorted = sorted(boxes, key=project)
+            # Midpoint
+            mid_x = (end.x + start.x) / 2
+            mid_y = (end.y + start.y) / 2
+            mid_point = Point(mid_x, mid_y)
+            offset = mid_point.distance(center_p)
+            # Euclidean distance between these two points
+            gap_distance = end.distance(start)
+            o = Opening(offset,gap_distance)
+            self.openings.add(o)
 
-        # Calculate center of the full wall
-        wall_center_x = sum(b.get_center()[0] for b in boxes) / len(boxes)
-        wall_center_y = sum(b.get_center()[1] for b in boxes) / len(boxes)
-
-        for i in range(len(boxes_sorted) - 1):
-            box_a = boxes_sorted[i]
-            box_b = boxes_sorted[i + 1]
-
-            _, end_a = box_a.get_center_line()
-            start_b, _ = box_b.get_center_line()
-
-            # Distance between boxes projected on wall axis
-            ox = start_b[0] - end_a[0]
-            oy = start_b[1] - end_a[1]
-            gap = ox * dx + oy * dy
-
-            if gap > 0.1:  # small tolerance
-                # Midpoint of opening
-                mid_x = (start_b[0] + end_a[0]) / 2
-                mid_y = (start_b[1] + end_a[1]) / 2
-
-                # Project midpoint to get signed distance from wall center
-                relative_cx = (mid_x - wall_center_x) * dx + (mid_y - wall_center_y) * dy
-                cx = round(relative_cx, 3)
-                width = round(gap, 3)
-                o = Opening(cx, width)
-                if o in self.openings:
-                    pass
-                else:
-                    self.openings.add(o)
+        return self.openings
 
     def merge_alighned(self, cb, p):
         if isinstance(cb, CollisionBox):

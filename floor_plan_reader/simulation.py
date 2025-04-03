@@ -4,6 +4,7 @@ from itertools import count
 
 import pygame
 
+from agent_manager import AgentManager
 from floor_plan_reader.agents.blob import Blob
 from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
@@ -25,7 +26,7 @@ class Simulation:
         self._line_dic = None
         self.running = True
         self.wf = WorldFactory()
-        self.zombie_candidates = []
+        self.agent_manager = AgentManager(self)
         self.world = None
         self.solver = None
         self.view = SimulationView(self)
@@ -63,9 +64,12 @@ class Simulation:
             blob = self.world.get_blob(ix, iy)
             if blob is not None:
                 blob.add_intersection(i)
-        scaled_model = self.world.model.convert_to_scale(0.028)
-        nodes = list(scaled_model.get_nodes())
-        edges = list(scaled_model.get_edges())
+        model = self.world.model
+        scaled_model = model.convert_to_scale(0.028)
+        nodes = list(model.get_nodes())
+        edges = list(model.get_edges())
+        for e in edges:
+            e.calculate_opening()
         data = {
             "nodes": nodes,
             "edges": edges
@@ -106,33 +110,7 @@ class Simulation:
         return len(self.world.wall_segments)
 
     def run(self):
-        agents = self.world.agents.copy()
-        for agent in agents:
-            if agent.alive:
-                agent.run()
-            else:
-                self.zombie_candidates.append(agent)
-        for zombie in self.zombie_candidates:
-            if zombie in self.world.agents:
-                self.world.agents.remove(zombie)
-            if zombie in self.world.walls:
-                self.world.walls.remove(zombie)
-            if zombie in self.world.blobs:
-                self.world.blobs.remove(zombie)
-            if zombie in self.world.wall_segments:
-                self.world.wall_segments.remove(zombie)
-
-            # else: no moves => ant stays put
-        if not len(self.world.candidates) == 0:
-            agent = self.world.candidates.popleft()
-            if isinstance(agent, Mushroom):
-                self.world.walls.add(agent)
-            if isinstance(agent, WallSegment):
-                self.world.wall_segments.add(agent)
-            if isinstance(agent, Blob):
-                self.world.blobs.add(agent)
-
-            self.world.agents.add(agent)
+        self.agent_manager.run()
 
     def init_world(self, image):
         img_gray = image.get_black_and_white()
