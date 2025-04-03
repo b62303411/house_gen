@@ -99,6 +99,6 @@ class IntersectionSolver:
         return {
             "lines": line_list,
             "intersections": list(intersections),
-            "edges": list(self.world.edges.values()),
+            "edges": list(self.world.get_edges()),
             "merge_candidates": merge_candidates
         }

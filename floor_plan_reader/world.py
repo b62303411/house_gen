@@ -11,6 +11,7 @@ from floor_plan_reader.agents.agent_factory import AgentFactory
 from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.id_util import IdUtil
 from floor_plan_reader.model.edge import Edge
+from floor_plan_reader.model.model import Model
 from floor_plan_reader.model.node import Node
 
 
@@ -24,45 +25,26 @@ class World:
         self.occupied_wall = None
         self.visited = None
         self.candidates = deque()
-        self.node_seq = count(start=1)
+
         self.occupied = None
         self.walls = set()
         self.agents = set()
         self.wall_segments = set()
         self.zombies = []
         self.blobs = set()
-        self.nodes = {}
-        self.edges = {}
+        self.model = Model()
 
     def has_node(self, node):
-        return node.getHash() in self.nodes.keys()
+        return self.model.has_node(node)
 
     def create_node(self, position):
-        x = position[0]
-        y = position[1]
-        n = Node((x, y))
-        hash_ = n.__hash__()
-        if hash_ in self.nodes.keys():
-            return self.nodes.get(hash_)
-        else:
-            n = Node((x, y))
-            n.id = f"N{next(self.node_seq)}"
-            self.add_node(n)
-            return n
+        return self.model.create_node(position)
 
     def add_node(self, node):
-        self.nodes[node.__hash__()] = node
+        self.model.add_node(node)
 
     def create_edge(self, node_a, node_b, line):
-        if node_a is None or node_b is None:
-            logging.error("node error")
-            return
-        n = Edge(node_a, node_b, line)
-        if n.__hash__() in self.edges.keys():
-            return self.edges.get(n.__hash__())
-        else:
-            self.edges[n.__hash__()] = n
-            return n
+        return self.model.create_edge(node_a, node_b, line)
 
     def get_neighbors_8(self, x, y):
         """Returns all 8 neighboring coordinates."""
@@ -104,6 +86,12 @@ class World:
         color_coded[..., 0] = r  # Red channel
         color_coded[..., 1] = g  # Green channel
         color_coded[..., 2] = b  # Blue channel
+
+    def get_nodes(self):
+        return self.model.get_nodes()
+
+    def get_edges(self):
+        return self.model.get_edges()
 
     def get_snapshot(self, x, y, width, height, grid, encode):
         color_coded = None

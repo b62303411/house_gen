@@ -11,7 +11,8 @@ class TexturedPlaneFactory:
         plane = bpy.context.object
         plane.name = plane_name
         # Correct scaling
-        plane.scale = (31.8, 15.15, 1)  # Ensure full size scaling
+        #20.0
+        plane.scale = (20.0, 17.0, 1)  # Ensure full size scaling
 
         # Apply scale
         #bpy.ops.object.transform_apply(scale=True, location=False)

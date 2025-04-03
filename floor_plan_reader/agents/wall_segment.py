@@ -7,7 +7,7 @@ from pygame import font
 from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
-from floor_plan_reader.opening import Opening
+from floor_plan_reader.model.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
 
 

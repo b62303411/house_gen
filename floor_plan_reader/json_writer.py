@@ -41,9 +41,8 @@ class JsonWriter:
             i += 1
         i = 1
         for e in result_info['edges']:
-            my_list = list(e.line.seg.nodes)
-            json = e.get_json()
-            edges.append(json)
+            json_str = e.get_json()
+            edges.append(json_str)
 
         result = {
             "nodes": nodes,

@@ -79,7 +79,7 @@ class SceneFactory:
     @staticmethod
     def create_plane_plan():
         # bpy.ops.mesh.primitive_plane_add(size=1)
-        obj = TexturedPlaneFactory.create_textured_plane("w1024.jpg", "architecture plan")
+        obj = TexturedPlaneFactory.create_textured_plane("fp2.png", "architecture plan")
         obj.name = "architecture plan"
         obj.location = (0.375159, -0.842076, 0)
         # Correct scaling

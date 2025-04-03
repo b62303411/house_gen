@@ -52,7 +52,6 @@ class Simulation:
 
     def save_blue_print(self):
         result = self.solver.build_lines_and_intersections(self.world.wall_segments)
-        self.world.nodes
         self._intersections = result.get("intersections")
         self._lines = result.get("lines")
         self._line_dic = {}
@@ -64,8 +63,9 @@ class Simulation:
             blob = self.world.get_blob(ix, iy)
             if blob is not None:
                 blob.add_intersection(i)
-        nodes = list(self.world.nodes.values())
-        edges = list(self.world.edges.values())
+        scaled_model = self.world.model.convert_to_scale(0.028)
+        nodes = list(scaled_model.get_nodes())
+        edges = list(scaled_model.get_edges())
         data = {
             "nodes": nodes,
             "edges": edges
