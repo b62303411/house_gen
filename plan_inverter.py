@@ -22,8 +22,8 @@ def fix_coordinates(data):
         y = node["y"]
         new_x = x * pixel_to_meter
         new_y = y * pixel_to_meter
-        node["x"] = new_x
-        node["y"] = new_y
+        node["x"] = new_x + -9.67246
+        node["y"] = -new_y + 7.68846
 
     for edge in data.get("edges", []):
         for opening in edge.get("openings", []):

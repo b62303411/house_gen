@@ -128,10 +128,10 @@ class WallSegment(Agent):
         return sorted
 
     def calculate_openings(self):
+        self.openings = set()
         if len(self.parts) < 2:
             return
         center_lines = self.get_sorted_lines()
-
         center = self.get_center()
         center_p = Point(center)
         for i in range(len(center_lines) - 1):

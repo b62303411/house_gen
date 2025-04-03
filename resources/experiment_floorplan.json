@@ -3,257 +3,244 @@
     {
       "id": "N1",
       "x": 602.5,
-      "y": 6.5
+      "y": 466.5
     },
     {
       "id": "N2",
-      "x": 434.0,
-      "y": 6.5
+      "x": 434.5,
+      "y": 466.0
     },
     {
       "id": "N3",
-      "x": 228.5,
-      "y": 466.0
+      "x": 474.0,
+      "y": 337.0
     },
     {
       "id": "N4",
-      "x": 523.5,
-      "y": 6.5
-    },
-    {
-      "id": "N5",
-      "x": 706.0,
-      "y": 336.5
-    },
-    {
-      "id": "N6",
-      "x": 474.0,
-      "y": 184.0
-    },
-    {
-      "id": "N7",
-      "x": 602.0,
-      "y": 184.0
-    },
-    {
-      "id": "N8",
-      "x": 474.0,
-      "y": 236.0
-    },
-    {
-      "id": "N9",
-      "x": 602.0,
-      "y": 236.0
-    },
-    {
-      "id": "N10",
-      "x": 338.5,
-      "y": 466.5
-    },
-    {
-      "id": "N11",
-      "x": 90.5,
-      "y": 297.0
-    },
-    {
-      "id": "N12",
-      "x": 474.0,
-      "y": 183.5
-    },
-    {
-      "id": "N13",
-      "x": 602.0,
-      "y": 183.5
-    },
-    {
-      "id": "N14",
-      "x": 90.5,
-      "y": 355.0
-    },
-    {
-      "id": "N15",
-      "x": 602.5,
-      "y": 82.5
-    },
-    {
-      "id": "N16",
-      "x": 540.5,
-      "y": 184.0
-    },
-    {
-      "id": "N17",
-      "x": 189.5,
-      "y": 297.0
-    },
-    {
-      "id": "N18",
-      "x": 540.5,
-      "y": 183.5
-    },
-    {
-      "id": "N19",
-      "x": 267.0,
-      "y": 385.0
-    },
-    {
-      "id": "N20",
-      "x": 474.0,
-      "y": 146.0
-    },
-    {
-      "id": "N21",
-      "x": 474.0,
-      "y": 337.0
-    },
-    {
-      "id": "N22",
-      "x": 474.0,
-      "y": 82.5
-    },
-    {
-      "id": "N23",
-      "x": 434.5,
-      "y": 466.5
-    },
-    {
-      "id": "N24",
-      "x": 434.5,
-      "y": 600.5
-    },
-    {
-      "id": "N25",
-      "x": 523.5,
-      "y": 82.5
-    },
-    {
-      "id": "N26",
-      "x": 602.0,
-      "y": 337.0
-    },
-    {
-      "id": "N27",
-      "x": 91.0,
-      "y": 466.0
-    },
-    {
-      "id": "N28",
-      "x": 706.0,
-      "y": 466.5
-    },
-    {
-      "id": "N29",
-      "x": 267.0,
-      "y": 337.5
-    },
-    {
-      "id": "N30",
-      "x": 474.0,
-      "y": 113.49999999999997
-    },
-    {
-      "id": "N31",
-      "x": 474.0,
-      "y": 274.5
-    },
-    {
-      "id": "N32",
-      "x": 296.0,
-      "y": 466.5
-    },
-    {
-      "id": "N33",
-      "x": 329.0,
-      "y": 466.5
-    },
-    {
-      "id": "N34",
-      "x": 329.0,
-      "y": 385.0
-    },
-    {
-      "id": "N35",
-      "x": 495.0,
-      "y": 274.5
-    },
-    {
-      "id": "N36",
-      "x": 602.5,
-      "y": 466.5
-    },
-    {
-      "id": "N37",
-      "x": 315.04289321881345,
-      "y": 466.5
-    },
-    {
-      "id": "N38",
-      "x": 496.53553390593277,
-      "y": 82.5
-    },
-    {
-      "id": "N39",
-      "x": 232.00000000000003,
-      "y": 337.5
-    },
-    {
-      "id": "N40",
-      "x": 228.5,
-      "y": 337.5
-    },
-    {
-      "id": "N41",
-      "x": 329.0,
-      "y": 337.0
-    },
-    {
-      "id": "N42",
       "x": 602.5,
       "y": 599.5
     },
     {
-      "id": "N43",
-      "x": 231.5,
+      "id": "N5",
+      "x": 706.0,
       "y": 337.0
     },
     {
+      "id": "N6",
+      "x": 706.0,
+      "y": 466.5
+    },
+    {
+      "id": "N7",
+      "x": 474.0,
+      "y": 184.0
+    },
+    {
+      "id": "N8",
+      "x": 228.5,
+      "y": 466.0
+    },
+    {
+      "id": "N9",
+      "x": 474.0,
+      "y": 274.5
+    },
+    {
+      "id": "N10",
+      "x": 602.0,
+      "y": 337.0
+    },
+    {
+      "id": "N11",
+      "x": 434.5,
+      "y": 468.0
+    },
+    {
+      "id": "N12",
+      "x": 474.0,
+      "y": 82.0
+    },
+    {
+      "id": "N13",
+      "x": 474.0,
+      "y": 146.0
+    },
+    {
+      "id": "N14",
+      "x": 474.0,
+      "y": 183.5
+    },
+    {
+      "id": "N15",
+      "x": 474.0,
+      "y": 236.0
+    },
+    {
+      "id": "N16",
+      "x": 228.5,
+      "y": 468.0
+    },
+    {
+      "id": "N17",
+      "x": 540.5,
+      "y": 184.0
+    },
+    {
+      "id": "N18",
+      "x": 602.0,
+      "y": 184.0
+    },
+    {
+      "id": "N19",
+      "x": 602.5,
+      "y": 82.0
+    },
+    {
+      "id": "N20",
+      "x": 434.5,
+      "y": 6.5
+    },
+    {
+      "id": "N21",
+      "x": 326.37132034355966,
+      "y": 466.0
+    },
+    {
+      "id": "N22",
+      "x": 523.5,
+      "y": 82.0
+    },
+    {
+      "id": "N23",
+      "x": 523.5,
+      "y": 6.5
+    },
+    {
+      "id": "N24",
+      "x": 495.0,
+      "y": 274.5
+    },
+    {
+      "id": "N25",
+      "x": 91.0,
+      "y": 355.0
+    },
+    {
+      "id": "N26",
+      "x": 434.5,
+      "y": 600.5
+    },
+    {
+      "id": "N27",
+      "x": 540.5,
+      "y": 183.5
+    },
+    {
+      "id": "N28",
+      "x": 189.5,
+      "y": 297.0
+    },
+    {
+      "id": "N29",
+      "x": 91.0,
+      "y": 297.0
+    },
+    {
+      "id": "N30",
+      "x": 602.0,
+      "y": 183.5
+    },
+    {
+      "id": "N31",
+      "x": 91.0,
+      "y": 468.0
+    },
+    {
+      "id": "N32",
+      "x": 328.37132034355966,
+      "y": 468.0
+    },
+    {
+      "id": "N33",
+      "x": 602.0,
+      "y": 236.0
+    },
+    {
+      "id": "N34",
+      "x": 602.0,
+      "y": 6.5
+    },
+    {
+      "id": "N35",
+      "x": 474.0,
+      "y": 113.49999999999997
+    },
+    {
+      "id": "N36",
+      "x": 328.5,
+      "y": 466.0
+    },
+    {
+      "id": "N37",
+      "x": 296.0,
+      "y": 466.0
+    },
+    {
+      "id": "N38",
+      "x": 328.5,
+      "y": 385.0
+    },
+    {
+      "id": "N39",
+      "x": 267.0,
+      "y": 385.0
+    },
+    {
+      "id": "N40",
+      "x": 308.39949493661163,
+      "y": 468.0
+    },
+    {
+      "id": "N41",
+      "x": 296.0,
+      "y": 468.0
+    },
+    {
+      "id": "N42",
+      "x": 228.5,
+      "y": 337.5
+    },
+    {
+      "id": "N43",
+      "x": 267.0,
+      "y": 337.5
+    },
+    {
       "id": "N44",
+      "x": 328.5,
+      "y": 337.0
+    },
+    {
+      "id": "N45",
+      "x": 232.00000000000003,
+      "y": 337.5
+    },
+    {
+      "id": "N46",
       "x": 228.5,
       "y": 334.0
     },
     {
-      "id": "N45",
-      "x": 338.5,
-      "y": 469.5147186257615
-    },
-    {
-      "id": "N46",
-      "x": 335.4852813742385,
-      "y": 466.5
+      "id": "N47",
+      "x": 231.5,
+      "y": 337.0
     }
   ],
   "edges": [
     {
-      "id": "Ext_N1_N2",
+      "id": "Ext_N1_N4",
       "start_node": "N1",
-      "end_node": "N2",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N7_N6",
-      "start_node": "N7",
-      "end_node": "N6",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N7_N1",
-      "start_node": "N7",
-      "end_node": "N1",
+      "end_node": "N4",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
@@ -262,302 +249,14 @@
           "type": "window",
           "center_x": 0.0,
           "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 5.0,
-          "bottom_z": 1,
-          "width": 211.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 42.0,
-          "bottom_z": 1,
-          "width": 189.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 76.5,
-          "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 27.0,
-          "bottom_z": 1,
-          "width": 211.0,
+          "width": 127.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N8_N6",
-      "start_node": "N8",
-      "end_node": "N6",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 258.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 41.0,
-          "bottom_z": 1,
-          "width": 33.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N8_N9",
-      "start_node": "N8",
-      "end_node": "N9",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N1_N9",
-      "start_node": "N1",
-      "end_node": "N9",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.0,
-          "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 5.0,
-          "bottom_z": 1,
-          "width": 211.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 42.0,
-          "bottom_z": 1,
-          "width": 189.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 76.5,
-          "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 27.0,
-          "bottom_z": 1,
-          "width": 211.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N3_N10",
+      "id": "Ext_N3_N5",
       "start_node": "N3",
-      "end_node": "N10",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 146.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 7.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 39.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 106.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 11.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 51.5,
-          "bottom_z": 1,
-          "width": 241.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 53.5,
-          "bottom_z": 1,
-          "width": 187.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 61.5,
-          "bottom_z": 1,
-          "width": 78.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N8_N12",
-      "start_node": "N8",
-      "end_node": "N12",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 258.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 41.0,
-          "bottom_z": 1,
-          "width": 33.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N12_N13",
-      "start_node": "N12",
-      "end_node": "N13",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N11_N14",
-      "start_node": "N11",
-      "end_node": "N14",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 25.5,
-          "bottom_z": 1,
-          "width": 59.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N17_N11",
-      "start_node": "N17",
-      "end_node": "N11",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N18_N16",
-      "start_node": "N18",
-      "end_node": "N16",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N8_N20",
-      "start_node": "N8",
-      "end_node": "N20",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 258.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 41.0,
-          "bottom_z": 1,
-          "width": 33.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N21_N20",
-      "start_node": "N21",
-      "end_node": "N20",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 258.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 41.0,
-          "bottom_z": 1,
-          "width": 33.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N21_N5",
-      "start_node": "N21",
       "end_node": "N5",
       "wall_type": "exterior",
       "stud_type": "2x6",
@@ -565,50 +264,51 @@
       "openings": [
         {
           "type": "window",
-          "center_x": 57.0,
+          "center_x": 0.0,
           "bottom_z": 1,
-          "width": 36.0,
+          "width": 234.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N21_N22",
-      "start_node": "N21",
-      "end_node": "N22",
+      "id": "Ext_N1_N6",
+      "start_node": "N1",
+      "end_node": "N6",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
       "openings": [
         {
           "type": "window",
-          "center_x": 0.5,
+          "center_x": 4.5,
           "bottom_z": 1,
-          "width": 258.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 41.0,
-          "bottom_z": 1,
-          "width": 33.0,
+          "width": 37.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N15_N22",
-      "start_node": "N15",
-      "end_node": "N22",
+      "id": "Ext_N6_N5",
+      "start_node": "N6",
+      "end_node": "N5",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
-      "openings": []
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.0,
+          "bottom_z": 1,
+          "width": 123.0,
+          "height": 1.3
+        }
+      ]
     },
     {
-      "id": "Ext_N3_N23",
+      "id": "Ext_N3_N7",
       "start_node": "N3",
-      "end_node": "N23",
+      "end_node": "N7",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
@@ -617,64 +317,53 @@
           "type": "window",
           "center_x": 0.5,
           "bottom_z": 1,
-          "width": 146.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 39.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 7.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 106.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 11.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 51.5,
-          "bottom_z": 1,
-          "width": 241.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 53.5,
-          "bottom_z": 1,
-          "width": 187.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 61.5,
-          "bottom_z": 1,
-          "width": 78.0,
+          "width": 115.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N24_N23",
-      "start_node": "N24",
-      "end_node": "N23",
+      "id": "Ext_N8_N2",
+      "start_node": "N8",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.0,
+          "bottom_z": 1,
+          "width": 248.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 105.5,
+          "bottom_z": 1,
+          "width": 132.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 47.5,
+          "bottom_z": 1,
+          "width": 248.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 49.0,
+          "bottom_z": 1,
+          "width": 171.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N2_N11",
+      "start_node": "N2",
+      "end_node": "N11",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
@@ -689,70 +378,8 @@
       ]
     },
     {
-      "id": "Ext_N25_N4",
-      "start_node": "N25",
-      "end_node": "N4",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.0,
-          "bottom_z": 1,
-          "width": 71.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N1_N26",
-      "start_node": "N1",
-      "end_node": "N26",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.0,
-          "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 5.0,
-          "bottom_z": 1,
-          "width": 211.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 42.0,
-          "bottom_z": 1,
-          "width": 189.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 76.5,
-          "bottom_z": 1,
-          "width": 112.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 27.0,
-          "bottom_z": 1,
-          "width": 211.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N27_N11",
-      "start_node": "N27",
+      "id": "Ext_N8_N11",
+      "start_node": "N8",
       "end_node": "N11",
       "wall_type": "exterior",
       "stud_type": "2x6",
@@ -760,171 +387,233 @@
       "openings": [
         {
           "type": "window",
-          "center_x": 25.5,
+          "center_x": 105.5,
           "bottom_z": 1,
-          "width": 59.0,
+          "width": 132.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 47.5,
+          "bottom_z": 1,
+          "width": 248.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 49.0,
+          "bottom_z": 1,
+          "width": 171.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N23_N27",
+      "id": "Ext_N3_N12",
+      "start_node": "N3",
+      "end_node": "N12",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.5,
+          "bottom_z": 1,
+          "width": 115.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N8_N16",
+      "start_node": "N8",
+      "end_node": "N16",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 17.0,
+          "bottom_z": 1,
+          "width": 27.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N7_N17",
+      "start_node": "N7",
+      "end_node": "N17",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N18_N7",
+      "start_node": "N18",
+      "end_node": "N7",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N18_N10",
+      "start_node": "N18",
+      "end_node": "N10",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 32.0,
+          "bottom_z": 1,
+          "width": 259.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 3.5,
+          "bottom_z": 1,
+          "width": 274.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 6.0,
+          "bottom_z": 1,
+          "width": 123.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N19_N12",
+      "start_node": "N19",
+      "end_node": "N12",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N19_N10",
+      "start_node": "N19",
+      "end_node": "N10",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 32.0,
+          "bottom_z": 1,
+          "width": 259.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 3.5,
+          "bottom_z": 1,
+          "width": 274.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 6.0,
+          "bottom_z": 1,
+          "width": 123.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N22_N23",
+      "start_node": "N22",
+      "end_node": "N23",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 1.0,
+          "bottom_z": 1,
+          "width": 27.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N23_N20",
       "start_node": "N23",
+      "end_node": "N20",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N24_N9",
+      "start_node": "N24",
+      "end_node": "N9",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N26_N2",
+      "start_node": "N26",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.0,
+          "bottom_z": 1,
+          "width": 133.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N27_N17",
+      "start_node": "N27",
+      "end_node": "N17",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N14_N27",
+      "start_node": "N14",
       "end_node": "N27",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 146.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 39.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 7.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 106.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 11.5,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 51.5,
-          "bottom_z": 1,
-          "width": 241.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 53.5,
-          "bottom_z": 1,
-          "width": 187.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 61.5,
-          "bottom_z": 1,
-          "width": 78.0,
-          "height": 1.3
-        }
-      ]
+      "openings": []
     },
     {
-      "id": "Ext_N28_N5",
-      "start_node": "N28",
-      "end_node": "N5",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.0,
-          "bottom_z": 1,
-          "width": 124.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N29_N19",
+      "id": "Ext_N29_N28",
       "start_node": "N29",
-      "end_node": "N19",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N34_N19",
-      "start_node": "N34",
-      "end_node": "N19",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N34_N33",
-      "start_node": "N34",
-      "end_node": "N33",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N35_N31",
-      "start_node": "N35",
-      "end_node": "N31",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N36_N28",
-      "start_node": "N36",
       "end_node": "N28",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.0,
-          "bottom_z": 1,
-          "width": 110.0,
-          "height": 1.3
-        }
-      ]
-    },
-    {
-      "id": "Ext_N39_N29",
-      "start_node": "N39",
-      "end_node": "N29",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
       "openings": []
     },
     {
-      "id": "Ext_N40_N29",
-      "start_node": "N40",
-      "end_node": "N29",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N3_N40",
-      "start_node": "N3",
-      "end_node": "N40",
+      "id": "Ext_N29_N25",
+      "start_node": "N29",
+      "end_node": "N25",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
@@ -933,14 +622,80 @@
           "type": "window",
           "center_x": 0.0,
           "bottom_z": 1,
-          "width": 129.0,
+          "width": 168.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N41_N33",
-      "start_node": "N41",
+      "id": "Ext_N14_N30",
+      "start_node": "N14",
+      "end_node": "N30",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N31_N2",
+      "start_node": "N31",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 105.5,
+          "bottom_z": 1,
+          "width": 132.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 47.5,
+          "bottom_z": 1,
+          "width": 248.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": 49.0,
+          "bottom_z": 1,
+          "width": 171.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N31_N29",
+      "start_node": "N31",
+      "end_node": "N29",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.0,
+          "bottom_z": 1,
+          "width": 168.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N21_N32",
+      "start_node": "N21",
+      "end_node": "N32",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N15_N33",
+      "start_node": "N15",
       "end_node": "N33",
       "wall_type": "exterior",
       "stud_type": "2x6",
@@ -948,53 +703,84 @@
       "openings": []
     },
     {
-      "id": "Ext_N41_N29",
-      "start_node": "N41",
-      "end_node": "N29",
+      "id": "Ext_N34_N20",
+      "start_node": "N34",
+      "end_node": "N20",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N34_N10",
+      "start_node": "N34",
+      "end_node": "N10",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
       "openings": [
         {
           "type": "window",
-          "center_x": 0.5,
+          "center_x": 32.0,
           "bottom_z": 1,
-          "width": 128.0,
+          "width": 259.0,
           "height": 1.3
         },
         {
           "type": "window",
-          "center_x": 2.0,
+          "center_x": 3.5,
           "bottom_z": 1,
-          "width": 47.0,
+          "width": 274.0,
           "height": 1.3
         },
         {
           "type": "window",
-          "center_x": 11.5,
+          "center_x": 6.0,
           "bottom_z": 1,
-          "width": 47.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 16.5,
-          "bottom_z": 1,
-          "width": 46.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 22.0,
-          "bottom_z": 1,
-          "width": 58.0,
+          "width": 123.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N36_N42",
-      "start_node": "N36",
+      "id": "Ext_N38_N36",
+      "start_node": "N38",
+      "end_node": "N36",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N38_N39",
+      "start_node": "N38",
+      "end_node": "N39",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N38_N32",
+      "start_node": "N38",
+      "end_node": "N32",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N37_N41",
+      "start_node": "N37",
+      "end_node": "N41",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N16_N42",
+      "start_node": "N16",
       "end_node": "N42",
       "wall_type": "exterior",
       "stud_type": "2x6",
@@ -1002,57 +788,21 @@
       "openings": [
         {
           "type": "window",
-          "center_x": 12.5,
+          "center_x": 17.0,
           "bottom_z": 1,
-          "width": 58.0,
+          "width": 27.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N41_N43",
-      "start_node": "N41",
+      "id": "Ext_N42_N43",
+      "start_node": "N42",
       "end_node": "N43",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
-      "openings": [
-        {
-          "type": "window",
-          "center_x": 0.5,
-          "bottom_z": 1,
-          "width": 128.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 2.0,
-          "bottom_z": 1,
-          "width": 47.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 11.5,
-          "bottom_z": 1,
-          "width": 47.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 16.5,
-          "bottom_z": 1,
-          "width": 46.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 22.0,
-          "bottom_z": 1,
-          "width": 58.0,
-          "height": 1.3
-        }
-      ]
+      "openings": []
     },
     {
       "id": "Ext_N43_N39",
@@ -1064,9 +814,18 @@
       "openings": []
     },
     {
-      "id": "Ext_N41_N40",
-      "start_node": "N41",
-      "end_node": "N40",
+      "id": "Ext_N44_N32",
+      "start_node": "N44",
+      "end_node": "N32",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N44_N42",
+      "start_node": "N44",
+      "end_node": "N42",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
@@ -1080,73 +839,41 @@
         },
         {
           "type": "window",
-          "center_x": 2.0,
+          "center_x": 24.0,
           "bottom_z": 1,
-          "width": 47.0,
+          "width": 3.0,
           "height": 1.3
         },
         {
           "type": "window",
-          "center_x": 11.5,
+          "center_x": 38.0,
           "bottom_z": 1,
-          "width": 47.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 16.5,
-          "bottom_z": 1,
-          "width": 46.0,
-          "height": 1.3
-        },
-        {
-          "type": "window",
-          "center_x": 22.0,
-          "bottom_z": 1,
-          "width": 58.0,
+          "width": 3.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N39_N44",
-      "start_node": "N39",
-      "end_node": "N44",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N3_N44",
-      "start_node": "N3",
-      "end_node": "N44",
+      "id": "Ext_N16_N46",
+      "start_node": "N16",
+      "end_node": "N46",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
       "openings": [
         {
           "type": "window",
-          "center_x": 0.0,
+          "center_x": 17.0,
           "bottom_z": 1,
-          "width": 129.0,
+          "width": 27.0,
           "height": 1.3
         }
       ]
     },
     {
-      "id": "Ext_N10_N45",
-      "start_node": "N10",
+      "id": "Ext_N46_N45",
+      "start_node": "N46",
       "end_node": "N45",
-      "wall_type": "exterior",
-      "stud_type": "2x6",
-      "height": 2.7432,
-      "openings": []
-    },
-    {
-      "id": "Ext_N45_N46",
-      "start_node": "N45",
-      "end_node": "N46",
       "wall_type": "exterior",
       "stud_type": "2x6",
       "height": 2.7432,
