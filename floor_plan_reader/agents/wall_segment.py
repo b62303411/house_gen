@@ -94,38 +94,56 @@ class WallSegment(Agent):
         return math.sqrt(ax * ax + ay * ay)
 
     def get_sorted_lines(self):
+        from shapely.geometry import Point, LineString
+
         class Sortable:
             def __init__(self, line, dist):
-                self.dist = dist
                 self.line = line
+                self.dist = dist
 
+            # Needed so that a_list.sort() knows how to compare two Sortable objects
             def __lt__(self, other):
                 return self.dist < other.dist
 
-        a_list = []
+        # 1) The line for the entire wall (or overall bounding shape):
         center_line = self.collision_box.get_center_line_string()
-        bounds = center_line.bounds
-        start = Point(bounds[0], bounds[1])
+        # 2) Grab the first coordinate as our reference "start" point.
+        #    (Alternatively, you could choose the midpoint, or something else
+        #     that represents the "anchor" point of your main geometry.)
+        ref_start_x, ref_start_y = center_line.coords[0]
+        ref_start = Point(ref_start_x, ref_start_y)
+
+        a_list = []
         for p in self.parts:
             candidate = p.collision_box.get_center_line_string()
-            c_bounds = center_line.bounds
-            start_i = Point(c_bounds[0], c_bounds[1])
-            end_i = Point(c_bounds[2], c_bounds[3])
-            sd = start.distance(start_i)
-            ed = start.distance(end_i)
 
-            if sd > ed:
-                corrected_line = LineString(ed, sd)
-                s = Sortable(corrected_line, ed)
-                a_list.append(s)
+            # --- Instead of using center_line.bounds, use candidate.bounds ---
+            c_bounds = candidate.bounds
+            candidate_start = Point(c_bounds[0], c_bounds[1])
+            candidate_end = Point(c_bounds[2], c_bounds[3])
+
+            # Distances from our reference_start to the candidate's two endpoints
+            dist_start = ref_start.distance(candidate_start)
+            dist_end = ref_start.distance(candidate_end)
+
+            # If the “start” is actually further away than the “end,”
+            # that implies we might want to flip/reverse the line so
+            # it consistently starts from the side that’s closer to ref_start.
+            if dist_start > dist_end:
+                # Reverse the candidate line
+                new_coords = list(candidate.coords)[::-1]
+                reversed_line = LineString(new_coords)
+                # We will sort it by dist_end (the smaller of the two)
+                a_list.append(Sortable(reversed_line, dist_end))
             else:
-                s = Sortable(candidate, sd)
-                a_list.append(s)
+                # As-is is okay
+                a_list.append(Sortable(candidate, dist_start))
+
+        # Sort by the stored distance
         a_list.sort()
-        sorted = []
-        for s in a_list:
-            sorted.append(s.line)
-        return sorted
+
+        # Return just the lines, now sorted from closest to farthest
+        return [sortable.line for sortable in a_list]
 
     def calculate_openings(self):
         self.openings = set()

@@ -42,11 +42,8 @@ class Edge:
                      }
         return str_value
 
-    def getHash(self):
-        return hash((self.node_a.point, self.node_b.point))
-
     def __hash__(self):
-        return self.getHash()
+        return hash(self.line.seg.id)
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()

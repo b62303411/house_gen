@@ -14,9 +14,6 @@ class Model:
     def add_node(self, node):
         self.nodes[node.__hash__()] = node
 
-    def add_edges(self,edge):
-        self.edges[edge.__hash__()] = edge
-
     def convert_to_scale(self, meter_per_pixel):
         m = Model()
         for e in self.edges.values():
@@ -49,14 +46,19 @@ class Model:
     def has_node(self, node):
         return node.__hash__() in self.nodes.keys()
 
+    def add_edges(self, edge):
+        self.edges[edge.__hash__()] = edge
+
     def create_edge(self, node_a, node_b, line):
         if node_a is None or node_b is None:
             logging.error("node error")
             return
         e = Edge(node_a, node_b, line)
         if e.__hash__() in self.edges.keys():
-            return self.edges.get(e.__hash__())
+            edge = self.edges[e.__hash__()]
+            edge.node_a = node_a
+            edge.node_b = node_b
+            return edge
         else:
             self.add_edges(e)
             return e
-

@@ -30,7 +30,7 @@ def fix_coordinates(data):
             width = opening.get("width")
             new_width = width * pixel_to_meter
             opening["width"] = new_width
-            center_x = opening.get("center_x")
+            center_x = -opening.get("center_x")
             opening["center_x"] = center_x * pixel_to_meter
 
     return data
