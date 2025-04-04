@@ -334,12 +334,14 @@ class Mushroom(Agent):
         valid_l = self.collision_box.length > 2
         valid_w = self.collision_box.width > 2
         valid_shape = self.collision_box.length > self.collision_box.width
+        valid_width = self.collision_box.width < 10
+
         x, y = self.get_center()
         on_food = self.world.is_food(x, y)
         if not on_food:
             return False
 
-        return valid_l and valid_w and valid_shape and on_food
+        return valid_l and valid_w and valid_shape and on_food and valid_width
 
     def recenter_phase(self):
         rm = self.right_margin

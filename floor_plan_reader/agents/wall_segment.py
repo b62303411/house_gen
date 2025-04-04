@@ -95,16 +95,27 @@ class WallSegment(Agent):
         """2D vector length."""
         return math.sqrt(ax * ax + ay * ay)
 
-    def _validate_part_within_parent(self, part):
+    def _validate_part_within_parent(self, part,tolerance=2):
+
         parent_line = self.collision_box_extended.get_center_line_string()
-        parent_min_y = min(p[1] for p in parent_line.coords)
-        parent_max_y = max(p[1] for p in parent_line.coords)
+        parent_coords = parent_line.coords
+        start = Point(parent_coords[0])
+        end = Point(parent_coords[-1])
+        center = Point(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2
+        )
+
+        max_allowed_distance = center.distance(start) + tolerance
 
         part_line = part.collision_box.get_center_line_string()
         for x, y in part_line.coords:
-            if not (parent_min_y <= y <= parent_max_y):
+            p = Point(x, y)
+            d = p.distance(center)
+            if d > max_allowed_distance:
                 raise ValueError(
-                    f"Child part at y={y} is outside of parent range {parent_min_y}–{parent_max_y}"
+                    f"Point ({x:.2f}, {y:.2f}) of child is too far from parent center "
+                    f"(distance {d:.2f} > max {max_allowed_distance:.2f})"
                 )
 
     def get_sorted_lines(self):
@@ -130,7 +141,13 @@ class WallSegment(Agent):
 
         a_list = []
         for p in self.parts:
-            self._validate_part_within_parent(p)
+            try:
+                self._validate_part_within_parent(p)
+            except :
+                self.recalculate_parent_box_from_parts()
+                self.calculate_extended_bounding_box()
+                self._validate_part_within_parent(p)
+
             candidate = p.collision_box.get_center_line_string()
 
             # --- Instead of using center_line.bounds, use candidate.bounds ---
