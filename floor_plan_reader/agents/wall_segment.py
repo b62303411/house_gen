@@ -9,6 +9,7 @@ from shapely import Point, LineString
 from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
+from floor_plan_reader.math.vector import Vector
 from floor_plan_reader.model.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
 from shapely.affinity import rotate
@@ -105,9 +106,11 @@ class WallSegment(Agent):
                 raise ValueError(
                     f"Child part at y={y} is outside of parent range {parent_min_y}–{parent_max_y}"
                 )
+
     def get_sorted_lines(self):
         self.recalculate_parent_box_from_parts()
         self.calculate_extended_bounding_box()
+
         class Sortable:
             def __init__(self, line, dist):
                 self.line = line
@@ -387,7 +390,6 @@ class WallSegment(Agent):
 
         self.collision_box = CollisionBox.create_from_line(center_line, width)
 
-
     def process_state(self):
 
         wrongs = []
@@ -553,6 +555,20 @@ class WallSegment(Agent):
             x, y = vp.convert(x, y)
             text_surface = self.f.render(f"s: {score:.{2}f}", True, (15, 255, 0))
             screen.blit(text_surface, (x, y))  # Position (x=10, y=10)
+        colour = (255, 0, 0)
+        for o in self.openings:
+            center = self.get_center()
+            v = Vector(center)
+            direction = self.collision_box.get_direction()
+            direction.scale(o.center_x)
+            position = v + direction
+            x = position.dx()
+            y = position.dy()
+            width = self.collision_box.width
+
+            collision_box = CollisionBox(x, y, width, o.width,
+                                         self.collision_box.rotation)
+            self.cb_drawer.draw(collision_box, screen, vp, colour)
 
     def get_score(self):
         return len(self.parts)
