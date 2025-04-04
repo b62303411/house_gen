@@ -1,6 +1,7 @@
 import logging
 import threading
 import time
+from itertools import count
 
 import pygame
 
@@ -21,6 +22,7 @@ class TestWallScanner(unittest.TestCase):
         self.height = 0
         self.vp = ViewPoint()
         self.simulation = None
+        self.node_seq = count(start=1)
         pygame.init()
 
     def draw(self):

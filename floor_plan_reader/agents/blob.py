@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from floor_plan_reader.agents.agent import Agent
@@ -139,7 +141,7 @@ class Blob(Agent):
                 self.status = "mush"
             elif length > 0:
                 if self.active_mush is None or self.active_mush.get_state() == 'done' or self.active_mush.alive == False:
-                    first_element = next(iter(self.free_slot))
+                    first_element = self.pick_random_free()
                     self.create_mushroom(first_element.x, first_element.y)
                 if self.get_wall_count() > 15:
                     self.print_blob()
@@ -154,6 +156,9 @@ class Blob(Agent):
                 self.world.draw_at((c.x, c.y), 0)
             self.alive = False
 
+    def pick_random_free(self):
+        selected = random.choice(list(self.free_slot))
+        return selected
     def print_blob(self):
         x, y = self.get_center()
         width, height = self.bounding_box.get_shape()

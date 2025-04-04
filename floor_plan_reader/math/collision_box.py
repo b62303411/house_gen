@@ -308,7 +308,25 @@ class CollisionBox:
         c = self.get_center_as_vector()
         new_c = c + dir_
         self.set_position(new_c.dx(), new_c.dy())
+    @staticmethod
+    def create_from_line(line, width):
+        x1, y1 = line.coords[0]
+        x2, y2 = line.coords[-1]
 
+        # Direction vector
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.hypot(dx, dy)
+        if length == 0:
+            raise ValueError("Line must have length > 0")
+        # Center point
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+        # Angle in radians and degrees
+        angle_rad = math.atan2(dy, dx)
+        angle_deg = math.degrees(angle_rad)
+        cb = CollisionBox(cx,cy,width,length,angle_deg)
+        return cb
 
     def get_normal(self):
         dir_ = self.get_direction()

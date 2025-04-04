@@ -12,6 +12,7 @@ from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.model.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
 from shapely.affinity import rotate
+from shapely.geometry import Point, LineString
 
 
 class Scores:
@@ -93,9 +94,20 @@ class WallSegment(Agent):
         """2D vector length."""
         return math.sqrt(ax * ax + ay * ay)
 
-    def get_sorted_lines(self):
-        from shapely.geometry import Point, LineString
+    def _validate_part_within_parent(self, part):
+        parent_line = self.collision_box_extended.get_center_line_string()
+        parent_min_y = min(p[1] for p in parent_line.coords)
+        parent_max_y = max(p[1] for p in parent_line.coords)
 
+        part_line = part.collision_box.get_center_line_string()
+        for x, y in part_line.coords:
+            if not (parent_min_y <= y <= parent_max_y):
+                raise ValueError(
+                    f"Child part at y={y} is outside of parent range {parent_min_y}–{parent_max_y}"
+                )
+    def get_sorted_lines(self):
+        self.recalculate_parent_box_from_parts()
+        self.calculate_extended_bounding_box()
         class Sortable:
             def __init__(self, line, dist):
                 self.line = line
@@ -115,6 +127,7 @@ class WallSegment(Agent):
 
         a_list = []
         for p in self.parts:
+            self._validate_part_within_parent(p)
             candidate = p.collision_box.get_center_line_string()
 
             # --- Instead of using center_line.bounds, use candidate.bounds ---
@@ -122,6 +135,8 @@ class WallSegment(Agent):
             candidate_start = Point(c_bounds[0], c_bounds[1])
             candidate_end = Point(c_bounds[2], c_bounds[3])
 
+            if p.collision_box.rotation != self.collision_box.rotation:
+                print ("wtf")
             # Distances from our reference_start to the candidate's two endpoints
             dist_start = ref_start.distance(candidate_start)
             dist_end = ref_start.distance(candidate_end)
@@ -129,15 +144,9 @@ class WallSegment(Agent):
             # If the “start” is actually further away than the “end,”
             # that implies we might want to flip/reverse the line so
             # it consistently starts from the side that’s closer to ref_start.
-            if dist_start > dist_end:
-                # Reverse the candidate line
-                new_coords = list(candidate.coords)[::-1]
-                reversed_line = LineString(new_coords)
-                # We will sort it by dist_end (the smaller of the two)
-                a_list.append(Sortable(reversed_line, dist_end))
-            else:
-                # As-is is okay
-                a_list.append(Sortable(candidate, dist_start))
+
+            # As-is is okay
+            a_list.append(Sortable(candidate, dist_start))
 
         # Sort by the stored distance
         a_list.sort()
@@ -163,6 +172,8 @@ class WallSegment(Agent):
         center = self.get_center()
         center_p = Point(center)
         for i in range(len(center_lines) - 1):
+            current_line = center_lines[i]
+
             # End of line i
             end_i = center_lines[i].coords[-1]
 
@@ -178,7 +189,7 @@ class WallSegment(Agent):
             offset = mid_point.distance(center_p)
             # Euclidean distance between these two points
             gap_distance = end.distance(start)
-
+            print(f"Gap = {gap_distance:.2f}")
             o = Opening(offset, gap_distance)
             self.add_opening(o)
 
@@ -331,6 +342,51 @@ class WallSegment(Agent):
                 return steps, x, y
 
         return steps, x, y
+
+    def recalculate_parent_box_from_parts(self):
+        if not self.parts:
+            raise ValueError("Cannot recalculate extent without parts.")
+
+            # Use current parent box rotation and direction
+        rotation_deg = self.collision_box.rotation
+        rotation_rad = math.radians(rotation_deg)
+        dir_x = math.cos(rotation_rad)
+        dir_y = math.sin(rotation_rad)
+        direction = (dir_x, dir_y)
+
+        # Use a consistent origin (start of current center line)
+        origin = Point(self.collision_box.get_center_line_string().coords[0])
+
+        # Project all child coordinates onto the parent direction
+        projections = []
+        for part in self.parts:
+            line = part.collision_box.get_center_line_string()
+            for coord in line.coords:
+                dx = coord[0] - origin.x
+                dy = coord[1] - origin.y
+                proj = dx * dir_x + dy * dir_y
+                projections.append(proj)
+
+        min_proj = min(projections)
+        max_proj = max(projections)
+
+        # Calculate projected start and end points
+        start = (
+            origin.x + dir_x * min_proj,
+            origin.y + dir_y * min_proj
+        )
+        end = (
+            origin.x + dir_x * max_proj,
+            origin.y + dir_y * max_proj
+        )
+
+        # Reuse from_line_and_width to regenerate box
+        center_line = LineString([start, end])
+
+        width = self.collision_box.width
+
+        self.collision_box = CollisionBox.create_from_line(center_line, width)
+
 
     def process_state(self):
 
