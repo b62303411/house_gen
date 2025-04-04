@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from shapely import Polygon, LineString, Point
 
+from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.math_segments import combine_segments_decimal
 from floor_plan_reader.math.vector import Vector
 
@@ -17,7 +18,7 @@ class CollisionBox:
         self.rotation = rotation
         self.default_direction = (1, 0)
         self.corners = None
-        self.direction = None
+        self._direction = None
         self.center_line = None
         self.points_forward = None
         self.points_backward = None
@@ -36,8 +37,8 @@ class CollisionBox:
         self.width = float(width)
         self.reset_cache()
 
-    def set_lenght(self, lenght):
-        self.length = float(lenght)
+    def set_length(self, length):
+        self.length = float(length)
         self.reset_cache()
 
     def copy(self):
@@ -64,20 +65,11 @@ class CollisionBox:
         return self.width * self.length
 
     def get_direction(self):
-        if self.direction is None:
+        if self._direction is None:
             angle_deg = round(self.rotation / 45.0) * 45 % 360
-            directions = {
-                0: (1, 0),
-                45: (math.sqrt(2) / 2, math.sqrt(2) / 2),
-                90: (0, 1),
-                135: (-math.sqrt(2) / 2, math.sqrt(2) / 2),
-                180: (-1, 0),
-                225: (-math.sqrt(2) / 2, -math.sqrt(2) / 2),
-                270: (0, -1),
-                315: (math.sqrt(2) / 2, -math.sqrt(2) / 2)
-            }
-            self.direction = Vector(directions.get(angle_deg, (0, 0)))
-        return self.direction.copy()
+            direction = Constants.DIRECTIONS_8.get(angle_deg)
+            self._direction = direction
+        return self._direction.copy()
 
     def get_vector(self):
         dir = self.get_direction()

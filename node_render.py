@@ -29,7 +29,7 @@ class NodeRender:
                 parent_obj=house_parent
             )
             id_str = edge.get('id')
-            output_path = os.path.abspath(f"{id_str}.blend")
+            output_path = os.path.abspath(f"blend_output\\{id_str}.blend")
             bpy.ops.wm.save_as_mainfile(filepath=output_path)
     @staticmethod
     def build_house_from_data(data):

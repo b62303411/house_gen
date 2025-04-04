@@ -49,6 +49,7 @@ class Vector:
             raise ValueError("Cannot normalize a vector with zero length.")
         self.direction = (self.direction[0] / self.length, self.direction[1] / self.length)
         self.length = 1
+        return self
 
     def scale(self, scalar):
         """Scale the vector by a scalar."""
@@ -148,6 +149,8 @@ class Vector:
 
     def distance_to_line_segment(self, point, segment_start, segment_end):
         pass
+
+
     def __add__(self, other):
         """Add another vector to this vector."""
         return Vector((self.direction[0] + other.direction[0], self.direction[1] + other.direction[1]))

@@ -2,6 +2,7 @@ import logging
 import math
 
 from floor_plan_reader.display.point import Point
+from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.scan_result import ScanResult
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
@@ -107,8 +108,7 @@ class WallScanner:
         data = SondeData(forward_steps, back_x, back_y, forward_x, forward_y)
         return data  # The total step count along this direction
 
-    def scan_for_walls(self, mush, x, y, directions=list(
-        map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
+    def scan_for_walls(self, mush, x, y, directions=Constants.DIRECTIONS_8.values()):
         results = ScanResult()
         for d in directions:
             data = self.measure_extent(mush, x, y, d)

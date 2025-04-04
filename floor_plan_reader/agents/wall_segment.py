@@ -106,7 +106,7 @@ class WallSegment(Agent):
                 return self.dist < other.dist
 
         # 1) The line for the entire wall (or overall bounding shape):
-        center_line = self.collision_box.get_center_line_string()
+        center_line = self.collision_box_extended.get_center_line_string()
         # 2) Grab the first coordinate as our reference "start" point.
         #    (Alternatively, you could choose the midpoint, or something else
         #     that represents the "anchor" point of your main geometry.)
@@ -146,9 +146,19 @@ class WallSegment(Agent):
         return [sortable.line for sortable in a_list]
 
     def calculate_openings(self):
-        self.openings = set()
+
         if len(self.parts) < 2:
             return
+        if not self.is_segment_fully_occupied():
+            parts = self.parts.copy()
+            for p in parts:
+                p.re_compute()
+                p.performe_ray_trace(self.collision_box.get_direction())
+                p.fill_box()
+                p.crawl_phase()
+            return
+        self.openings = set()
+
         center_lines = self.get_sorted_lines()
         center = self.get_center()
         center_p = Point(center)
@@ -168,10 +178,68 @@ class WallSegment(Agent):
             offset = mid_point.distance(center_p)
             # Euclidean distance between these two points
             gap_distance = end.distance(start)
-            o = Opening(offset,gap_distance)
-            self.openings.add(o)
+
+            o = Opening(offset, gap_distance)
+            self.add_opening(o)
 
         return self.openings
+
+    def is_segment_fully_occupied(self):
+        """
+        Validates whether the full axis of a wall segment is covered by its collision boxes.
+
+        Args:
+            segment (List[CollisionBox]): List of aligned boxes forming a wall segment.
+            world: The world object with a method `is_occupied(x, y)` -> bool
+
+        Returns:
+            bool: True if the full axis is covered, False if there are any gaps.
+        """
+
+        direction, _ = self.collision_box.derive_direction_and_normal()
+        dx, dy = direction.direction
+
+        # Project all start/end points to get full coverage range
+        projections = []
+        for cb in self.parts:
+            p1, p2 = cb.collision_box.get_center_line()
+            projections.extend([
+                (p1[0], p1[1]),
+                (p2[0], p2[1])
+            ])
+
+        # Sort all by projection along wall axis
+        def project(pt):
+            return pt[0] * dx + pt[1] * dy
+
+        projections = sorted(projections, key=project)
+
+        start_pt = projections[0]
+        end_pt = projections[-1]
+
+        # Step along wall axis pixel by pixel
+        distance = int(math.hypot(end_pt[0] - start_pt[0], end_pt[1] - start_pt[1]))
+        for i in range(distance + 1):
+            x = int(round(start_pt[0] + dx * i))
+            y = int(round(start_pt[1] + dy * i))
+            if self.world.is_food(x, y) and not self.world.is_occupied(x, y):
+                for p in self.parts:
+                    if p.collidepoint(x, y):
+                        logging.error("wtf")
+                return False  # There's a gap
+
+        return True
+
+    def add_opening(self, o):
+        if o.width > 120:
+            logging.info("wtf")
+            center = self.get_center()
+            width = 250
+            height = 250
+            x = center[0]
+            y = center[1]
+            self.world.print_snapshot(x, y, width + 2, height + 2, self.id)
+        self.openings.add(o)
 
     def merge_alighned(self, cb, p):
         if isinstance(cb, CollisionBox):
@@ -224,7 +292,7 @@ class WallSegment(Agent):
         if steps_forward > 1 or steps_backward > 1:
             extension = steps_backward + steps_forward
             l = self.collision_box_extended.length
-            self.collision_box_extended.set_lenght(l + extension + 2)
+            self.collision_box_extended.set_length(l + extension + 2)
             if steps_forward > steps_backward:
                 (bx1, by1), (bx2, by2) = self.collision_box_extended.get_center_line()
                 self.collision_box_extended.move_forward(abs(steps_backward - steps_forward) / 2)

@@ -98,25 +98,34 @@ class World:
         x = int(x)
         y = int(y)
 
+        # Calculate the boundaries with clamping
+        h1 = max(0, y - height // 2)
+        h2 = min(grid.shape[0], y + height // 2)
+        w1 = max(0, x - width // 2)
+        w2 = min(grid.shape[1], x + width // 2)
+
+        # Clamping the boundaries to ensure they are within the valid range
+        if h1 >= grid.shape[0]:
+            h1 = grid.shape[0] - 1
+        if h2 > grid.shape[0]:
+            h2 = grid.shape[0]
+        if w1 >= grid.shape[1]:
+            w1 = grid.shape[1] - 1
+        if w2 > grid.shape[1]:
+            w2 = grid.shape[1]
+
+        # Extract the clamped region
+        region = grid[h1:h2, w1:w2]
+
+        # Get the shape of the region
+        shape = region.shape
+        color_coded = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
+
+        encode(color_coded, region, width, height)
+        # 4) Save the extracted region as an image file
+        return color_coded
         # Ensure the region is within the image boundaries
-        if x - width // 2 >= 0 and x + width // 2 <= grid.shape[1] and \
-                y - height // 2 >= 0 and y + height // 2 <= grid.shape[0]:
-            # Extract the 10x10 region
-            height = int(height)
-            width = int(width)
-            # Calculate the boundaries
-            h1 = max(0, y - height // 2)
-            h2 = min(grid.shape[0], y + height // 2)
-            w1 = max(0, x - width // 2)
-            w2 = min(grid.shape[1], x + width // 2)
-            region = grid[h1:h2, w1:w2]
-            shape = region.shape
-            color_coded = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
-            encode(color_coded, region, width, height)
-            # 4) Save the extracted region as an image file
-            return color_coded
-        else:
-            logging.info("The region is out of bounds.")
+
         return color_coded
 
     def print_snapshot(self, x, y, width=20, height=20, name_prefix="region"):
@@ -124,9 +133,11 @@ class World:
         y = int(y)
         # Ensure the region is within the image boundaries
         color_coded = self.get_grid_snapwhot(x, y, width, height)
+        if color_coded is None:
+            return
         region_image = Image.fromarray(color_coded)
         if region_image is not None:
-            name = f"{name_prefix}_{width}x{height}_{x}_{y}.png"
+            name = f"debug_output\\{name_prefix}_{width}x{height}_{x}_{y}.png"
             region_image.save(name)
             logging.info(f"{width}x{height} region saved as '{name}'")
 

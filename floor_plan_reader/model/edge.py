@@ -14,6 +14,7 @@ class Edge:
         return e
 
     def calculate_opening(self):
+        self.opening = set()
         for o in self.line.seg.openings:
             self.opening.add(o.copy())
 

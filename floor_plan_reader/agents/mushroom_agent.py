@@ -9,6 +9,7 @@ from floor_plan_reader.cell import Cell
 from floor_plan_reader.display.arrow import Arrow
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.display.cell_renderer import CellRenderer
+from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.math.min_max import MinMax
@@ -22,7 +23,7 @@ class Mushroom(Agent):
         super().__init__(mush_id)
         self.division_points = None
         self.perimeter = None
-        self.wall_scanner = WallScanner(world)
+        self._wall_scanner = WallScanner(world)
         self.world = world
         self.outward_points = set()
         self.root_cells = set([Cell(start_x, start_y)])
@@ -198,7 +199,7 @@ class Mushroom(Agent):
             self.co_axial_walls.add(obj)
 
     def absorb_bleading_out(self):
-        new_cb, division_points = self.wall_scanner.detect_bleed_along_collision_box(self, self.collision_box)
+        new_cb, division_points = self._wall_scanner.detect_bleed_along_collision_box(self, self.collision_box)
         self.division_points = division_points
         self.collision_box.set_width(new_cb.width)
         center = new_cb.get_center()
@@ -326,6 +327,7 @@ class Mushroom(Agent):
     def kill(self):
         self.alive = False
         for r in self.root_cells:
+            self.blob.free(r)
             self.world.free(r.x, r.y)
 
     def is_valid(self):
@@ -380,9 +382,10 @@ class Mushroom(Agent):
     def get_width(self):
         return self.collision_box.width
 
-    def performe_ray_trace(self):
+    def performe_ray_trace(self, direction=None):
+
         """Determine the longest axis."""
-        result = self.ray_trace_from_center()
+        result = self.ray_trace_from_center(direction)
         if result.is_valid():
             stem_length = result.get_lenght()
             width = result.get_width()
@@ -395,15 +398,14 @@ class Mushroom(Agent):
             if self.world.is_food(x, y):
                 is_on_food = True
 
-            self.collision_box.set_lenght(stem_length)
+            self.collision_box.set_length(stem_length)
             self.collision_box.set_width(width)
             self.set_position(cx, cy)
 
             angle = self.collision_box.calculate_rotation_from_direction(dx, dy)
             self.collision_box.rotation = angle
             self.corners()
-            direction = (1, 0) if abs(dx) > abs(dy) and dx > 0 else (-1, 0) if abs(dx) > abs(dy) else (
-                0, 1) if dy > 0 else (0, -1)
+
             x, y = self.get_center()
             if is_on_food and not self.world.is_food(x, y):
                 area = self.collision_box.get_area()
@@ -550,18 +552,25 @@ class Mushroom(Agent):
                 not self.world.is_occupied(x, y) and
                 not self.world.collide_with_any(self, x, y))
 
-    def ray_trace_from_center(self):
+    def ray_trace_from_center(self, direction=None):
         center_x, center_y = self.get_center()
-        values = self.ray_trace(center_x, center_y)
+        values = self.ray_trace(center_x, center_y, direction)
         return values
 
-    def ray_trace(self, x, y):
-        values = self.scan_for_walls(x, y)
+    def ray_trace(self, x, y, direction):
+        if direction is not None:
+            d = direction
+            do = direction.opposite()
+            normal = d.get_normal()
+            normal_o = normal.opposite()
+            direction = [d, do, normal, normal_o]
+            values = self.scan_for_walls(x, y, direction)
+        else:
+            values = self.scan_for_walls(x, y)
         return values
 
-    def scan_for_walls(self, x, y, directions=list(
-        map(lambda direction: Vector(direction), [(1, 0), (0, 1), (0.5, 0.5), (0.5, -0.5)]))):
-        return self.wall_scanner.scan_for_walls(self, x, y, directions)
+    def scan_for_walls(self, x, y, directions=Constants.DIRECTIONS_8.values()):
+        return self._wall_scanner.scan_for_walls(self, x, y, directions)
 
     def scan_for_blockages(self, dx, dy):
         steps = 0
