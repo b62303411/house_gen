@@ -136,7 +136,7 @@ class WallSegment(Agent):
             candidate_end = Point(c_bounds[2], c_bounds[3])
 
             if p.collision_box.rotation != self.collision_box.rotation:
-                print ("wtf")
+                p.collision_box.rotation = self.collision_box.rotation
             # Distances from our reference_start to the candidate's two endpoints
             dist_start = ref_start.distance(candidate_start)
             dist_end = ref_start.distance(candidate_end)

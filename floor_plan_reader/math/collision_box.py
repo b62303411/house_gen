@@ -15,7 +15,7 @@ class CollisionBox:
         self.center_y = center_y
         self.width = float(width)
         self.length = float(length)
-        self.rotation = rotation
+        self.rotation = int(rotation)
         self.default_direction = (1, 0)
         self.corners = None
         self._direction = None
