@@ -157,6 +157,16 @@ class WallSegment(Agent):
         # Return just the lines, now sorted from closest to farthest
         return [sortable.line for sortable in a_list]
 
+    def project_along_wall_direction(self, vec_to_point, wall_direction):
+        """
+        Projects the vector `vec_to_point` onto the `wall_direction`.
+
+        Both should be instances of your Vector class.
+        Assumes `wall_direction` is already normalized.
+        Returns a scalar (float): the signed distance along the wall's axis.
+        """
+        return vec_to_point.dot_product(wall_direction)
+
     def calculate_openings(self):
 
         if len(self.parts) < 2:
@@ -189,7 +199,10 @@ class WallSegment(Agent):
             mid_x = (end.x + start.x) / 2
             mid_y = (end.y + start.y) / 2
             mid_point = Point(mid_x, mid_y)
-            offset = mid_point.distance(center_p)
+            vec_to_mid = Vector((mid_point.x - center_p.x, mid_point.y - center_p.y))
+            direction = self.collision_box.get_direction()
+            offset = self.project_along_wall_direction(vec_to_mid, direction)
+            # offset = mid_point.distance(center_p)
             # Euclidean distance between these two points
             gap_distance = end.distance(start)
             print(f"Gap = {gap_distance:.2f}")
@@ -240,6 +253,7 @@ class WallSegment(Agent):
                 for p in self.parts:
                     if p.collidepoint(x, y):
                         logging.error("wtf")
+                logging.info("not fully compliant")
                 return False  # There's a gap
 
         return True
@@ -555,6 +569,10 @@ class WallSegment(Agent):
             x, y = vp.convert(x, y)
             text_surface = self.f.render(f"s: {score:.{2}f}", True, (15, 255, 0))
             screen.blit(text_surface, (x, y))  # Position (x=10, y=10)
+
+        self.draw_opening(screen, vp)
+
+    def draw_opening(self, screen, vp):
         colour = (255, 0, 0)
         for o in self.openings:
             center = self.get_center()
