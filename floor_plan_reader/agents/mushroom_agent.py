@@ -9,6 +9,7 @@ from floor_plan_reader.cell import Cell
 from floor_plan_reader.display.arrow import Arrow
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.display.cell_renderer import CellRenderer
+from floor_plan_reader.display.mushroom_draw import MushroomDraw
 from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
@@ -47,8 +48,14 @@ class Mushroom(Agent):
         self.co_axial_walls = set()
         self.state_machine = MushAgentStateMachine(self)
         self.cell_render = CellRenderer()
-        self.bb_drawer = BoundingBoxDrawer()
+        self.drawer = MushroomDraw(self)
         self.blob = blob
+
+    def run(self):
+        self.process_state()
+
+    def draw(self, screen, vp):
+        self.drawer.draw(screen, vp)
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -68,9 +75,6 @@ class Mushroom(Agent):
 
     def get_center(self):
         return self.collision_box.get_center()
-
-    def run(self):
-        self.process_state()
 
     def re_compute(self):
         self.free()
@@ -258,7 +262,7 @@ class Mushroom(Agent):
                 walls.add(coaxial.wall_segment)
 
         if len(walls) == 0:
-            wall = self.world.create_wall_segment()
+            wall = self.world.create_wall_segment(self.collision_box)
             self.wall_segment = wall
             wall.add_part(self)
             for coaxial in self.co_axial_walls:
@@ -267,11 +271,11 @@ class Mushroom(Agent):
         else:
             # elect a wall
             winner = None
-            max_lenght = -1
+            max_length = -1
             for w in walls:
-                max_lenght = max(w.get_score(), max_lenght)
+                max_length = max(w.get_score(), max_length)
             for w in walls:
-                if w.get_score() == max_lenght:
+                if w.get_score() == max_length:
                     winner = w
                     break
             for w in walls:
@@ -433,8 +437,8 @@ class Mushroom(Agent):
     def stem_growth_phase(self):
         """Grow a stem along the longest axis."""
         x, y = self.get_center()
-
-        for i in range(self.stem_length + 1):
+        stem_length = self.collision_box.length
+        for i in range(stem_length + 1):
             sx = int(x + self.get_direction()[0] * i)
             sy = int(y + self.get_direction()[1] * i)
             if self.world.is_food(sx, sy) and not self.world.is_occupied(sx, sy):
@@ -594,92 +598,18 @@ class Mushroom(Agent):
             return
         self.set_position((min_x + max_x) / 2.0, (min_y + max_y) / 2.0)
 
-    def draw_margin(self, surface, vp, color=(0, 255, 0), width=2):
-        box = self.collision_box
-        cx, cy = box.get_center()
-        cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction
-        length = 1.5 * self.left_margin * vp.zoom_factor
-        color = (200, 0, 0)
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-        nx, ny = -nx, -ny
-        length = 1.5 * self.right_margin * vp.zoom_factor
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-
-    def draw_normal_arrow(self, surface, vp, color=(0, 255, 0), width=2):
-        box = self.collision_box
-        # 1) Get the center and normal from the box
-        cx, cy = box.get_center()
-        cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction  # might not be unit-length
-        # If the user wants to draw on 'left', invert the normal
-        if self.left_inside == False:
-            nx, ny = -nx, -ny
-
-        length = 15
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-
-    def draw_arrow(self, cx, cy, nx, ny, vp, surface, color, length, width=2):
-        arrow = Arrow(cx, cy, nx, ny, length, width, color)
-
-        arrow.draw(surface, vp)
-
-    def draw_cells(self, cells, screen, vp):
-        for cell in cells:
-            sx, sy = vp.convert(cell.x, cell.y)
-            pygame.draw.rect(screen, (100, 200, 160), pygame.Rect(sx, sy, 1, 1))
-
-    def draw(self, screen, vp):
-
-        if self.get_state() != "done":
-            self.draw_cells(self.root_cells, screen, vp)
-            self.draw_cells(self.core_cells, screen, vp)
-
-        if self.alive:
-            if self.is_outer_wall():
-                colour = (200, 200, 20)
-            else:
-                colour = (255, 255, 0)
-        else:
-            colour = (255, 0, 0)
-        if self.collision_box is not None:
-            self.bb_drawer.draw(self.collision_box, screen, vp, colour)
-
-        x, y = self.get_center()
-        x, y = vp.convert(x, y)
-        pygame.draw.circle(screen, colour, (x, y), 1)
-        if self.is_outer_wall():
-            self.draw_normal_arrow(screen, vp)
-        if self.left_margin is not None and self.right_margin is not None:
-            self.draw_margin(screen, vp, (0, 0, 0))
-        for p in self.outward_points:
-            x = p[0]
-            y = p[1]
-            x, y = vp.convert(x, y)
-            colour = (0, 255, 0)
-            pygame.draw.circle(screen, colour, (x, y), 1)
-
-        if self.selected:
-            for c in self.crawl_points:
-                x = c[0]
-                y = c[1]
-                x, y = vp.convert(x, y)
-                colour = (0, 255, 0)
-                pygame.draw.circle(screen, colour, (x, y), 1)
-
     def center_on_food(self):
         x, y = self.get_center()
         return self.world.is_food(x, y)
 
-    def can_merge_with(self, other):
+    def get_distance_from(self, other):
+        return self.collision_box.get_distance_from(other.collision_box)
+
+    def can_merge_with(self, other, tolerance=0.1):
         if not isinstance(other, Mushroom) or self is other:
             return False
-        if self.collidepoint(other.center_x, other.center_y):
-            tolerance = 0.1
-            same_x = abs(self.center_x - other.center_x) < tolerance
-            same_y = abs(self.center_y - other.center_y) < tolerance
-            return same_x or same_y
-        return False
+        distance = self.get_distance_from(other)
+        return distance < tolerance
 
     def merge_with(self, other):
         logging.debug(f"Merging Mushroom {self.id} with {other.id}")
@@ -697,12 +627,19 @@ class Mushroom(Agent):
         if not self.world.is_blob(x, y):
             self.world.create_blob(x, y)
 
-    def print_box(self):
+    def print_box_from_cell(self):
         bb = BoundingBox.from_cells(self.core_cells)
         x, y = bb.get_center()
         width, height = bb.get_shape()
         self.world.print_snapshot(x, y, width + 4, height + 4, "wall")
         self.record_stack_trace()
+
+    def print_box(self):
+        y = self.collision_box.center_y
+        x = self.collision_box.center_x
+        height = self.collision_box.width
+        width = self.collision_box.length
+        self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
@@ -715,13 +652,6 @@ class Mushroom(Agent):
         y = self.collision_box.center_y
         x = self.collision_box.center_x
         # self.world.print_snapshot(x, y)
-
-    def print_box(self):
-        y = self.collision_box.center_y
-        x = self.collision_box.center_x
-        height = self.collision_box.width
-        width = self.collision_box.length
-        self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
 
     def create_blob(self, x, y):
         self.world.create_blob(x, y)

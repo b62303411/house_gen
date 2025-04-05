@@ -51,9 +51,19 @@ class WallScanner:
         food = self.is_food(x, y)
         value = self.world.get_occupied_id(x, y)
         has_wall = self.world.is_wall_occupied(x, y)
-        free = value == 0 or value == mush.id
+
+        wall_free = True
+        if mush is not None:
+            if has_wall:
+                wall_id = self.world.get_occupied_wall_id(x, y)
+                if mush.wall_segment is not None:
+                    wall_free = mush.wall_segment.id == wall_id
+        elif has_wall:
+            wall_free = False
+
+        free = (value == 0 or value == mush.id) and wall_free
         occupied = not free
-        value = food and not occupied and not has_wall
+        value = food and not occupied
         return value
 
         # 2) Walk backward to find the first boundary

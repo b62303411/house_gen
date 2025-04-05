@@ -45,9 +45,11 @@ class Vector:
 
     def normalize(self):
         """Normalize the vector to have a length of 1."""
-        if self.length == 0:
-            raise ValueError("Cannot normalize a vector with zero length.")
-        self.direction = (self.direction[0] / self.length, self.direction[1] / self.length)
+        length = math.hypot(self.direction[0], self.direction[1])
+        if length < 1e-8:
+            raise ValueError("Cannot normalize a vector with near-zero length.")
+
+        self.direction = (self.direction[0] / length, self.direction[1] / length)
         self.length = 1
         return self
 

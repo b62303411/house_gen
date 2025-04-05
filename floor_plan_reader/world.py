@@ -93,7 +93,7 @@ class World:
     def get_edges(self):
         return self.model.get_edges()
 
-    def get_snapshot(self, x, y, width, height, grid, encode):
+    def get_clampt_region(self, x, y, width, height, grid):
         color_coded = None
         x = int(x)
         y = int(y)
@@ -116,6 +116,11 @@ class World:
 
         # Extract the clamped region
         region = grid[h1:h2, w1:w2]
+        return region
+
+    def get_snapshot(self, x, y, width, height, grid, encode):
+        color_coded = None
+        region = self.get_clampt_region(x, y, width, height, grid)
 
         # Get the shape of the region
         shape = region.shape
@@ -127,6 +132,29 @@ class World:
         # Ensure the region is within the image boundaries
 
         return color_coded
+
+    def print_occupancy_status(self, x, y, width, height, name_prefix="occupancy"):
+        wall_grid = self.get_clampt_region(x, y, width, height, self.grid)
+        occ = self.get_clampt_region(x, y, width, height, self.occupied)
+        occ_binary = (occ > 0).astype(np.uint8)
+        h, l = occ.shape
+        out = np.zeros((h, l, 3), dtype=np.uint8)
+        for i in range(h):
+            for j in range(l):
+                wall = wall_grid[i, j]
+                occ = occ_binary[i, j]
+                if wall == 0:
+                    out[i, j] = [0, 0, 0]  # black
+                elif wall == 1 and occ == 0:
+                    out[i, j] = [255, 0, 0]  # red
+                elif wall == 1 and occ == 1:
+                    out[i, j] = [0, 255, 0]  # green
+
+        region_image = Image.fromarray(out)
+        if region_image is not None:
+            name = f"debug_output\\occupancy_{name_prefix}_{width}x{height}_{x}_{y}.png"
+            region_image.save(name)
+            logging.info(f"{width}x{height} region saved as '{name}'")
 
     def print_snapshot(self, x, y, width=20, height=20, name_prefix="region"):
         x = int(x)
@@ -218,8 +246,9 @@ class World:
                 results.append(a)
         return results
 
-    def create_wall_segment(self):
+    def create_wall_segment(self, collision_box):
         ws = WallSegment(IdUtil.get_id(), self)
+        ws.collision_box = collision_box.copy()
         self.candidates.append(ws)
         self.wall_segments.add(ws)
         return ws

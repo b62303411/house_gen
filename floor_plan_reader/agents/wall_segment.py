@@ -1,6 +1,7 @@
 import logging
 import math
 from decimal import Decimal
+from itertools import combinations
 
 import pygame
 from pygame import font
@@ -95,7 +96,7 @@ class WallSegment(Agent):
         """2D vector length."""
         return math.sqrt(ax * ax + ay * ay)
 
-    def _validate_part_within_parent(self, part,tolerance=2):
+    def _validate_part_within_parent(self, part, tolerance=2):
 
         parent_line = self.collision_box_extended.get_center_line_string()
         parent_coords = parent_line.coords
@@ -119,8 +120,6 @@ class WallSegment(Agent):
                 )
 
     def get_sorted_lines(self):
-        self.recalculate_parent_box_from_parts()
-        self.calculate_extended_bounding_box()
 
         class Sortable:
             def __init__(self, line, dist):
@@ -141,12 +140,6 @@ class WallSegment(Agent):
 
         a_list = []
         for p in self.parts:
-            try:
-                self._validate_part_within_parent(p)
-            except :
-                self.recalculate_parent_box_from_parts()
-                self.calculate_extended_bounding_box()
-                self._validate_part_within_parent(p)
 
             candidate = p.collision_box.get_center_line_string()
 
@@ -156,7 +149,8 @@ class WallSegment(Agent):
             candidate_end = Point(c_bounds[2], c_bounds[3])
 
             if p.collision_box.rotation != self.collision_box.rotation:
-                p.collision_box.rotation = self.collision_box.rotation
+                logging.debug(f"{p.collision_box.rotation} vs {self.collision_box.rotation}")
+
             # Distances from our reference_start to the candidate's two endpoints
             dist_start = ref_start.distance(candidate_start)
             dist_end = ref_start.distance(candidate_end)
@@ -189,10 +183,12 @@ class WallSegment(Agent):
         if len(self.parts) < 2:
             return
         if not self.is_segment_fully_occupied():
+            self.print_occupancy()
             parts = self.parts.copy()
             for p in parts:
                 p.re_compute()
                 p.performe_ray_trace(self.collision_box.get_direction())
+                p.absorb_bleading_out()
                 p.fill_box()
                 p.crawl_phase()
             return
@@ -275,15 +271,26 @@ class WallSegment(Agent):
 
         return True
 
+    def print_occupancy(self):
+        center = self.get_center()
+        width = 250
+        height = 250
+        x = center[0]
+        y = center[1]
+        self.world.print_occupancy_status(x, y, width + 2, height + 2, self.id)
+
+    def print_snapshot(self):
+        center = self.get_center()
+        width = 250
+        height = 250
+        x = center[0]
+        y = center[1]
+        self.world.print_snapshot(x, y, width + 2, height + 2, self.id)
+
     def add_opening(self, o):
         if o.width > 120:
             logging.info("wtf")
-            center = self.get_center()
-            width = 250
-            height = 250
-            x = center[0]
-            y = center[1]
-            self.world.print_snapshot(x, y, width + 2, height + 2, self.id)
+            self.print_snapshot()
         self.openings.add(o)
 
     def merge_alighned(self, cb, p):
@@ -303,6 +310,21 @@ class WallSegment(Agent):
                 cb = self.merge_alighned(cb, p)
 
         self.set_collision_box(cb)
+
+    def fitting_phase(self):
+        self.state="opening"
+        return
+        self.recalculate_parent_box_from_parts()
+        self.calculate_extended_bounding_box()
+
+        if self.is_segment_fully_occupied():
+            for p in self.parts:
+                try:
+                    self._validate_part_within_parent(p)
+                except:
+                    logging.error("")
+                    return
+            self.state = "opening"
 
     def negotiate_phase(self):
         self.negotiate()
@@ -363,6 +385,8 @@ class WallSegment(Agent):
         steps = 0
         x, y = 0, 0
         measuring_extent = False
+        if points is None:
+            raise Exception
         for p in points:
             x = int(p[0])
             y = int(p[1])
@@ -380,45 +404,25 @@ class WallSegment(Agent):
     def recalculate_parent_box_from_parts(self):
         if not self.parts:
             raise ValueError("Cannot recalculate extent without parts.")
+        line_strings = self.get_sorted_lines()
 
-            # Use current parent box rotation and direction
-        rotation_deg = self.collision_box.rotation
-        rotation_rad = math.radians(rotation_deg)
-        dir_x = math.cos(rotation_rad)
-        dir_y = math.sin(rotation_rad)
-        direction = (dir_x, dir_y)
+        endpoints = []
+        for line in line_strings:
+            coords = list(line.coords)
+            endpoints.append(Point(coords[0]))
+            endpoints.append(Point(coords[-1]))
 
-        # Use a consistent origin (start of current center line)
-        origin = Point(self.collision_box.get_center_line_string().coords[0])
+        max_dist = -1
+        max_pair = (None, None)
 
-        # Project all child coordinates onto the parent direction
-        projections = []
-        for part in self.parts:
-            line = part.collision_box.get_center_line_string()
-            for coord in line.coords:
-                dx = coord[0] - origin.x
-                dy = coord[1] - origin.y
-                proj = dx * dir_x + dy * dir_y
-                projections.append(proj)
-
-        min_proj = min(projections)
-        max_proj = max(projections)
-
-        # Calculate projected start and end points
-        start = (
-            origin.x + dir_x * min_proj,
-            origin.y + dir_y * min_proj
-        )
-        end = (
-            origin.x + dir_x * max_proj,
-            origin.y + dir_y * max_proj
-        )
-
-        # Reuse from_line_and_width to regenerate box
-        center_line = LineString([start, end])
+        for p1, p2 in combinations(endpoints, 2):
+            dist = p1.distance(p2)
+            if dist > max_dist:
+                max_dist = dist
+                max_pair = (p1, p2)
 
         width = self.collision_box.width
-
+        center_line = LineString([max_pair[0], max_pair[1]])
         self.collision_box = CollisionBox.create_from_line(center_line, width)
 
     def process_state(self):
@@ -447,8 +451,10 @@ class WallSegment(Agent):
             return
         elif self.state == "extend":
             self.calculate_extended_bounding_box()
-            self.state = "opening"
+            self.state = "fitting"
             return
+        elif self.state == "fitting":
+            self.fitting_phase()
         elif self.state == "opening":
             self.calculate_openings()
             self.state = "done"
