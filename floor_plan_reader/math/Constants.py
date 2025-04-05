@@ -17,3 +17,24 @@ class Constants:
     }
 
     DIRECTIONS_8 = {angle: Vector(v).normalize() for angle, v in raw_directions.items()}
+
+
+    # Reverse mapping: normalized vector (as tuple) -> angle
+    VECTOR_TO_ANGLE = {
+        (round(v.dx(), 6), round(v.dy(), 6)): angle
+        for angle, v in DIRECTIONS_8.items()
+    }
+
+    @staticmethod
+    def get_key(vector):
+        return (round(vector.dx(), 6), round(vector.dy(), 6))
+    @staticmethod
+    def angle_to_vector(angle):
+        """Convert angle (0, 45, ..., 315) to normalized Vector."""
+        return Constants.DIRECTIONS_8[angle]
+
+    @staticmethod
+    def vector_to_angle(vector):
+        """Convert normalized Vector to closest matching angle."""
+        key = Constants.get_key(vector)
+        return Constants.VECTOR_TO_ANGLE.get(key, None)

@@ -52,13 +52,6 @@ class CollisionBox:
             length=self.length,
             rotation=self.rotation
         )
-        # If needed, also copy any other dynamic attributes
-        # For example, default_direction or corners
-        # corners often should reset so new_box can recalc
-        new_box.default_direction = self.default_direction
-        # corners might remain None so it recalculates later,
-        # but if you do want to copy them directly, do so:
-        # new_box.corners = list(self.corners) if self.corners else None
         return new_box
 
     def get_area(self):
@@ -68,7 +61,7 @@ class CollisionBox:
         if self._direction is None:
             angle_deg = round(self.rotation / 45.0) * 45 % 360
             direction = Constants.DIRECTIONS_8.get(angle_deg)
-            self._direction = direction
+            self._direction = direction.normalize()
         return self._direction.copy()
 
     def get_vector(self):
@@ -96,7 +89,7 @@ class CollisionBox:
         minx, miny, maxx, maxy = poly.bounds
         if x < minx or x > maxx or y < miny or y > maxy:
             return False
-        point = Point(x,y)
+        point = Point(x, y)
         poly = self.get_polygon()
         return poly.contains(point)
 
@@ -267,7 +260,6 @@ class CollisionBox:
         return self.calculate_overlap_ratio(other) > 0.1
         # return other.is_point_inside(self.center_x, self.center_y)
 
-
     def get_center_line(cb):
         """
         Returns ((x1, y1), (x2, y2)) for the center line of a CollisionBox
@@ -294,20 +286,21 @@ class CollisionBox:
             points.append((point_x, point_y))
         return points
 
-    def move_forward(self, lenght):
+    def move_forward(self, length):
         dir_ = self.get_direction()
-        dir_.scale(lenght)
+        dir_.scale(length)
         self.move(dir_)
 
-    def move_backward(self, lenght):
+    def move_backward(self, length):
         dir_ = self.get_direction().opposite()
-        dir_.scale(lenght)
+        dir_.scale(length)
         self.move(dir_)
 
     def move(self, dir_):
         c = self.get_center_as_vector()
         new_c = c + dir_
         self.set_position(new_c.dx(), new_c.dy())
+
     @staticmethod
     def create_from_line(line, width):
         x1, y1 = line.coords[0]
@@ -325,7 +318,7 @@ class CollisionBox:
         # Angle in radians and degrees
         angle_rad = math.atan2(dy, dx)
         angle_deg = math.degrees(angle_rad)
-        cb = CollisionBox(cx,cy,width,length,angle_deg)
+        cb = CollisionBox(cx, cy, width, length, angle_deg)
         return cb
 
     def get_normal(self):
@@ -358,9 +351,9 @@ class CollisionBox:
                 points_backward.append((current_x, current_y))
                 current_x -= direction[0]
                 current_y -= direction[1]
-            if len(points_backward) > 0 :
-                self.points_backward=points_backward
-                self.points_forward=points_forward
+            if len(points_backward) > 0:
+                self.points_backward = points_backward
+                self.points_forward = points_forward
             else:
                 pass
 
@@ -580,7 +573,7 @@ class CollisionBox:
         if self.center_line is None:
             (x1, y1), (x2, y2) = self.get_center_line()
             end1 = Point(x1, y1)
-            end2 = Point(x2,y2)
+            end2 = Point(x2, y2)
             self.center_line = LineString([end1, end2])
         return self.center_line
 

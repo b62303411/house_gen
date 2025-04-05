@@ -1,5 +1,6 @@
 from sortedcontainers import SortedList
 
+from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.vector import Vector
 
 
@@ -12,15 +13,18 @@ class ScanResult:
         self.center = None
 
     def add_sonde(self, direction, sonde):
-        self.sonde_dic[direction] = sonde
-        self.sonde_dic[direction.opposite()] = sonde
+        angle = Constants.vector_to_angle(direction)
+        angle_o = Constants.vector_to_angle(direction.opposite())
+        self.sonde_dic[angle] = sonde
+        self.sonde_dic[angle_o] = sonde
         self.sondes.add(sonde)
 
     def get_longest(self):
         return self.sondes[-1]
 
-    def get_from_dir(self, dir):
-        return self.sonde_dic.get(dir)
+    def get_from_dir(self, dir_vector):
+        angle = Constants.vector_to_angle(dir_vector)
+        return self.sonde_dic.get(angle)
 
     def to_global(self, u, v, origin, d_dir, n_dir):
         return (
@@ -37,6 +41,8 @@ class ScanResult:
         self.width_sonde = width_sonde
 
         d_data = self.stem_sonde.data
+        if self.width_sonde is None:
+            return
         n_data = self.width_sonde.data
         d_direction = self.stem_sonde.direction
         n_direction = self.width_sonde.direction

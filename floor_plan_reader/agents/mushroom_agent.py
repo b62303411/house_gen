@@ -207,7 +207,7 @@ class Mushroom(Agent):
 
     def crawl(self, points):
         steps = 0
-        opening_lenght = 0
+        opening_length = 0
         measuring_opening = False
 
         for p in points:
@@ -215,7 +215,7 @@ class Mushroom(Agent):
             y = p[1]
             steps = steps + 1
             if measuring_opening:
-                if opening_lenght > 100:
+                if opening_length > 100:
                     return
                 if self.world.is_food(x, y):
                     if self.world.is_occupied(x, y):
@@ -227,15 +227,16 @@ class Mushroom(Agent):
                     else:
                         self.create_blob(x, y)
                 else:
-                    opening_lenght = opening_lenght + 1
+                    opening_length = opening_length + 1
 
             else:
-                if self.world.is_food(x, y):
+
+                if self.world.is_food(x, y) and not self.is_occupied_by_other_mush(x,y):
                     self.outward_points.add(p)
-                    if (steps <= 1):
+                    if steps <= 1:
                         normal = self.collision_box.get_normal()
-                        dir = self.get_direction()
-                        directions = [normal, dir]
+                        direction = self.get_direction()
+                        directions = [normal, direction]
                         self.scan_for_walls(x, y, directions)
                         # print("hum")
                 else:
@@ -267,11 +268,11 @@ class Mushroom(Agent):
         else:
             # elect a wall
             winner = None
-            max_lenght = -1
+            max_length = -1
             for w in walls:
-                max_lenght = max(w.get_score(), max_lenght)
+                max_length = max(w.get_score(), max_length)
             for w in walls:
-                if w.get_score() == max_lenght:
+                if w.get_score() == max_length:
                     winner = w
                     break
             for w in walls:
@@ -433,8 +434,8 @@ class Mushroom(Agent):
     def stem_growth_phase(self):
         """Grow a stem along the longest axis."""
         x, y = self.get_center()
-
-        for i in range(self.stem_length + 1):
+        stem_length = self.collision_box.length
+        for i in range(stem_length + 1):
             sx = int(x + self.get_direction()[0] * i)
             sy = int(y + self.get_direction()[1] * i)
             if self.world.is_food(sx, sy) and not self.world.is_occupied(sx, sy):
@@ -556,6 +557,8 @@ class Mushroom(Agent):
 
     def ray_trace_from_center(self, direction=None):
         center_x, center_y = self.get_center()
+        if self.is_occupied_by_other_mush(center_x,center_y):
+            logging.debug("occupied ?!")
         values = self.ray_trace(center_x, center_y, direction)
         return values
 
@@ -697,12 +700,19 @@ class Mushroom(Agent):
         if not self.world.is_blob(x, y):
             self.world.create_blob(x, y)
 
-    def print_box(self):
+    def print_box_from_cell(self):
         bb = BoundingBox.from_cells(self.core_cells)
         x, y = bb.get_center()
         width, height = bb.get_shape()
         self.world.print_snapshot(x, y, width + 4, height + 4, "wall")
         self.record_stack_trace()
+
+    def print_box(self):
+        y = self.collision_box.center_y
+        x = self.collision_box.center_x
+        height = self.collision_box.width
+        width = self.collision_box.length
+        self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()
@@ -716,12 +726,11 @@ class Mushroom(Agent):
         x = self.collision_box.center_x
         # self.world.print_snapshot(x, y)
 
-    def print_box(self):
-        y = self.collision_box.center_y
-        x = self.collision_box.center_x
-        height = self.collision_box.width
-        width = self.collision_box.length
-        self.world.print_snapshot(x, y, width + 10, height + 10, "debug")
-
     def create_blob(self, x, y):
         self.world.create_blob(x, y)
+
+    def is_occupied_by_other_mush(self, x, y):
+        if self.world.is_occupied(x,y):
+            return self.world.get_occupied_id(x,y) != self.id
+        else:
+            return False
