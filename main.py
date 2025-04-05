@@ -1,5 +1,4 @@
 import bpy
-import math
 import os
 import sys
 
@@ -27,35 +26,30 @@ def get_script_dir():
 
     return script_dir
 
+
 script_dir = get_script_dir()
 if script_dir not in sys.path:
     sys.path.append(script_dir)
-    sys.path.append("E:\workspace\blender_house\house_gen") 
+    sys.path.append("E:\\workspace\\blender_house\\house_gen")
 
-print("Updated script_dir:", script_dir) 
+print("Updated script_dir:", script_dir)
 # Debugging: Print sys.path to check if it's added
-#print("Updated sys.path:", sys.path)
-
+# print("Updated sys.path:", sys.path)
 
 
 print("Python Executable:", sys.executable)
 print("Python Version:", sys.version)
 print("Current Working Directory:", os.getcwd())
-#print("Sys Path:", sys.path)
-import os
+# print("Sys Path:", sys.path)
+
 
 script_dir = "E:\\workspace\\blender_house\\house_gen"
 print("Files in script directory:", os.listdir(script_dir))
 
-import bed_factory
-import frame_factory
 import importlib
-import materials
-import board_factory
-import windows
-import segment_factory
-import house_factory
-import bath_thub_factory
+from furnitures_gen import board_factory, bed_factory, bath_thub_factory, frame_factory, segment_factory, house_factory, \
+    windows, materials
+
 importlib.reload(materials)  # Force refresh
 importlib.reload(board_factory)
 importlib.reload(windows)
@@ -64,8 +58,8 @@ importlib.reload(house_factory)
 importlib.reload(frame_factory)
 importlib.reload(bed_factory)
 importlib.reload(bath_thub_factory)
-from scene_factory import SceneFactory
-
+from furnitures_gen.scene_factory import SceneFactory
 
 if __name__ == "__main__":
     SceneFactory.build_scene()
+

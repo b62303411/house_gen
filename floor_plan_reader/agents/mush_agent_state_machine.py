@@ -6,37 +6,53 @@ class MushAgentStateMachine:
     def process_state(self):
         if self.state == "ray_trace":
             self.mush.ray_trace_phase()
+            self.state = "fill_phase"
+            return
+        if self.state == "fill_phase":
+            self.mush.absorb_bleading_out()
             self.mush.fill_box()
-            self.state = "recenter_phase"
+            self.state = "hey_neighbour"
+            return
+        if self.state == "hey_neighbour":
+            self.mush.hey_neighbour()
+            self.state = "pruning"
         if self.state == "recenter_phase":
             if self.mush.recenter_phase():
                 self.state = "recenter_phase"
             else:
+                self.mush.fill_box()
                 self.state = "pruning"
+            return
         elif self.state == "pruning":
             self.mush.prunning_phase()
             self.state = "wall_type"
+            return
         elif self.state == "overlap":
             self.mush.overlap_phase()
             self.state = "crawl"
+            return
         elif self.state == "crawl":
             self.mush.crawl_phase()
             self.state = "wrapup"
+            return
         elif self.state == "wall_type":
             self.mush.wall_type_phase()
             if self.mush.is_centered():
                 self.state = "center"
             else:
                 self.state = "overlap"
+            return
         elif self.state == "center":
             self.mush.try_to_center()
             self.state = "overlap"
+            return
         elif self.state == "wrapup":
             if self.mush.is_valid():
                 self.mush.forced_fill_box()
                 self.state = "done"
             else:
                 self.mush.kill()
+            return
 
     def process_state_(self):
         """State machine for floor plan resolution."""

@@ -1,9 +1,13 @@
+import logging
 import math
 from decimal import Decimal
 
+from shapely import Polygon, LineString, Point
+
+from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.math_segments import combine_segments_decimal
 from floor_plan_reader.math.vector import Vector
-from shapely.geometry import Polygon
+
 
 class CollisionBox:
     def __init__(self, center_x, center_y, width, length, rotation):
@@ -11,23 +15,32 @@ class CollisionBox:
         self.center_y = center_y
         self.width = float(width)
         self.length = float(length)
-        self.rotation = rotation
+        self.rotation = int(rotation)
         self.default_direction = (1, 0)
         self.corners = None
+        self._direction = None
+        self.center_line = None
+        self.points_forward = None
+        self.points_backward = None
+        self.polygon = None
 
     def __eq__(self, other):
         if not isinstance(other, CollisionBox):
             return False
         return (self.center_x, self.center_y, self.width, self.length, self.rotation) == \
-               (other.center_x, other.center_y, other.width, other.length, other.rotation)
+            (other.center_x, other.center_y, other.width, other.length, other.rotation)
 
     def __hash__(self):
         return hash((self.center_x, self.center_y, self.width, self.length, self.rotation))
 
-    def set_width(self,width):
+    def set_width(self, width):
         self.width = float(width)
-    def set_lenght(self,lenght):
-        self.length = float(lenght)
+        self.reset_cache()
+
+    def set_length(self, length):
+        self.length = float(length)
+        self.reset_cache()
+
     def copy(self):
         """
         Return a new CollisionBox that is a copy of this one.
@@ -39,31 +52,17 @@ class CollisionBox:
             length=self.length,
             rotation=self.rotation
         )
-        # If needed, also copy any other dynamic attributes
-        # For example, default_direction or corners
-        # corners often should reset so new_box can recalc
-        new_box.default_direction = self.default_direction
-        # corners might remain None so it recalculates later,
-        # but if you do want to copy them directly, do so:
-        # new_box.corners = list(self.corners) if self.corners else None
         return new_box
 
     def get_area(self):
         return self.width * self.length
 
     def get_direction(self):
-        angle_deg = round(self.rotation / 45.0) * 45 % 360
-        directions = {
-            0: (1, 0),
-            45: (math.sqrt(2) / 2, math.sqrt(2) / 2),
-            90: (0, 1),
-            135: (-math.sqrt(2) / 2, math.sqrt(2) / 2),
-            180: (-1, 0),
-            225: (-math.sqrt(2) / 2, -math.sqrt(2) / 2),
-            270: (0, -1),
-            315: (math.sqrt(2) / 2, -math.sqrt(2) / 2)
-        }
-        return Vector(directions.get(angle_deg, (0, 0)))
+        if self._direction is None:
+            angle_deg = round(self.rotation / 45.0) * 45 % 360
+            direction = Constants.DIRECTIONS_8.get(angle_deg)
+            self._direction = direction.normalize()
+        return self._direction.copy()
 
     def get_vector(self):
         dir = self.get_direction()
@@ -73,23 +72,26 @@ class CollisionBox:
     def get_center(self):
         return self.center_x, self.center_y
 
+    def get_center_as_vector(self):
+        return Vector((self.center_x, self.center_y))
+
     def area_of_triangle(self, A, B, C):
         return abs((A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1])) / 2.0)
 
+    def get_polygon(self):
+        if self.polygon is None:
+            corners = self.calculate_corners()
+            self.polygon = Polygon(corners)  # Create the polygon
+        return self.polygon
+
     def is_point_inside(self, x, y):
-        corners = self.calculate_corners()
-        A, B, C, D = corners
-        P = (x, y)
-
-        rect_area = self.area_of_triangle(A, B, C) + self.area_of_triangle(A, C, D)
-        area_sum = (
-                self.area_of_triangle(P, A, B) +
-                self.area_of_triangle(P, B, C) +
-                self.area_of_triangle(P, C, D) +
-                self.area_of_triangle(P, D, A)
-        )
-
-        return abs(rect_area - area_sum) < 1e-5
+        poly = self.get_polygon()
+        minx, miny, maxx, maxy = poly.bounds
+        if x < minx or x > maxx or y < miny or y > maxy:
+            return False
+        point = Point(x, y)
+        poly = self.get_polygon()
+        return poly.contains(point)
 
     def line_equation(self, p1, p2, tol=1e-9):
         """
@@ -156,7 +158,7 @@ class CollisionBox:
         else:
             return False
 
-    def is_on_same_axis_as(self, other, a_t=1,tolerance=5):
+    def is_on_same_axis_as(self, other, a_t=1, tolerance=5):
         if not self.is_parallel_to(other):
             return False
 
@@ -219,7 +221,6 @@ class CollisionBox:
         # 1) Get and normalize the normal
         nx, ny = self.get_normal().direction
 
-
         cx, cy = self.get_center()
 
         # 2) Create lists for each direction
@@ -244,7 +245,7 @@ class CollisionBox:
         angle_rad = math.radians(self.rotation)
 
         # Direction vector (rotated from default direction (1,0))
-        direction = Vector( (math.cos(angle_rad), math.sin(angle_rad)))
+        direction = Vector((math.cos(angle_rad), math.sin(angle_rad)))
 
         # Normal vector (rotated 90 degrees from direction)
         normal = direction.get_normal()
@@ -257,7 +258,7 @@ class CollisionBox:
 
     def is_overlapping(self, other):
         return self.calculate_overlap_ratio(other) > 0.1
-        #return other.is_point_inside(self.center_x, self.center_y)
+        # return other.is_point_inside(self.center_x, self.center_y)
 
     def get_center_line(cb):
         """
@@ -274,6 +275,7 @@ class CollisionBox:
         x2 = cx + dx * half_len
         y2 = cy + dy * half_len
         return (x1, y1), (x2, y2)
+
     def get_ray_trace_points(self):
         direction = self.get_direction()
         half_length = self.length / 2.0
@@ -284,48 +286,97 @@ class CollisionBox:
             points.append((point_x, point_y))
         return points
 
-    def get_normal(self):
-        dir = self.get_direction()
-        return dir.get_normal()
+    def move_forward(self, length):
+        dir_ = self.get_direction()
+        dir_.scale(length)
+        self.move(dir_)
 
+    def move_backward(self, length):
+        dir_ = self.get_direction().opposite()
+        dir_.scale(length)
+        self.move(dir_)
+
+    def move(self, dir_):
+        c = self.get_center_as_vector()
+        new_c = c + dir_
+        self.set_position(new_c.dx(), new_c.dy())
+
+    @staticmethod
+    def create_from_line(line, width):
+        x1, y1 = line.coords[0]
+        x2, y2 = line.coords[-1]
+
+        # Direction vector
+        dx = x2 - x1
+        dy = y2 - y1
+        length = math.hypot(dx, dy)
+        if length == 0:
+            raise ValueError("Line must have length > 0")
+        # Center point
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+        # Angle in radians and degrees
+        angle_rad = math.atan2(dy, dx)
+        angle_deg = math.degrees(angle_rad)
+        cb = CollisionBox(cx, cy, width, length, angle_deg)
+        return cb
+
+    def get_normal(self):
+        dir_ = self.get_direction()
+        return dir_.get_normal()
 
     def get_extended_ray_trace_points(self, max_x, max_y):
-        direction = self.get_direction().direction
-        half_length = self.length / 2.0
+        if self.points_forward is None or self.points_forward is None:
+            direction = self.get_direction().direction
+            half_length = self.length / 2.0
 
-        points_forward = []
-        points_backward = []
-        # Start points just outside the rectangle at both ends
-        start_forward_x = self.center_x + direction[0] * half_length
-        start_forward_y = self.center_y + direction[1] * half_length
-        start_backward_x = self.center_x - direction[0] * half_length
-        start_backward_y = self.center_y - direction[1] * half_length
+            points_forward = []
+            points_backward = []
+            # Start points just outside the rectangle at both ends
+            start_forward_x = self.center_x + direction[0] * half_length
+            start_forward_y = self.center_y + direction[1] * half_length
+            start_backward_x = self.center_x - direction[0] * half_length
+            start_backward_y = self.center_y - direction[1] * half_length
 
-        # Forward iteration
-        current_x, current_y = start_forward_x + direction[0], start_forward_y + direction[1]
-        while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
-            points_forward.append((current_x, current_y))
-            current_x += direction[0]
-            current_y += direction[1]
+            # Forward iteration
+            current_x, current_y = start_forward_x + direction[0], start_forward_y + direction[1]
+            while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
+                points_forward.append((current_x, current_y))
+                current_x += direction[0]
+                current_y += direction[1]
 
-        # Backward iteration
-        current_x, current_y = start_backward_x - direction[0], start_backward_y - direction[1]
-        while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
-            points_backward.append((current_x, current_y))
-            current_x -= direction[0]
-            current_y -= direction[1]
+            # Backward iteration
+            current_x, current_y = start_backward_x - direction[0], start_backward_y - direction[1]
+            while 0 <= current_x <= max_x and 0 <= current_y <= max_y:
+                points_backward.append((current_x, current_y))
+                current_x -= direction[0]
+                current_y -= direction[1]
+            if len(points_backward) > 0:
+                self.points_backward = points_backward
+                self.points_forward = points_forward
+            else:
+                pass
 
-        return points_forward, points_backward
+        return self.points_forward, self.points_backward
 
     def set_position(self, x, y):
         self.center_x = x
         self.center_y = y
+        self.reset_cache()
+
+    def reset_cache(self):
         self.corners = None
-    def calculate_overlap_ratio(self,other):
+        self.points_forward = None
+        self.points_backward = None
+        self.polygon = None
+        self.center_line = None
+
+    def calculate_overlap_ratio(self, other):
         overlap = self.calculate_overlap(other)
         if self.get_area() == 0:
             return 0
-        return overlap /self.get_area()
+        return overlap / self.get_area()
+
     def calculate_overlap(self, other):
         corners_self = self.calculate_corners()
         corners_other = other.calculate_corners()
@@ -341,12 +392,13 @@ class CollisionBox:
         # Calculate the intersection area
         intersection = polygon_self.intersection(polygon_other)
         return intersection.area
+
     def calculate_corners(self):
         if self.corners is not None:
             return self.corners
         """Get OBB corner points in world coordinates"""
-        half_length = (self.length) / 2 - .5
-        half_width = (self.width) / 2 - .5
+        half_length = self.length / 2 - .5
+        half_width = self.width / 2 - .5
         direction, normal = self.derive_direction_and_normal()
 
         back = direction.opposite()
@@ -355,12 +407,11 @@ class CollisionBox:
         front.scale(half_length)
         left = normal.copy()
         left.scale(half_width)
-        position = Vector((self.center_x,self.center_y))
-        to_left = position+left+back
-        top_right=position-left+back
-        bottom_left = position+front+left
-        bottom_right = position+front-left
-
+        position = Vector((self.center_x, self.center_y))
+        to_left = position + left + back
+        top_right = position - left + back
+        bottom_left = position + front + left
+        bottom_right = position + front - left
 
         # Calculate corners without offsets
         top_left = (
@@ -401,9 +452,25 @@ class CollisionBox:
         pixels = []
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
-                if self.is_point_inside(x + 0.5, y + 0.5):  # Pixel center check
-                    pixels.append((x, y))
+                pixels.append((x, y))
         return pixels
+
+    def get_center_line(self):
+        """
+        Returns a 2D line segment for the box's center line:
+        segment start (x1, y1), segment end (x2, y2).
+        """
+        direction, _ = self.derive_direction_and_normal()
+        dx, dy = direction.direction  # e.g. (cosθ, sinθ)
+        half_len = self.length / 2.0
+
+        cx, cy = self.center_x, self.center_y
+        x1 = cx - dx * half_len
+        y1 = cy - dy * half_len
+        x2 = cx + dx * half_len
+        y2 = cy + dy * half_len
+
+        return (x1, y1), (x2, y2)
 
     def to_decimal(self, value):
         x = Decimal(value[0])
@@ -411,10 +478,11 @@ class CollisionBox:
         return x, y
 
     def get_definition(self):
-        return self.get_center(),self.get_direction(),self.length
-    def merge_aligned2(self,other):
-        new_cx, new_cy, dirx, diry, new_length= combine_segments_decimal(
-            self,other)
+        return self.get_center(), self.get_direction(), self.length
+
+    def merge_aligned2(self, other):
+        new_cx, new_cy, dirx, diry, new_length = combine_segments_decimal(
+            self, other)
         merged_box = CollisionBox(
             center_x=float(new_cx),
             center_y=float(new_cy),
@@ -423,6 +491,7 @@ class CollisionBox:
             rotation=self.rotation  # same as 'other' since they are parallel
         )
         return merged_box
+
     def merge_aligned(self, other, decimal_precision=3):
         """
         Merge this CollisionBox with another *parallel* CollisionBox to form
@@ -493,10 +562,23 @@ class CollisionBox:
         )
         return merged_box
 
-
     def calculate_rotation_from_direction(self, dx, dy):
         angle_rad = math.atan2(dy, dx)
         angle_deg = math.degrees(angle_rad)
         # Normalize angle to nearest 45 degrees
         angle_deg = round(angle_deg / 45) * 45
         return angle_deg % 360
+
+    def get_center_line_string(self):
+        if self.center_line is None:
+            (x1, y1), (x2, y2) = self.get_center_line()
+            end1 = Point(x1, y1)
+            end2 = Point(x2, y2)
+            self.center_line = LineString([end1, end2])
+        return self.center_line
+
+    def distance_from_center_line(self, point):
+        line = self.get_center_line_string()
+        p = Point(point.x, point.y)
+        logging.debug(f"{p.x}")
+        return p.distance(line)

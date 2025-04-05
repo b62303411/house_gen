@@ -9,5 +9,6 @@ class PruningUtil:
                         ratio = candiate.get_occupation_ratio()
                         if ratio < m.get_occupation_ratio():
                             candiate.kill()
+                            #candiate.kill()
                             return True,m
         return False,None

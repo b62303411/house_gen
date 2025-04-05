@@ -2,8 +2,9 @@ import pygame
 
 
 class Agent:
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, agent_id):
+        self.id = agent_id
+        self.alive = True
 
     def __eq__(self, other):
         """Check equality based on x and y values."""
@@ -12,15 +13,13 @@ class Agent:
         return False
 
     def __hash__(self):
-        return hash((self.id))
+        return hash(self.id)
 
     def run(self):
         pass
 
-    def draw(self,screen, zoom_factor,offset_x,offset_y):
+    def draw(self, screen, zoom_factor, offset_x, offset_y):
         pass
-
-
 
     def collidepoint(self, x, y):
         rect = self.get_world_rect()

@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 
 
@@ -16,7 +18,7 @@ class Window:
     def show(self):
         """Show the pop-up."""
         self.visible = True
-        print("view")
+        logging.info("view")
 
     def hide(self):
         """Hide the pop-up."""

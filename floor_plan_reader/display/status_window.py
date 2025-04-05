@@ -12,8 +12,11 @@ class StatusWindow(Window):
     def draw(self, surface):
         super().draw(surface)
         txt =[]
+
         agent_txt = f"Agents: {self.simulation.get_agent_count()}"
         seg_txt = f"Wall Seg: {self.simulation.get_wall_segment_count()}"
+        blob_txt = f"blobs:{self.simulation.get_blob_count()}"
         txt.append(agent_txt)
         txt.append(seg_txt)
+        txt.append(blob_txt)
         self.text_box.set_text(txt)

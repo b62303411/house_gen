@@ -1,11 +1,19 @@
+import logging
+import math
 from decimal import Decimal
 
 import pygame
 from pygame import font
+from shapely import Point, LineString
 
 from floor_plan_reader.agents.agent import Agent
+from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.math.collision_box import CollisionBox
+from floor_plan_reader.math.vector import Vector
+from floor_plan_reader.model.opening import Opening
 from floor_plan_reader.pruning_util import PruningUtil
+from shapely.affinity import rotate
+from shapely.geometry import Point, LineString
 
 
 class Scores:
@@ -24,9 +32,10 @@ class Scores:
 
 class WallSegment(Agent):
 
-    def __init__(self, id, world):
-        super().__init__(id)
+    def __init__(self, agent_id, world):
+        super().__init__(agent_id)
         self.collision_box = None
+        self.collision_box_extended = None
         self.world = world
         self.scores = set()
         self.parts = set()
@@ -38,14 +47,21 @@ class WallSegment(Agent):
         self.openings = set()
         self.overlapping = set()
         self.nodes = set()
+        self.cb_drawer = BoundingBoxDrawer()
+        self.wall_dic = {}
 
-    def add_node(self,node):
+    def __hash__(self):
+        return hash(self.id)
+
+    def add_node(self, node):
         self.nodes.add(node)
+
     def set_collision_box(self, cb):
         if isinstance(cb, CollisionBox):
             self.collision_box = cb.copy()
 
     def add_part(self, part):
+        self.wall_dic[part.id] = part
         self.parts.add(part)
         self.state = "negotiate"
 
@@ -58,20 +74,224 @@ class WallSegment(Agent):
                 return True
         return False
 
+    def merge(self, seg):
+        for p in seg.parts:
+            p.wall_scanner = self
+            self.add_part(p)
+        for n in seg.nodes:
+            self.add_node(n)
+
     def set_position(self, x, y):
         self.collision_box.set_position(x, y)
 
     def calculate_if_external(self):
         pass
 
-    def calculate_openings(self):
-        pass
+    def dot2(self, ax, ay, bx, by):
+        """2D dot product."""
+        return ax * bx + ay * by
 
-    def merge_alighned(self,cb,p):
+    def length2(self, ax, ay):
+        """2D vector length."""
+        return math.sqrt(ax * ax + ay * ay)
+
+    def _validate_part_within_parent(self, part,tolerance=2):
+
+        parent_line = self.collision_box_extended.get_center_line_string()
+        parent_coords = parent_line.coords
+        start = Point(parent_coords[0])
+        end = Point(parent_coords[-1])
+        center = Point(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2
+        )
+
+        max_allowed_distance = center.distance(start) + tolerance
+
+        part_line = part.collision_box.get_center_line_string()
+        for x, y in part_line.coords:
+            p = Point(x, y)
+            d = p.distance(center)
+            if d > max_allowed_distance:
+                raise ValueError(
+                    f"Point ({x:.2f}, {y:.2f}) of child is too far from parent center "
+                    f"(distance {d:.2f} > max {max_allowed_distance:.2f})"
+                )
+
+    def get_sorted_lines(self):
+        self.recalculate_parent_box_from_parts()
+        self.calculate_extended_bounding_box()
+
+        class Sortable:
+            def __init__(self, line, dist):
+                self.line = line
+                self.dist = dist
+
+            # Needed so that a_list.sort() knows how to compare two Sortable objects
+            def __lt__(self, other):
+                return self.dist < other.dist
+
+        # 1) The line for the entire wall (or overall bounding shape):
+        center_line = self.collision_box_extended.get_center_line_string()
+        # 2) Grab the first coordinate as our reference "start" point.
+        #    (Alternatively, you could choose the midpoint, or something else
+        #     that represents the "anchor" point of your main geometry.)
+        ref_start_x, ref_start_y = center_line.coords[0]
+        ref_start = Point(ref_start_x, ref_start_y)
+
+        a_list = []
+        for p in self.parts:
+            try:
+                self._validate_part_within_parent(p)
+            except :
+                self.recalculate_parent_box_from_parts()
+                self.calculate_extended_bounding_box()
+                self._validate_part_within_parent(p)
+
+            candidate = p.collision_box.get_center_line_string()
+
+            # --- Instead of using center_line.bounds, use candidate.bounds ---
+            c_bounds = candidate.bounds
+            candidate_start = Point(c_bounds[0], c_bounds[1])
+            candidate_end = Point(c_bounds[2], c_bounds[3])
+
+            if p.collision_box.rotation != self.collision_box.rotation:
+                p.collision_box.rotation = self.collision_box.rotation
+            # Distances from our reference_start to the candidate's two endpoints
+            dist_start = ref_start.distance(candidate_start)
+            dist_end = ref_start.distance(candidate_end)
+
+            # If the “start” is actually further away than the “end,”
+            # that implies we might want to flip/reverse the line so
+            # it consistently starts from the side that’s closer to ref_start.
+
+            # As-is is okay
+            a_list.append(Sortable(candidate, dist_start))
+
+        # Sort by the stored distance
+        a_list.sort()
+
+        # Return just the lines, now sorted from closest to farthest
+        return [sortable.line for sortable in a_list]
+
+    def project_along_wall_direction(self, vec_to_point, wall_direction):
+        """
+        Projects the vector `vec_to_point` onto the `wall_direction`.
+
+        Both should be instances of your Vector class.
+        Assumes `wall_direction` is already normalized.
+        Returns a scalar (float): the signed distance along the wall's axis.
+        """
+        return vec_to_point.dot_product(wall_direction)
+
+    def calculate_openings(self):
+
+        if len(self.parts) < 2:
+            return
+        if not self.is_segment_fully_occupied():
+            parts = self.parts.copy()
+            for p in parts:
+                p.re_compute()
+                p.performe_ray_trace(self.collision_box.get_direction())
+                p.fill_box()
+                p.crawl_phase()
+            return
+        self.openings = set()
+
+        center_lines = self.get_sorted_lines()
+        center = self.get_center()
+        center_p = Point(center)
+        for i in range(len(center_lines) - 1):
+            current_line = center_lines[i]
+
+            # End of line i
+            end_i = center_lines[i].coords[-1]
+
+            # Start of line i+1
+            start_i1 = center_lines[i + 1].coords[0]
+            end = Point(end_i)
+            start = Point(start_i1)
+
+            # Midpoint
+            mid_x = (end.x + start.x) / 2
+            mid_y = (end.y + start.y) / 2
+            mid_point = Point(mid_x, mid_y)
+            vec_to_mid = Vector((mid_point.x - center_p.x, mid_point.y - center_p.y))
+            direction = self.collision_box.get_direction()
+            offset = self.project_along_wall_direction(vec_to_mid, direction)
+            # offset = mid_point.distance(center_p)
+            # Euclidean distance between these two points
+            gap_distance = end.distance(start)
+            print(f"Gap = {gap_distance:.2f}")
+            o = Opening(offset, gap_distance)
+            self.add_opening(o)
+
+        return self.openings
+
+    def is_segment_fully_occupied(self):
+        """
+        Validates whether the full axis of a wall segment is covered by its collision boxes.
+
+        Args:
+            segment (List[CollisionBox]): List of aligned boxes forming a wall segment.
+            world: The world object with a method `is_occupied(x, y)` -> bool
+
+        Returns:
+            bool: True if the full axis is covered, False if there are any gaps.
+        """
+
+        direction, _ = self.collision_box.derive_direction_and_normal()
+        dx, dy = direction.direction
+
+        # Project all start/end points to get full coverage range
+        projections = []
+        for cb in self.parts:
+            p1, p2 = cb.collision_box.get_center_line()
+            projections.extend([
+                (p1[0], p1[1]),
+                (p2[0], p2[1])
+            ])
+
+        # Sort all by projection along wall axis
+        def project(pt):
+            return pt[0] * dx + pt[1] * dy
+
+        projections = sorted(projections, key=project)
+
+        start_pt = projections[0]
+        end_pt = projections[-1]
+
+        # Step along wall axis pixel by pixel
+        distance = int(math.hypot(end_pt[0] - start_pt[0], end_pt[1] - start_pt[1]))
+        for i in range(distance + 1):
+            x = int(round(start_pt[0] + dx * i))
+            y = int(round(start_pt[1] + dy * i))
+            if self.world.is_food(x, y) and not self.world.is_occupied(x, y):
+                for p in self.parts:
+                    if p.collidepoint(x, y):
+                        logging.error("wtf")
+                logging.info("not fully compliant")
+                return False  # There's a gap
+
+        return True
+
+    def add_opening(self, o):
+        if o.width > 120:
+            logging.info("wtf")
+            center = self.get_center()
+            width = 250
+            height = 250
+            x = center[0]
+            y = center[1]
+            self.world.print_snapshot(x, y, width + 2, height + 2, self.id)
+        self.openings.add(o)
+
+    def merge_alighned(self, cb, p):
         if isinstance(cb, CollisionBox):
             cb = cb.merge_aligned(p.collision_box)
         return cb
-    def negotiate_phase(self):
+
+    def negotiate(self):
         cb = None
         for p in self.parts:
             ratio = p.get_covered_ratio()
@@ -80,9 +300,126 @@ class WallSegment(Agent):
             if cb is None:
                 cb = p.collision_box.copy()
             else:
-                cb = self.merge_alighned(cb,p)
+                cb = self.merge_alighned(cb, p)
 
         self.set_collision_box(cb)
+
+    def negotiate_phase(self):
+        self.negotiate()
+        error = False
+        for n in self.parts:
+            if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
+                error = True
+                break
+        if error:
+            self.state = "error"
+        else:
+            self.state = "prune"
+        return
+
+    def prune_phase(self):
+        pruned, against = PruningUtil.prune(self, self.world.wall_segments)
+        if pruned:
+            #    for p in self.parts:
+            #        p.wall_segment = against
+            #        against.add_part(p)
+            self.state = "dead"
+        else:
+            self.state = "normalize"
+
+    def calculate_extended_bounding_box(self):
+        h, w = self.world.get_shape()
+        points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w, h)
+        steps_backward, bx, by = self.crawl(points_backward)
+        steps_forward, fx, fy = self.crawl(points_forward)
+        self.collision_box_extended = self.collision_box.copy()
+
+        if steps_forward > 1 or steps_backward > 1:
+            extension = steps_backward + steps_forward
+            l = self.collision_box_extended.length
+            self.collision_box_extended.set_length(l + extension + 2)
+            if steps_forward > steps_backward:
+                (bx1, by1), (bx2, by2) = self.collision_box_extended.get_center_line()
+                self.collision_box_extended.move_forward(abs(steps_backward - steps_forward) / 2)
+                (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
+                id_start = self.world.get_occupied_id(x1, y1)
+                id_end = self.world.get_occupied_id(x2, y2)
+                if id_start in self.wall_dic and id_end in self.wall_dic:
+                    if steps_forward > 1 or steps_backward > 1:
+                        logging.info("error")
+
+            else:
+                self.collision_box_extended.move_backward(abs(steps_backward - steps_forward) / 2)
+                (x1, y1), (x2, y2) = self.collision_box_extended.get_center_line()
+                id_start = self.world.get_occupied_id(x1, y1)
+                id_end = self.world.get_occupied_id(x2, y2)
+                if id_start in self.wall_dic and id_end in self.wall_dic:
+                    if steps_forward > 1 or steps_backward > 1:
+                        logging.info("error")
+
+        logging.info(f"steps b{steps_backward} steps f{steps_forward}")
+
+    def crawl(self, points):
+        steps = 0
+        x, y = 0, 0
+        measuring_extent = False
+        for p in points:
+            x = int(p[0])
+            y = int(p[1])
+            if self.world.is_food(x, y):
+                id = self.world.get_occupied_wall_id(x, y)
+                if id != self.id:
+                    measuring_extent = True
+                if measuring_extent:
+                    steps = steps + 1
+            else:
+                return steps, x, y
+
+        return steps, x, y
+
+    def recalculate_parent_box_from_parts(self):
+        if not self.parts:
+            raise ValueError("Cannot recalculate extent without parts.")
+
+            # Use current parent box rotation and direction
+        rotation_deg = self.collision_box.rotation
+        rotation_rad = math.radians(rotation_deg)
+        dir_x = math.cos(rotation_rad)
+        dir_y = math.sin(rotation_rad)
+        direction = (dir_x, dir_y)
+
+        # Use a consistent origin (start of current center line)
+        origin = Point(self.collision_box.get_center_line_string().coords[0])
+
+        # Project all child coordinates onto the parent direction
+        projections = []
+        for part in self.parts:
+            line = part.collision_box.get_center_line_string()
+            for coord in line.coords:
+                dx = coord[0] - origin.x
+                dy = coord[1] - origin.y
+                proj = dx * dir_x + dy * dir_y
+                projections.append(proj)
+
+        min_proj = min(projections)
+        max_proj = max(projections)
+
+        # Calculate projected start and end points
+        start = (
+            origin.x + dir_x * min_proj,
+            origin.y + dir_y * min_proj
+        )
+        end = (
+            origin.x + dir_x * max_proj,
+            origin.y + dir_y * max_proj
+        )
+
+        # Reuse from_line_and_width to regenerate box
+        center_line = LineString([start, end])
+
+        width = self.collision_box.width
+
+        self.collision_box = CollisionBox.create_from_line(center_line, width)
 
     def process_state(self):
 
@@ -92,45 +429,38 @@ class WallSegment(Agent):
                 for i in self.parts:
                     if not n.collision_box.is_on_same_axis_as(i.collision_box):
                         wrongs.append(i)
-                print("")
+                logging.debug("error")
+            return
         if self.state == "negotiate":
             self.negotiate_phase()
-            error = False
-            for n in self.parts:
-                if self.collision_box.width > 2 * n.collision_box.width or self.collision_box.width > 100:
-                    error = True
-                    break
-            if error:
-                self.state = "error"
-            else:
-                self.state = "prune"
+            return
         elif self.state == "prune":
-
-            pruned, against = PruningUtil.prune(self, self.world.wall_segments)
-            if pruned:
-                #    for p in self.parts:
-                #        p.wall_segment = against
-                #        against.add_part(p)
-                self.state = "dead"
-            else:
-                self.state = "normalize"
+            self.prune_phase()
+            return
         elif self.state == "normalize":
             self.normalize()
             self.state = "fill"
+            return
         elif self.state == "fill":
             self.fill_box()
+            self.state = "extend"
+            return
+        elif self.state == "extend":
+            self.calculate_extended_bounding_box()
+            self.state = "opening"
+            return
+        elif self.state == "opening":
+            self.calculate_openings()
             self.state = "done"
+            return
         elif self.state == "dead":
             for e in self.overlapping:
                 ratio = e.collision_box.calculate_overlap(self.collision_box)
-                area  = self.collision_box.get_area()
+                area = self.collision_box.get_area()
                 r = ratio / area
-                percent = r *100
+                percent = r * 100
                 print(f"{percent}%")
-
-
-
-
+            return
 
     def fill_box(self):
         pixels = self.collision_box.iterate_covered_pixels()
@@ -232,33 +562,19 @@ class WallSegment(Agent):
     def get_center(self):
         return self.collision_box.get_center()
 
-    def draw_corners(self, screen, vp, corners, colour=(0, 255, 255), size=1):
-        corners_ = []
-
-        for c in corners:
-            cp = vp.convert(c[0], c[1])
-            corners_.append(cp)
-
-        pygame.draw.polygon(screen, colour, corners_, size)
+    def draw_corners(self, screen, vp, colour=(0, 255, 255), size=1):
+        self.cb_drawer.draw(self.collision_box, screen, vp, colour)
 
     def draw(self, screen, vp):
-
-        if self.alive:
-            colour = (255, 50, 200)
-        else:
-            colour = (255, 0, 200)
-        if self.state == "error":
-            colour = (255, 0, 0)
-        corners = self.corners()
 
         size = 1
         if self.is_selected():
             size = 3
 
-        self.draw_corners(screen, vp, corners, colour, size)
         colour = (0, 255, 0)
+        self.draw_corners(screen, vp, colour, size)
         for o in self.overlapping:
-            self.draw_corners(screen, vp, o.corners(), colour, 3)
+            self.cb_drawer.draw(o.collision_box, screen, vp, colour)
 
         x, y = self.get_center()
         x, y = vp.convert(x, y)
@@ -270,6 +586,27 @@ class WallSegment(Agent):
             x, y = vp.convert(x, y)
             text_surface = self.f.render(f"s: {score:.{2}f}", True, (15, 255, 0))
             screen.blit(text_surface, (x, y))  # Position (x=10, y=10)
+
+        self.draw_opening(screen, vp)
+
+    def draw_opening(self, screen, vp):
+        colour = (255, 0, 0)
+        for o in self.openings:
+            center = self.get_center()
+            v = Vector(center)
+            direction = self.collision_box.get_direction()
+            direction.scale(o.center_x)
+            position = v + direction
+            x = position.dx()
+            y = position.dy()
+            width = self.collision_box.width
+
+            collision_box = CollisionBox(x, y, width, o.width,
+                                         self.collision_box.rotation)
+            self.cb_drawer.draw(collision_box, screen, vp, colour)
+
+    def get_score(self):
+        return len(self.parts)
 
     def get_collision_box(self):
         return self.collision_box
