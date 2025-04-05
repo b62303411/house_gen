@@ -6,6 +6,7 @@ from shapely import Polygon, LineString, Point
 
 from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.math_segments import combine_segments_decimal
+from floor_plan_reader.math.points_logic import Points_Logic
 from floor_plan_reader.math.vector import Vector
 
 
@@ -23,6 +24,7 @@ class CollisionBox:
         self.points_forward = None
         self.points_backward = None
         self.polygon = None
+        self._cached_pixels  = None
 
     def __eq__(self, other):
         if not isinstance(other, CollisionBox):
@@ -52,13 +54,6 @@ class CollisionBox:
             length=self.length,
             rotation=self.rotation
         )
-        # If needed, also copy any other dynamic attributes
-        # For example, default_direction or corners
-        # corners often should reset so new_box can recalc
-        new_box.default_direction = self.default_direction
-        # corners might remain None so it recalculates later,
-        # but if you do want to copy them directly, do so:
-        # new_box.corners = list(self.corners) if self.corners else None
         return new_box
 
     def get_area(self):
@@ -68,7 +63,7 @@ class CollisionBox:
         if self._direction is None:
             angle_deg = round(self.rotation / 45.0) * 45 % 360
             direction = Constants.DIRECTIONS_8.get(angle_deg)
-            self._direction = direction
+            self._direction = direction.normalize()
         return self._direction.copy()
 
     def get_vector(self):
@@ -249,13 +244,13 @@ class CollisionBox:
         return left_side_points, right_side_points
 
     def derive_direction_and_normal(self):
-        angle_rad = math.radians(self.rotation)
+
 
         # Direction vector (rotated from default direction (1,0))
-        direction = Vector((math.cos(angle_rad), math.sin(angle_rad)))
+        direction = self.get_direction()
 
         # Normal vector (rotated 90 degrees from direction)
-        normal = direction.get_normal()
+        normal = direction.get_normal().normalize()
 
         return direction, normal
 
@@ -325,7 +320,7 @@ class CollisionBox:
         # Angle in radians and degrees
         angle_rad = math.atan2(dy, dx)
         angle_deg = math.degrees(angle_rad)
-        cb = CollisionBox(cx,cy,width,length,angle_deg)
+        cb = CollisionBox(cx, cy,width,length,angle_deg)
         return cb
 
     def get_normal(self):
@@ -377,6 +372,7 @@ class CollisionBox:
         self.points_backward = None
         self.polygon = None
         self.center_line = None
+        self._cached_pixels  = None
 
     def calculate_overlap_ratio(self, other):
         overlap = self.calculate_overlap(other)
@@ -449,18 +445,26 @@ class CollisionBox:
         return self.corners
 
     def iterate_covered_pixels(self):
+
+        if self._cached_pixels is not None:
+            return self._cached_pixels
+
+        wall_polygon = self.get_polygon()
         corners = self.calculate_corners()
+
         xs = [c[0] for c in corners]
         ys = [c[1] for c in corners]
-
         min_x, max_x = int(math.floor(min(xs))), int(math.ceil(max(xs)))
         min_y, max_y = int(math.floor(min(ys))), int(math.ceil(max(ys)))
 
-        pixels = []
+        self._cached_pixels = []
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
-                pixels.append((x, y))
-        return pixels
+                center = Point(x + 0.5, y + 0.5)  # Test pixel center
+                if wall_polygon.contains(center):
+                    self._cached_pixels.append((x, y))
+        return self._cached_pixels
+
 
     def get_center_line(self):
         """
@@ -515,58 +519,13 @@ class CollisionBox:
             return False
             # raise ValueError("Boxes are not aligned (not parallel) and cannot be merged.")
 
-        # 2) Get this box's direction and normal (they're valid for both if parallel)
-        direction, normal = self.derive_direction_and_normal()
-        direction = self.to_decimal(direction.direction)
-        normal = self.to_decimal(normal.direction)
+        self_line = self.get_center_line_string()
+        other_line = other.get_center_line_string()
+        p = Points_Logic()
+        line = p.create_line_from_two_most_distant_points([self_line,other_line])
 
-        # 3) Gather corners from both boxes
-        corners_self = self.calculate_corners()
-        corners_other = other.calculate_corners()
-        all_corners = corners_self + corners_other
+        merged_box = self.create_from_line(line,self.width)
 
-        def dot(px, py, qx, qy):
-            """Dot product of 2D vectors (px, py) · (qx, qy)."""
-            return px * qx + py * qy
-
-        # 4) Project corners onto direction and normal to find combined min/max
-        dir_values = []
-        norm_values = []
-
-        for (cx, cy) in all_corners:
-            dir_val = dot(cx, cy, direction[0], direction[1])
-            norm_val = dot(cx, cy, normal[0], normal[1])
-            dir_values.append(dir_val)
-            norm_values.append(norm_val)
-
-        min_dir, max_dir = min(dir_values), max(dir_values)
-        min_norm, max_norm = min(norm_values), max(norm_values)
-        min_dir = Decimal(min_dir)
-        max_dir = Decimal(max_dir)
-        min_norm = Decimal(min_norm)
-        max_norm = Decimal(max_norm)
-        # 5) The new box length/width spans from min->max along direction/normal
-        new_length = max_dir - min_dir
-        new_width = max_norm - min_norm
-        half = Decimal(0.5)
-        # 6) Compute the center by taking midpoint in direction & normal space
-        center_dir = half * (min_dir + max_dir)
-        center_norm = half * (min_norm + max_norm)
-
-        # 7) Convert that (center_dir, center_norm) back to world coordinates
-        #    using direction and normal as a 2D basis
-
-        center_x = center_dir * direction[0] + center_norm * normal[0]
-        center_y = center_dir * direction[1] + center_norm * normal[1]
-
-        # 8) Create a new bounding box
-        merged_box = CollisionBox(
-            center_x=float(center_x),
-            center_y=float(center_y),
-            width=float(new_width),
-            length=float(new_length),
-            rotation=self.rotation  # same as 'other' since they are parallel
-        )
         return merged_box
 
     def calculate_rotation_from_direction(self, dx, dy):
@@ -589,3 +548,12 @@ class CollisionBox:
         p = Point(point.x, point.y)
         logging.debug(f"{p.x}")
         return p.distance(line)
+
+    def get_distance_from(self, collision_box):
+        self_point = self.get_center_point()
+        other_point = collision_box.get_center_point()
+        return self_point.distance(other_point)
+
+    def get_center_point(self):
+        center = self.get_center()
+        return Point(center)

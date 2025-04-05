@@ -92,15 +92,15 @@ class TestLineDistanceCalculations(unittest.TestCase):
         self.assertAlmostEqual(cb.center_y, -3)
 
     def test_move_diagonal_forward(self):
-        cb = CollisionBox(center_x=1, center_y=1, width=2, length=4, rotation=45)
-        cb.move_forward(math.sqrt(2))
-        self.assertAlmostEqual(cb.center_x, 2)
-        self.assertAlmostEqual(cb.center_y, 2)
+        cb = CollisionBox(center_x=0, center_y=0, width=2, length=4, rotation=45)
+        cb.move_forward(2)
+        self.assertAlmostEqual(cb.center_x, math.sqrt(2))
+        self.assertAlmostEqual(cb.center_y, math.sqrt(2))
 
     def test_move_diagonal_backward(self):
-        cb = CollisionBox(center_x=1, center_y=1, width=2, length=4, rotation=225)
-        cb.move_backward(math.sqrt(2))
-        self.assertAlmostEqual(cb.center_x, 2)
-        self.assertAlmostEqual(cb.center_y, 2)
+        cb = CollisionBox(center_x=0, center_y=0, width=2, length=4, rotation=225)
+        cb.move_backward(2)
+        self.assertAlmostEqual(cb.center_x, math.sqrt(2))
+        self.assertAlmostEqual(cb.center_y, math.sqrt(2))
 if __name__ == "__main__":
     unittest.main()

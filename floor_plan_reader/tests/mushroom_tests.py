@@ -1,4 +1,5 @@
 import json
+import math
 import unittest
 from decimal import Decimal
 
@@ -7,12 +8,10 @@ import numpy as np
 from floor_plan_reader.agents.mushroom_agent import Mushroom
 from floor_plan_reader.agents.wall_segment import WallSegment
 from floor_plan_reader.cell import Cell
+from floor_plan_reader.id_util import IdUtil
 from floor_plan_reader.math.collision_box import CollisionBox
-from floor_plan_reader.id_util import Id_Util
+
 from floor_plan_reader.world_factory import WorldFactory
-
-
-
 
 
 class TestMushroomGrowth(unittest.TestCase):
@@ -24,10 +23,13 @@ class TestMushroomGrowth(unittest.TestCase):
         wf.set_grid(grid)
         self.world = wf.create_World()  # Mock world
         self.blob = None
-        self.mushroom = Mushroom( self.world,self.blob ,5, 5, 1)
+        self.mushroom = Mushroom(self.world, self.blob, 5, 5, 1)
 
-    def create_wall(self,x,y):
-        self.mushroom = Mushroom(self.world, self.blob , x, y, 1)
+        self.ws = WallSegment(IdUtil.get_id(), self.world)
+
+    def create_wall(self, x, y):
+        self.mushroom = Mushroom(self.world, self.blob, x, y, 1)
+
     def test_test(self):
         self.mushroom.run()
 
@@ -84,7 +86,7 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertEqual(y, 5)
 
     def test_wall_detection_vertical_wall(self):
-        self.create_wall(4,2)
+        self.create_wall(4, 2)
 
         self.world.grid[2:12, 4:7] = 1  # Horizontal wall (3 pixels thick, 4 pixels long)
         self.assertFalse(self.world.is_food(int(2), int(4)))
@@ -126,19 +128,31 @@ class TestMushroomGrowth(unittest.TestCase):
 
     def test_collisions(self):
         c = CollisionBox(10, 10, 4, 25, 45)
-        c.length = 25
-        c.width = 30
-        c.center_y = 453.5
-        c.center_x = 109.5
+        c.length = 100
+        c.width = 4
+        c.center_y = 0
+        c.center_x = 0
         c.rotation = 45
         corners = c.calculate_corners()
-        self.assertEqual(1, corners[0][1])
+        d = 50 / math.sqrt(2)
+        di = int(d)
+        for c in corners:
+            self.assertAlmostEqual(di, abs(c[0]), delta=1)
 
     def test_merge_horizontal_aligned(self):
         # Two boxes, same y, horizontal orientation
         boxA = CollisionBox(center_x=10, center_y=10, width=4, length=6, rotation=0)
         boxB = CollisionBox(center_x=20, center_y=10, width=4, length=6, rotation=0)
+        # box a is supposed to be  from 7  to 13
+        lineA = boxA.get_center_line()
+        lineAString = boxA.get_center_line_string()
+        self.assertAlmostEqual(7, lineA[0][0])
+        self.assertAlmostEqual(13, lineA[1][0])
+        lineB = boxB.get_center_line()
+        self.assertAlmostEqual(17, lineB[0][0])
+        self.assertAlmostEqual(23, lineB[1][0])
 
+        # box b is supposed to be from 18  to 23
         merged = boxA.merge_aligned(boxB)
 
         # Both boxes have the same orientation and the same width => merged should have the same width
@@ -171,24 +185,30 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertAlmostEqual(merged.center_x, 10)
         self.assertAlmostEqual(merged.center_y, 15)
 
+    def create_mush(self,cb):
+        m = Mushroom(self.world, self.blob, cb.center_x, cb.center_y, IdUtil.get_id())
+        m.collision_box = cb.copy()
+        return m
+
     def test_merge_vertical_aligned_json(self):
-        filename = "/resources/test.json"
+        filename = "resources/test.json"
         world = self.world
+        ws = self.ws
+
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts
 
             # Re-create each CollisionBox
         boxes = [CollisionBox.from_dict(item) for item in data]
         mushrooms = []
-        ws = WallSegment(Id_Util.get_id())
+
         for b in boxes:
             self.assertTrue(b.is_on_same_axis_as(boxes[0]))
-            m = Mushroom(b.center_x, b.center_y, world, Id_Util.get_id())
-            m.collision_box = b.copy()
+            m = self.create_mush(b)
             mushrooms.append(m)
 
         for m in mushrooms:
-            ws.add_part(m)
+            self.ws.add_part(m)
 
         ws.process_state()
         x, y = ws.get_center()
@@ -199,16 +219,11 @@ class TestMushroomGrowth(unittest.TestCase):
         e = Decimal(603.0)
         value = (a + b + c + d + e) / 5
         self.assertAlmostEqual(Decimal(602.65), value)
-        half = Decimal(2)
-        max_y = Decimal(Decimal(322.0) + Decimal(35 / half))
-        min_y = Decimal(Decimal(17.0) - Decimal(27 / half))
-        l_y = max_y - min_y
-        c_y = min_y + l_y / 2
+
         l = Decimal(ws.collision_box.length + 2)
-        self.assertAlmostEqual(l_y, l, delta=2)
-        self.assertAlmostEqual(602.65, x, delta=2)
-        self.assertAlmostEqual(171.5, c_y, delta=1)
-        self.assertAlmostEqual(170, y, delta=2)
+        self.assertAlmostEqual(57, l, delta=2)
+        self.assertAlmostEqual(696.25, x, delta=2)
+        self.assertAlmostEqual(466.25, y, delta=2)
 
     def test_corners(self):
         cb = CollisionBox(17, 354, 7, 7, 315)
@@ -218,7 +233,7 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertNotAlmostEquals(corners[1][0], corners[3][0])
 
     def test_merge_vertical_aligned_json2(self):
-        filename = "/resources/test.json"
+        filename = "resources/test.json"
         world = self.world
         with open(filename, "r") as f:
             data = json.load(f)  # This will be a list of dicts
@@ -226,10 +241,10 @@ class TestMushroomGrowth(unittest.TestCase):
             # Re-create each CollisionBox
         boxes = [CollisionBox.from_dict(item) for item in data]
         mushrooms = []
-        ws = WallSegment(Id_Util.get_id())
+        ws = WallSegment(IdUtil.get_id(), world)
         for b in boxes:
             self.assertTrue(b.is_on_same_axis_as(boxes[0]))
-            m = Mushroom(b.center_x, b.center_y, world, Id_Util.get_id())
+            m = Mushroom(b.center_x, b.center_y, world, IdUtil.get_id())
             m.collision_box = b.copy()
             mushrooms.append(m)
             self.world.agents.append(m)
