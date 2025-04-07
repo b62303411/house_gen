@@ -195,7 +195,16 @@ class Blob(Agent):
     def create_mushroom(self, x, y):
         c = Cell(x, y)
         self.free_slot.remove(c)
+
         self.active_mush = self.world.create_mushroom(self, x, y)
+
+        wall_seg_id = self.world.get_occupied_wall_id(x, y)
+        if wall_seg_id != 0:
+            wall = self.world.get_occupied_wall_by_id(wall_seg_id)
+
+            if wall is not None:
+                self.active_mush.seg = wall
+                wall.add(self.active_mush)
         self._walls.add(self.active_mush)
 
     def draw_cells(self, screen, vp, cells, colour):

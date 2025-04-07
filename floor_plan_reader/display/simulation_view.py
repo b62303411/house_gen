@@ -59,6 +59,8 @@ class SimulationView:
         for c in self.selections:
             # if not self.selected.is_on_same_axis_as(c):
             boxes.append(c.collision_box)
+            c.collision_box.reset_cache()
+            c.collision_box.get_center_line_string()
 
         self.simulation.save_boxes_to_json(boxes, "test.json")
         self.selected.crawl_phase()

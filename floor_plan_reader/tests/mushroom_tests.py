@@ -50,7 +50,7 @@ class TestMushroomGrowth(unittest.TestCase):
                              "Only one mushroom should spawn per cluster")
 
     def test_wall_detection_horizontal_wall(self):
-        self.mushroom = Mushroom(2, 4, self.world, 1)
+        self.mushroom = self.create_wall(2, 4)
         self.world.grid[4:7, 2:12] = 1  # Horizontal wall (3 pixels thick, 4 pixels long)
         self.assertFalse(self.world.is_food(int(1), int(3)))
         self.assertTrue(self.world.is_food(int(2), int(4)))
@@ -60,9 +60,9 @@ class TestMushroomGrowth(unittest.TestCase):
         self.mushroom.run()
         self.assertLessEqual(self.mushroom.collision_box.width, 3)
         self.assertLessEqual(self.mushroom.collision_box.length, 10)
-        self.assertEqual(self.mushroom.state, "stem_growth")
+        self.assertEqual(self.mushroom.get_state(), "stem_growth")
         self.mushroom.run()
-        self.assertEqual(self.mushroom.state, "width_assessment")
+        self.assertEqual(self.mushroom.get_state(), "width_assessment")
         self.mushroom.run()
         # self.assertEqual(self.mushroom.state,"width_expansion")
         self.mushroom.run()
@@ -230,7 +230,7 @@ class TestMushroomGrowth(unittest.TestCase):
 
         corners = cb.calculate_corners()
 
-        self.assertNotAlmostEquals(corners[1][0], corners[3][0])
+        self.assertNotAlmostEqual(corners[1][0], corners[3][0])
 
     def test_merge_vertical_aligned_json2(self):
         filename = "resources/test.json"
@@ -244,10 +244,10 @@ class TestMushroomGrowth(unittest.TestCase):
         ws = WallSegment(IdUtil.get_id(), world)
         for b in boxes:
             self.assertTrue(b.is_on_same_axis_as(boxes[0]))
-            m = Mushroom(b.center_x, b.center_y, world, IdUtil.get_id())
+            m = self.create_mush(b)
             m.collision_box = b.copy()
             mushrooms.append(m)
-            self.world.agents.append(m)
+            self.world.agents.add(m)
             self.world.walls.add(m)
             pixels = b.iterate_covered_pixels()
             for p in pixels:

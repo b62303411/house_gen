@@ -87,15 +87,15 @@ class WallSegment(Agent):
     def calculate_if_external(self):
         pass
 
-    def dot2(self, ax, ay, bx, by):
-        """2D dot product."""
-        return ax * bx + ay * by
+    def fitting_phase(self):
+        for p in self.parts:
+            try:
+                self._validate_part_within_parent(p)
+            except:
+                self.recalculate_parent_box_from_parts()
+                self.calculate_extended_bounding_box()
 
-    def length2(self, ax, ay):
-        """2D vector length."""
-        return math.sqrt(ax * ax + ay * ay)
-
-    def _validate_part_within_parent(self, part,tolerance=2):
+    def _validate_part_within_parent(self, part, tolerance=2):
 
         parent_line = self.collision_box_extended.get_center_line_string()
         parent_coords = parent_line.coords
@@ -141,12 +141,6 @@ class WallSegment(Agent):
 
         a_list = []
         for p in self.parts:
-            try:
-                self._validate_part_within_parent(p)
-            except :
-                self.recalculate_parent_box_from_parts()
-                self.calculate_extended_bounding_box()
-                self._validate_part_within_parent(p)
 
             candidate = p.collision_box.get_center_line_string()
 
@@ -363,6 +357,8 @@ class WallSegment(Agent):
         steps = 0
         x, y = 0, 0
         measuring_extent = False
+        if points is None:
+            breakpoint()
         for p in points:
             x = int(p[0])
             y = int(p[1])

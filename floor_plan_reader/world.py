@@ -28,6 +28,7 @@ class World:
 
         self.occupied = None
         self.walls = set()
+        self._walls_dic = {}
         self.agents = set()
         self.wall_segments = set()
         self.zombies = []
@@ -250,7 +251,10 @@ class World:
         ws = WallSegment(IdUtil.get_id(), self)
         self.candidates.append(ws)
         self.wall_segments.add(ws)
+        self._walls_dic[ws.id] = ws
         return ws
+    def get_occupied_wall_by_id(self,id):
+        return self._walls_dic.get(id)
 
     def create_blob(self, x, y):
         if self.is_within_bounds(x, y):

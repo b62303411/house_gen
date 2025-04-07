@@ -1,12 +1,40 @@
 import logging
 import math
+from copy import deepcopy
 
-from floor_plan_reader.display.point import Point
+from shapely import LineString
+
 from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.scan_result import ScanResult
 from floor_plan_reader.sonde import Sonde
 from floor_plan_reader.sonde_data import SondeData
-from floor_plan_reader.math.vector import Vector
+
+
+
+class Key:
+    def __init__(self, d, x, y):
+        self.direction = d
+        self.x = x
+        self.y = y
+
+    def __hash__(self):
+        """Hash the vector based on its direction."""
+        return hash((self.direction, self.x, self.y))
+
+    def __eq__(self, other):
+        """Compare two vectors for equality based on their direction."""
+        if isinstance(other, Key):
+            return self.direction == other.direction and self.x == other.x and self.y == other.y
+
+        return False
+
+
+class SondeExtra:
+    def __init__(self):
+        self.results = {}
+
+    def add_result(self, key, result):
+        self.results[key] = result
 
 
 class WallScanner:
@@ -16,8 +44,10 @@ class WallScanner:
     def is_food(self, x, y):
         return self.world.is_food(int(x), int(y))
 
-    def is_3_wide_food(self, cx, cy, direction):
-        normal = direction.get_normal()
+    def is_3_wide_food(self, k, threshold=0, strategy=None):
+        cx = k.x
+        cy = k.y
+        normal = k.direction.get_normal()
         nx, ny = normal.direction
         x, y = cx, cy
         while self.is_food(x, y):
@@ -30,7 +60,9 @@ class WallScanner:
             x += nx
             y += ny
             steps += 1
-        if steps >= 3:
+        if strategy is not None:
+            strategy.add_result(k, steps)
+        if steps > 3:
             return True
 
         return False
@@ -38,16 +70,38 @@ class WallScanner:
     def is_within_bounds(self, x, y):
         return self.world.is_within_bounds(x, y)
 
-    def ping(self, x, y, d, mush):
+    def is_food_and_free(self, x, y, mush):
+        food = self.is_food(x, y)
+        if not food:
+            return False
+
+        mush_id = self.world.get_occupied_id(x, y)
+        if mush_id == 0:
+            return True
+
+        if mush_id == mush.id:
+            return True
+
+        return False
+
+    def ping(self, k, mush, threshold=3, strategy=None):
+        x = k.x
+        y = k.y
+        d = k.direction
         is_within_bounds = self.is_within_bounds(x, y)
         if not is_within_bounds:
             return False
-        is_food = self.is_cell_valid(x, y, d, mush)
+        is_food = self.is_cell_valid(k, mush)
 
-        is_wide_enough = self.is_3_wide_food(x, y, d)
+        is_wide_enough = self.is_3_wide_food(k, threshold, strategy)
         return is_food and is_wide_enough
 
-    def is_cell_valid(self, x, y, d=None, mush=None):
+    def is_cell_valid(self, k, mush=None, treshold=3, strategy=None):
+        return self.is_food_and_free(k.x, k.y, mush)
+
+    def is_cell_valid_(self, k, mush=None, treshold=3, strategy=None):
+        x = k.x
+        y = k.y
         food = self.is_food(x, y)
         value = self.world.get_occupied_id(x, y)
         has_wall = self.world.is_wall_occupied(x, y)
@@ -75,12 +129,15 @@ class WallScanner:
     def is_ok(self, x, y, d=None, mush=None):
         return self.is_food(x, y)
 
-    def walk_until_invalid(self, mush, x, y, d, ping):
+    def walk_until_invalid(self, mush, k, ping, strategy=None):
+        d = k.direction
+        x = k.x
+        y = k.y
         dx, dy = d.dx(), d.dy()
         steps_walked = 0
         last_valid_x = x
         last_valid_y = y
-        while ping(x, y, d, mush):
+        while ping(Key(d, x, y), mush, 3, strategy):
             last_valid_x = x
             last_valid_y = y
             steps_walked += 1
@@ -88,11 +145,14 @@ class WallScanner:
             y += dy
         return last_valid_x, last_valid_y, steps_walked
 
-    def measure_extent(self, mush, x, y, d):
+    def measure_extent(self, mush, k):
         """Measure extent along a given direction vector (dx, dy) properly.
        - First, crawl backward to find the start.
        - Then, count forward to find the total steps.
         """
+        d = k.direction
+        x = k.x
+        y = k.y
         dx, dy = d.dx(), d.dy()
         height, width = self.world.grid.shape
         min_x = None
@@ -100,30 +160,35 @@ class WallScanner:
         max_x = None
         max_y = None
         # Step 1: Crawl backward until hitting a boundary
-        if self.is_cell_valid(x, y, d, mush):
+        if self.is_cell_valid(k, mush):
             min_x = x
             min_y = y
         else:
             pass
         d_reverse = d.copy()
         d_reverse.scale(-1)
-        back_x, back_y, _ = self.walk_until_invalid(mush, x, y, d_reverse, self.ping)
+        k_reverse = Key(d_reverse, x, y)
+        back_x, back_y, _ = self.walk_until_invalid(mush, k_reverse, self.ping)
 
         # 3) Walk forward from that backward boundary
         #    to find the forward boundary
-        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, back_x, back_y, d, self.ping)
+        k_forward = Key(d, back_x, back_y)
+        extra = SondeExtra()
+        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, k_forward, self.ping, extra)
 
         if min_x is None:
             logging.info(f"{x} {y}  {width} {height}")
         # Step 2: Move one step forward to set the actual starting point
 
         data = SondeData(forward_steps, back_x, back_y, forward_x, forward_y)
+        data.extra = extra
         return data  # The total step count along this direction
 
     def scan_for_walls(self, mush, x, y, directions=Constants.DIRECTIONS_8.values()):
         results = ScanResult()
         for d in directions:
-            data = self.measure_extent(mush, x, y, d)
+            k = Key(d, x, y)
+            data = self.measure_extent(mush, k)
             s = Sonde(d, data)
 
             results.add_sonde(d, s)
@@ -132,84 +197,82 @@ class WallScanner:
         return results
 
     def detect_bleed_along_collision_box(self, mush, cb, bleed_threshold=4):
-        """
-        Given a CollisionBox (cb), analyze each step along its stem to detect 1-pixel-thick bleeding in either
-        normal direction. If the bleed persists without exceeding 1 pixel of thickness for at least `bleed_threshold`
-        points, adjust the box width and center accordingly. If any bleed exceeds 1 pixel in width at any point,
-        it's marked for potential wall division.
-
-        Args:
-            cb: CollisionBox instance
-            walk_until_invalid: function(x, y, direction) -> (last_x, last_y, steps)
-            bleed_threshold: Minimum number of consecutive bleed points to trigger boundary expansion
-
-        Returns:
-            new_cb: CollisionBox - updated with shifted center and expanded width if needed
-            division_points: List of (x, y) tuples where wall division is suggested
-        """
         direction, normal = cb.derive_direction_and_normal()
         dx, dy = direction.direction
         ndx, ndy = normal.direction
+
         cx, cy = cb.get_center()
-        half_len = cb.length / 2.0
+        corners = cb.calculate_corners()
+        # following the vector
+        # Each edge of the box
+        edges = {
+            "left": LineString([corners[2], corners[1]]),
+            "front": LineString([corners[3], corners[2]]),
+            "right": LineString([corners[3], corners[0]]),
+            "back": LineString([corners[1], corners[0]])
+        }
 
-        resolution = int(cb.length)
-        left_bleed = 0
-        right_bleed = 0
-        division_points = []
-        half_width = cb.width / 2.0
+        bleed_directions = {
+            "left": normal.opposite(),  # normal-
+            "right": normal,  # normal+
+            "front": direction,  # direction+
+            "back": direction.opposite()  # direction-
+        }
 
-        for i in range(-resolution // 2, resolution // 2 + 1):
-            x = int(cx + i * dx + .5)
-            y = int(cy + i * dy + .5)
+        detected_bleed_edges = []
 
-            normal_vector = Vector((ndx, ndy))
-            left_vector = normal_vector.opposite()
-            min_x, min_y, left_steps = self.walk_until_invalid(mush, x, y, left_vector, self.is_cell_valid)
+        for name, line in edges.items():
+            bleed_vec = bleed_directions[name].normalize()
+            length = line.length
+            samples = int(length) + 1
 
-            max_x, max_y, right_steps = self.walk_until_invalid(mush, min_x, min_y, normal_vector, self.is_cell_valid)
+            for i in range(samples):
+                pt = line.interpolate(i / samples, normalized=True)
+                bleed_x = pt.x + bleed_vec.dx()
+                bleed_y = pt.y + bleed_vec.dy()
+                k = Key(bleed_vec, int(round(bleed_x)), int(round(bleed_y)))
+                if self.is_cell_valid(k, mush):
+                    bleed_x = bleed_x + bleed_vec.dx()
+                    bleed_y = bleed_y + bleed_vec.dy()
+                    k_plus_one = Key(bleed_vec, int(round(bleed_x)), int(round(bleed_y)))
+                    if not self.is_cell_valid(k_plus_one, mush):
+                        detected_bleed_edges.append(name)
+                        break  # One is enough to expand that side
 
-            candidate_width = right_steps
-            left_point = Point(min_x, min_y)
-            right_point = Point(max_x, max_y)
+        # Now decide how to grow the box
+        shift_x = shift_y = 0
+        grow_length = 0
+        grow_width = 0
 
-            left_dist = cb.distance_from_center_line(left_point)
-            right_dist = cb.distance_from_center_line(right_point)
-
-            if left_dist > half_width or right_dist > half_width:
-                left_diff = int(abs(left_dist - half_width))
-                right_diff = int(abs(right_dist - half_width))
-                # Check if the bleed goes beyond the current half-width
-                if left_diff > 1 or right_diff > 1:
-                    division_points.append((x, y))
-                else:
-                    if math.isclose(left_diff, 1.0, abs_tol=0.5):
-                        left_bleed += 1
-                    if math.isclose(right_diff, 1.0, abs_tol=0.5):
-                        right_bleed += 1
-
-        # Adjust width and center if persistent 1-pixel bleed exists
-        shift_x = 0
-        shift_y = 0
-        width_adjustment = 0
-
-        if left_bleed >= bleed_threshold:
+        if "left" in detected_bleed_edges:
             shift_x -= ndx * 0.5
             shift_y -= ndy * 0.5
-            width_adjustment += 1
-        if right_bleed >= bleed_threshold:
+            grow_width += 1
+        if "right" in detected_bleed_edges:
             shift_x += ndx * 0.5
             shift_y += ndy * 0.5
-            width_adjustment += 1
+            grow_width += 1
+        if "front" in detected_bleed_edges:
+            shift_x += dx * 0.5
+            shift_y += dy * 0.5
+            grow_length += 1
+        if "back" in detected_bleed_edges:
+            shift_x -= dx * 0.5
+            shift_y -= dy * 0.5
+            grow_length += 1
 
-        if width_adjustment > 0:
-            new_center_x = cb.center_x + shift_x
-            new_center_y = cb.center_y + shift_y
-            new_width = cb.width + width_adjustment
+        if grow_length or grow_width:
             from copy import deepcopy
             new_cb = deepcopy(cb)
-            new_cb.set_position(new_center_x, new_center_y)
-            new_cb.set_width(new_width)
-            return new_cb, division_points
+            new_cb.set_position(cb.center_x + shift_x, cb.center_y + shift_y)
+            new_cb.set_length(cb.length + grow_length)
+            new_cb.set_width(cb.width + grow_width)
 
+            # Ensure stem is longer than width
+            if new_cb.width > new_cb.length:
+                new_cb.swap_direction()
+
+            return new_cb , None
+
+        division_points = None
         return cb, division_points

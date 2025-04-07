@@ -9,6 +9,7 @@ from floor_plan_reader.cell import Cell
 from floor_plan_reader.display.arrow import Arrow
 from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
 from floor_plan_reader.display.cell_renderer import CellRenderer
+from floor_plan_reader.display.mushroom_draw import MushroomDraw
 from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
@@ -47,8 +48,14 @@ class Mushroom(Agent):
         self.co_axial_walls = set()
         self.state_machine = MushAgentStateMachine(self)
         self.cell_render = CellRenderer()
-        self.bb_drawer = BoundingBoxDrawer()
+        self.drawer = MushroomDraw(self)
         self.blob = blob
+
+    def run(self):
+        self.process_state()
+
+    def draw(self, screen, vp):
+        self.drawer.draw(screen, vp)
 
     def xor_bool(self, a, b):
         return bool(a) != bool(b)
@@ -68,9 +75,6 @@ class Mushroom(Agent):
 
     def get_center(self):
         return self.collision_box.get_center()
-
-    def run(self):
-        self.process_state()
 
     def re_compute(self):
         self.free()
@@ -201,9 +205,8 @@ class Mushroom(Agent):
     def absorb_bleading_out(self):
         new_cb, division_points = self._wall_scanner.detect_bleed_along_collision_box(self, self.collision_box)
         self.division_points = division_points
-        self.collision_box.set_width(new_cb.width)
-        center = new_cb.get_center()
-        self.collision_box.set_position(center[0], center[1])
+        self.collision_box = new_cb
+
 
     def crawl(self, points):
         steps = 0
@@ -330,11 +333,12 @@ class Mushroom(Agent):
         for r in self.root_cells:
             self.blob.free(r)
             self.world.free(r.x, r.y)
-
+    def is_division(self):
+        return self.get_width() == self.collision_box.length
     def is_valid(self):
         valid_l = self.collision_box.length > 2
         valid_w = self.collision_box.width > 2
-        valid_shape = self.collision_box.length > self.collision_box.width
+        valid_shape = self.collision_box.length >= self.collision_box.width
         valid_width = self.collision_box.width < 10
 
         x, y = self.get_center()
@@ -392,7 +396,7 @@ class Mushroom(Agent):
         if result.is_valid():
             stem_length = result.get_lenght()
             width = result.get_width()
-            if (width == 2):
+            if width == 2:
                 pass
             cx, cy = result.center
             dx, dy = result.get_dir().direction
@@ -558,6 +562,7 @@ class Mushroom(Agent):
     def ray_trace_from_center(self, direction=None):
         center_x, center_y = self.get_center()
         if self.is_occupied_by_other_mush(center_x,center_y):
+            self.kill()
             logging.debug("occupied ?!")
         values = self.ray_trace(center_x, center_y, direction)
         return values
@@ -597,92 +602,18 @@ class Mushroom(Agent):
             return
         self.set_position((min_x + max_x) / 2.0, (min_y + max_y) / 2.0)
 
-    def draw_margin(self, surface, vp, color=(0, 255, 0), width=2):
-        box = self.collision_box
-        cx, cy = box.get_center()
-        cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction
-        length = 1.5 * self.left_margin * vp.zoom_factor
-        color = (200, 0, 0)
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-        nx, ny = -nx, -ny
-        length = 1.5 * self.right_margin * vp.zoom_factor
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-
-    def draw_normal_arrow(self, surface, vp, color=(0, 255, 0), width=2):
-        box = self.collision_box
-        # 1) Get the center and normal from the box
-        cx, cy = box.get_center()
-        cx, cy = vp.convert(cx, cy)
-        nx, ny = box.get_normal().direction  # might not be unit-length
-        # If the user wants to draw on 'left', invert the normal
-        if self.left_inside == False:
-            nx, ny = -nx, -ny
-
-        length = 15
-        self.draw_arrow(cx, cy, nx, ny, vp, surface, color, length, width)
-
-    def draw_arrow(self, cx, cy, nx, ny, vp, surface, color, length, width=2):
-        arrow = Arrow(cx, cy, nx, ny, length, width, color)
-
-        arrow.draw(surface, vp)
-
-    def draw_cells(self, cells, screen, vp):
-        for cell in cells:
-            sx, sy = vp.convert(cell.x, cell.y)
-            pygame.draw.rect(screen, (100, 200, 160), pygame.Rect(sx, sy, 1, 1))
-
-    def draw(self, screen, vp):
-
-        if self.get_state() != "done":
-            self.draw_cells(self.root_cells, screen, vp)
-            self.draw_cells(self.core_cells, screen, vp)
-
-        if self.alive:
-            if self.is_outer_wall():
-                colour = (200, 200, 20)
-            else:
-                colour = (255, 255, 0)
-        else:
-            colour = (255, 0, 0)
-        if self.collision_box is not None:
-            self.bb_drawer.draw(self.collision_box, screen, vp, colour)
-
-        x, y = self.get_center()
-        x, y = vp.convert(x, y)
-        pygame.draw.circle(screen, colour, (x, y), 1)
-        if self.is_outer_wall():
-            self.draw_normal_arrow(screen, vp)
-        if self.left_margin is not None and self.right_margin is not None:
-            self.draw_margin(screen, vp, (0, 0, 0))
-        for p in self.outward_points:
-            x = p[0]
-            y = p[1]
-            x, y = vp.convert(x, y)
-            colour = (0, 255, 0)
-            pygame.draw.circle(screen, colour, (x, y), 1)
-
-        if self.selected:
-            for c in self.crawl_points:
-                x = c[0]
-                y = c[1]
-                x, y = vp.convert(x, y)
-                colour = (0, 255, 0)
-                pygame.draw.circle(screen, colour, (x, y), 1)
-
     def center_on_food(self):
         x, y = self.get_center()
         return self.world.is_food(x, y)
 
-    def can_merge_with(self, other):
+    def get_distance_from(self, other):
+        return self.collision_box.get_distance_from(other.collision_box)
+
+    def can_merge_with(self, other, tolerance=0.1):
         if not isinstance(other, Mushroom) or self is other:
             return False
-        if self.collidepoint(other.center_x, other.center_y):
-            tolerance = 0.1
-            same_x = abs(self.center_x - other.center_x) < tolerance
-            same_y = abs(self.center_y - other.center_y) < tolerance
-            return same_x or same_y
-        return False
+        distance = self.get_distance_from(other)
+        return distance < tolerance
 
     def merge_with(self, other):
         logging.debug(f"Merging Mushroom {self.id} with {other.id}")
