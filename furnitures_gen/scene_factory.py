@@ -1,4 +1,6 @@
 import math
+import os
+
 import bpy
 
 from ResourceFinder import ResourceFinder
@@ -87,6 +89,12 @@ class SceneFactory:
 
         # Apply scale
         # bpy.ops.object.transform_apply(scale=True, location=False)
+
+    @staticmethod
+    def build_and_save_furniture():
+        FurnitureFactory.create_furniture_prototypes()
+        output_path = os.path.abspath(f"blend_output\\furniture.blend")
+        bpy.ops.wm.save_as_mainfile(filepath=output_path)
 
     @staticmethod
     def build_scene():

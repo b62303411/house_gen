@@ -77,8 +77,9 @@ class NodeRender:
     @staticmethod
     def build_from_data():
         # Example usage:
-        #filepath = "experiment_floorplan.json"
         filepath = "corrected_floorplan.json"
+        #filepath = "experiment_floorplan.json"
+        #filepath = "corrected_floorplan.json"
         floorplan_data = NodeRender.load_floorplan_json(filepath)
         NodeRender.build_house_from_data(floorplan_data)
 
