@@ -3,7 +3,9 @@ import math
 
 class Vector:
 
-    def __init__(self, direction):
+    def __init__(self, direction: tuple[float, float]):
+        if (not isinstance(direction, (tuple, list))) or len(direction) != 2:
+            raise TypeError("direction must be a (dx, dy) 2D tuple or list")
         self.direction = direction
         self.length = 1
 
@@ -27,6 +29,33 @@ class Vector:
     def __repr__(self):
         """String representation of the vector."""
         return f"Vector(direction={self.direction}, length={self.length})"
+
+    def __add__(self, other):
+        """
+        Called when using the + operator, e.g. v1 + v2.
+        Must return a new instance (or relevant result).
+        """
+        return Vector((self.dx() + other.dx(), self.dy() + other.dy()))
+
+    def __sub__(self, other):
+        """
+        Called when using the - operator, e.g. v1 - v2.
+        Must return a new instance (or relevant result).
+        """
+        return Vector((self.dx()- other.dx(), self.dy() - other.dy()))
+
+    def __mul__(self, scalar):
+        """
+        Called by `self * other`.
+        We'll define this for scalar multiplication only:
+          Vector2D(x, y) * number => Vector2D(x * number, y * number)
+        If you wanted a dot product for Vector*Vector, you'd do that here.
+        """
+        if isinstance(scalar, (int, float)):
+            x = self.dx()*scalar
+            y = self.dy() * scalar
+            return Vector((x, y))
+        raise TypeError("Can only multiply Vector2D by a scalar (int or float)")
 
     def calculate_length(self):
         """Calculate the length (magnitude) of the vector."""
@@ -53,10 +82,18 @@ class Vector:
         self.length = 1
         return self
 
-    def scale(self, scalar):
-        """Scale the vector by a scalar."""
-        self.direction = (self.direction[0] * scalar, self.direction[1] * scalar)
-        self.length = 1
+    def scale(self, new_length):
+        """Return a new vector with the same direction scaled to the given length."""
+        dx, dy = self.direction
+        current_magnitude = math.sqrt(dx**2 + dy**2)
+
+        if current_magnitude == 0:
+            raise ValueError("Cannot scale a zero-length vector.")
+
+        scale_factor = new_length / current_magnitude
+        scaled_direction = (dx * scale_factor, dy * scale_factor)
+
+        return Vector(scaled_direction)
 
     def dot_product(self, other):
         """Calculate the dot product with another vector."""
@@ -160,7 +197,9 @@ class Vector:
 
     def __sub__(self, other):
         """Subtract another vector from this vector."""
-        return Vector((self.direction[0] - other.direction[0], self.direction[1] - other.direction[1]))
+        x = self.direction[0] - other.direction[0]
+        y = self.direction[1] - other.direction[1]
+        return Vector((x, y))
 
     def __mul__(self, scalar):
         """Multiply the vector by a scalar."""

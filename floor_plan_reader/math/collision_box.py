@@ -336,6 +336,45 @@ class CollisionBox:
 
         cb = CollisionBox(cx, cy, width, length, snapped_angle_deg)
         return cb
+    @staticmethod
+    def make_wall_rectangle_from_direction(center, direction, length, width):
+        """
+        Creates a rectangle (wall candidate) from a center point and a given direction.
+
+        Args:
+            center: (x, y) center of the rectangle
+            direction: normalized (dx, dy) vector along the wall stem
+            length: total stem length (along direction)
+            width: total wall width (perpendicular to direction)
+
+        Returns:
+            A shapely Polygon with 4 corners
+        """
+        from shapely.geometry import Polygon
+        from math import hypot
+        cx = center.x
+        cy = center.y
+        dx, dy = direction
+        norm = hypot(dx, dy)
+        if norm == 0:
+            return None
+
+        ux, uy = dx / norm, dy / norm  # stem direction (unit vector)
+        nx, ny = -uy, ux  # normal direction (perpendicular)
+
+        hl = length / 2
+        hw = width / 2
+
+        # Generate points
+        p1 = (cx - ux * hl, cy - uy * hl)
+        p2 = (cx + ux * hl, cy + uy * hl)
+
+        p1_left = (p1[0] + nx * hw, p1[1] + ny * hw)
+        p1_right = (p1[0] - nx * hw, p1[1] - ny * hw)
+        p2_left = (p2[0] + nx * hw, p2[1] + ny * hw)
+        p2_right = (p2[0] - nx * hw, p2[1] - ny * hw)
+
+        return Polygon([p1_left, p2_left, p2_right, p1_right])
 
     def get_normal(self):
         dir_ = self.get_direction()
@@ -415,11 +454,11 @@ class CollisionBox:
         direction, normal = self.derive_direction_and_normal()
 
         back = direction.opposite()
-        back.scale(half_length)
+        back = back.scale(half_length)
         front = direction.copy()
-        front.scale(half_length)
+        front = front.scale(half_length)
         left = normal.copy()
-        left.scale(half_width)
+        left = left.scale(half_width)
         position = Vector((self.center_x, self.center_y))
         to_left = position + left + back
         top_right = position - left + back

@@ -6,22 +6,19 @@ import pygame
 from floor_plan_reader.agents.agent import Agent
 from floor_plan_reader.agents.mush_agent_state_machine import MushAgentStateMachine
 from floor_plan_reader.cell import Cell
-from floor_plan_reader.display.arrow import Arrow
-from floor_plan_reader.display.bounding_box_drawer import BoundingBoxDrawer
+
 from floor_plan_reader.display.cell_renderer import CellRenderer
 from floor_plan_reader.display.mushroom_draw import MushroomDraw
 from floor_plan_reader.math.Constants import Constants
 from floor_plan_reader.math.bounding_box import BoundingBox
 from floor_plan_reader.math.collision_box import CollisionBox
 from floor_plan_reader.math.min_max import MinMax
-from floor_plan_reader.math.vector import Vector
-
-from floor_plan_reader.wall_scanner import WallScanner
+from vector_based.agents.wall_scanner import WallScanner
 
 
-class Mushroom(Agent):
-    def __init__(self, world, blob, start_x, start_y, mush_id):
-        super().__init__(mush_id)
+class Segment(Agent):
+    def __init__(self, world, blob, start_x, start_y, id):
+        super().__init__(id)
         self.division_points = None
         self.perimeter = None
         self._wall_scanner = WallScanner(world)
@@ -50,7 +47,7 @@ class Mushroom(Agent):
         self.cell_render = CellRenderer()
         self.drawer = MushroomDraw(self)
         self.blob = blob
-        self.polygon = None
+
 
     def run(self):
         self.process_state()
@@ -99,13 +96,14 @@ class Mushroom(Agent):
 
     def hey_neighbour(self):
         if self.is_outer_wall():
+            return
             # lets take over smaller wall
-            points_forward, points_backward = self.get_extended_ray_trace_points()
-            if self.bulldose(points_backward):
-                self.grow()
+            #points_forward, points_backward = self.get_extended_ray_trace_points()
+            #if self.bulldose(points_backward):
+            #    self.grow()
 
-            if self.bulldose(points_forward):
-                self.grow()
+            #if self.bulldose(points_forward):
+            #    self.grow()
 
     def bulldose(self, points):
         for p in points:
@@ -251,7 +249,9 @@ class Mushroom(Agent):
                     measuring_opening = True
 
     def crawl_phase(self):
+        return
         h, w = self.world.get_shape()
+
         points_forward, points_backward = self.collision_box.get_extended_ray_trace_points(w, h)
         self.crawl_points = set()
         self.crawl_points.update(points_forward)
@@ -569,7 +569,7 @@ class Mushroom(Agent):
 
     def ray_trace_from_center(self, direction=None):
         center_x, center_y = self.get_center()
-        if self.is_occupied_by_other_mush(center_x,center_y):
+        if self.is_occupied_by_other(center_x,center_y):
             self.kill()
             logging.debug("occupied ?!")
         values = self.ray_trace(center_x, center_y, direction)
@@ -618,7 +618,7 @@ class Mushroom(Agent):
         return self.collision_box.get_distance_from(other.collision_box)
 
     def can_merge_with(self, other, tolerance=0.1):
-        if not isinstance(other, Mushroom) or self is other:
+        if not isinstance(other, Segment) or self is other:
             return False
         distance = self.get_distance_from(other)
         return distance < tolerance
@@ -668,8 +668,8 @@ class Mushroom(Agent):
     def create_blob(self, x, y):
         self.world.create_blob(x, y)
 
-    def is_occupied_by_other_mush(self, x, y):
-        if self.world.is_occupied(x,y):
-            return self.world.get_occupied_id(x,y) != self.id
+    def is_occupied_by_other(self, x, y):
+        if self.blob.is_occupied(x,y):
+            return self.blob.get_occupied_id(x,y) != self.id
         else:
             return False

@@ -25,6 +25,7 @@ class Blob(Agent):
         self._dead_walls = set()
         self._intersections = set()
         self.bounding_box = None
+        self.polygon = None
 
     def __lt__(self, other):
         # Compare based on the 'value' attribute
@@ -116,7 +117,10 @@ class Blob(Agent):
 
     def run(self):
         if self.status == "born":
-            self.status = "grow"
+            if self.polygon is not None:
+                self.status = "mush"
+            else:
+                self.status = "grow"
             return
         elif self.status == "grow":
             size = self.blob_size()

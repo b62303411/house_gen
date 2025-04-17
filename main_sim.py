@@ -22,7 +22,7 @@ def run_sim():
     s.run_ant_simulation(
         image_path="floor_plans/fp2.png",
         image_path_filtered="dark_tones_only.png",
-        threshold=200,
+        threshold=180,
         num_ants=200,
         allow_revisit=True
     )

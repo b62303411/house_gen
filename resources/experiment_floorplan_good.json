@@ -1,0 +1,584 @@
+{
+  "nodes": [
+    {
+      "id": "N1",
+      "x": 435.0,
+      "y": 191.5857864376269
+    },
+    {
+      "id": "N2",
+      "x": 327.99999999999994,
+      "y": 298.0
+    },
+    {
+      "id": "N3",
+      "x": 434.5,
+      "y": 192.0857864376269
+    },
+    {
+      "id": "N4",
+      "x": 706.0,
+      "y": 336.5
+    },
+    {
+      "id": "N5",
+      "x": 434.5,
+      "y": 191.49999999999994
+    },
+    {
+      "id": "N6",
+      "x": 602.5,
+      "y": 466.5
+    },
+    {
+      "id": "N7",
+      "x": 602.5,
+      "y": 184.0
+    },
+    {
+      "id": "N8",
+      "x": 602.5,
+      "y": 236.0
+    },
+    {
+      "id": "N9",
+      "x": 474.0,
+      "y": 184.0
+    },
+    {
+      "id": "N10",
+      "x": 474.0,
+      "y": 236.0
+    },
+    {
+      "id": "N11",
+      "x": 474.0,
+      "y": 337.0
+    },
+    {
+      "id": "N12",
+      "x": 706.0,
+      "y": 466.5
+    },
+    {
+      "id": "N13",
+      "x": 434.5,
+      "y": 6.500000000000011
+    },
+    {
+      "id": "N14",
+      "x": 90.5,
+      "y": 354.5
+    },
+    {
+      "id": "N15",
+      "x": 540.5,
+      "y": 184.0
+    },
+    {
+      "id": "N16",
+      "x": 90.50000000000001,
+      "y": 466.0
+    },
+    {
+      "id": "N17",
+      "x": 602.0,
+      "y": 337.0
+    },
+    {
+      "id": "N18",
+      "x": 90.49999999999999,
+      "y": 298.0
+    },
+    {
+      "id": "N19",
+      "x": 474.0,
+      "y": 274.0
+    },
+    {
+      "id": "N20",
+      "x": 484.0,
+      "y": 274.0
+    },
+    {
+      "id": "N21",
+      "x": 189.5,
+      "y": 298.0
+    },
+    {
+      "id": "N22",
+      "x": 602.5,
+      "y": 599.0
+    },
+    {
+      "id": "N23",
+      "x": 523.0,
+      "y": 6.499999999999999
+    },
+    {
+      "id": "N24",
+      "x": 602.5,
+      "y": 6.49999999999999
+    },
+    {
+      "id": "N25",
+      "x": 329.0,
+      "y": 337.5
+    },
+    {
+      "id": "N26",
+      "x": 228.0,
+      "y": 337.5
+    },
+    {
+      "id": "N27",
+      "x": 602.5,
+      "y": 81.99999999999999
+    },
+    {
+      "id": "N28",
+      "x": 329.0,
+      "y": 466.0
+    },
+    {
+      "id": "N29",
+      "x": 228.0,
+      "y": 466.0
+    },
+    {
+      "id": "N30",
+      "x": 296.0,
+      "y": 466.0
+    },
+    {
+      "id": "N31",
+      "x": 434.5,
+      "y": 466.0
+    },
+    {
+      "id": "N32",
+      "x": 329.0,
+      "y": 385.0
+    },
+    {
+      "id": "N33",
+      "x": 329.0,
+      "y": 468.1715728752538
+    },
+    {
+      "id": "N34",
+      "x": 523.0,
+      "y": 82.0
+    },
+    {
+      "id": "N35",
+      "x": 307.0,
+      "y": 466.0
+    },
+    {
+      "id": "N36",
+      "x": 326.8284271247462,
+      "y": 466.0
+    },
+    {
+      "id": "N37",
+      "x": 267.0,
+      "y": 337.5
+    },
+    {
+      "id": "N38",
+      "x": 267.0,
+      "y": 385.0
+    },
+    {
+      "id": "N39",
+      "x": 474.0,
+      "y": 109.5
+    },
+    {
+      "id": "N40",
+      "x": 189.5,
+      "y": 354.5
+    }
+  ],
+  "edges": [
+    {
+      "id": "Ext_N1_N2",
+      "start_node": "N1",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 1.999999999999976,
+          "bottom_z": 1,
+          "width": 63.74368670764565,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N3_N13",
+      "start_node": "N3",
+      "end_node": "N13",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 58.0,
+          "bottom_z": 1,
+          "width": 23.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -29.5,
+          "bottom_z": 1,
+          "width": 36.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N17_N24",
+      "start_node": "N17",
+      "end_node": "N24",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 33.0,
+          "bottom_z": 1,
+          "width": 36.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -44.0,
+          "bottom_z": 1,
+          "width": 36.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N7_N9",
+      "start_node": "N7",
+      "end_node": "N9",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N11_N39",
+      "start_node": "N11",
+      "end_node": "N39",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N8_N10",
+      "start_node": "N8",
+      "end_node": "N10",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N11_N4",
+      "start_node": "N11",
+      "end_node": "N4",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -61.0,
+          "bottom_z": 1,
+          "width": 36.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N4_N12",
+      "start_node": "N4",
+      "end_node": "N12",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 0.5,
+          "bottom_z": 1,
+          "width": 53.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N6_N12",
+      "start_node": "N6",
+      "end_node": "N12",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 1.5,
+          "bottom_z": 1,
+          "width": 36.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N16_N18",
+      "start_node": "N16",
+      "end_node": "N18",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -28.5,
+          "bottom_z": 1,
+          "width": 59.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N18_N2",
+      "start_node": "N18",
+      "end_node": "N2",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -6.5,
+          "bottom_z": 1,
+          "width": 37.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N7_N9",
+      "start_node": "N7",
+      "end_node": "N9",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N7_N9",
+      "start_node": "N7",
+      "end_node": "N9",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N19_N20",
+      "start_node": "N19",
+      "end_node": "N20",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N6_N22",
+      "start_node": "N6",
+      "end_node": "N22",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 15.5,
+          "bottom_z": 1,
+          "width": 58.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N13_N24",
+      "start_node": "N13",
+      "end_node": "N24",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N26_N25",
+      "start_node": "N26",
+      "end_node": "N25",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -6.5,
+          "bottom_z": 1,
+          "width": 28.0,
+          "height": 1.3
+        },
+        {
+          "type": "window",
+          "center_x": -37.0,
+          "bottom_z": 1,
+          "width": 3.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N19_N20",
+      "start_node": "N19",
+      "end_node": "N20",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N33_N25",
+      "start_node": "N33",
+      "end_node": "N25",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N31_N16",
+      "start_node": "N31",
+      "end_node": "N16",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N29_N26",
+      "start_node": "N29",
+      "end_node": "N26",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N27_N34",
+      "start_node": "N27",
+      "end_node": "N34",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N23_N34",
+      "start_node": "N23",
+      "end_node": "N34",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 1.0,
+          "bottom_z": 1,
+          "width": 27.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N36_N33",
+      "start_node": "N36",
+      "end_node": "N33",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N38_N32",
+      "start_node": "N38",
+      "end_node": "N32",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N38_N37",
+      "start_node": "N38",
+      "end_node": "N37",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": []
+    },
+    {
+      "id": "Ext_N40_N14",
+      "start_node": "N40",
+      "end_node": "N14",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": 46.0,
+          "bottom_z": 1,
+          "width": 75.0,
+          "height": 1.3
+        }
+      ]
+    },
+    {
+      "id": "Ext_N40_N21",
+      "start_node": "N40",
+      "end_node": "N21",
+      "wall_type": "exterior",
+      "stud_type": "2x6",
+      "height": 2.7432,
+      "openings": [
+        {
+          "type": "window",
+          "center_x": -4.0,
+          "bottom_z": 1,
+          "width": 27.0,
+          "height": 1.3
+        }
+      ]
+    }
+  ],
+  "furnitures": []
+}

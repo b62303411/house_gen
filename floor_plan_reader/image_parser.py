@@ -18,15 +18,20 @@ class ImageParser:
         return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
 
     def filter_img(self, img, threshold):
-        return (img >= threshold).astype(np.uint8)
+        adaptive =  cv2.adaptiveThreshold(
+            img, 180, cv2.ADAPTIVE_THRESH_MEAN_C,
+            cv2.THRESH_BINARY, 11, 2
+        )
+        return (adaptive >= threshold).astype(np.uint8)
 
     def init(self, img_path, threshold):
         self.img_colour = cv2.imread(img_path)
         self.img_gray = self.read_img(img_path)
         if self.img_gray is None:
             raise FileNotFoundError(f"Cannot load image: {img_path}")
-        self.img_gray = cv2.bitwise_not(self.img_gray)
-        self._img_gray_filtered = self.filter_img(self.img_gray,threshold)
+        self._img_gray_filtered = self.filter_img(self.img_gray, threshold)
+        self.img_gray = cv2.bitwise_not(self._img_gray_filtered)
+
 
     def get_black_and_white(self):
         return self._img_gray_filtered

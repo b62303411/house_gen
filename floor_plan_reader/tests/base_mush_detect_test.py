@@ -65,3 +65,43 @@ class TestMushroomGrowth(unittest.TestCase):
         self.assertAlmostEqual(76, polygon.bounds[1])
         self.assertAlmostEqual(46, polygon.bounds[2])
         self.assertAlmostEqual(128, polygon.bounds[3])
+    def test_specific_2(self):
+        self.simulation = Simulation()
+        file = "779_252x252_588_182.png"
+        image_path = f"resources\\{file}"
+        img_parser = ImageParser()
+        img = img_parser.read_img(image_path)
+        img_parser.set_two_color_img(img, 200)
+
+        self.simulation.init_world(img_parser)
+
+        self.blob = self.simulation.world.create_blob(25, 128)
+        m = self.create_wall(25, 128)
+        m.performe_ray_trace()
+        self.assertAlmostEqual(36, m.collision_box.get_area())
+        m.absorb_bleading_out()
+        self.assertAlmostEqual(49, m.collision_box.get_area())
+        m.collision_box._cached_pixels = None
+        m.fill_box()
+        self.assertTrue(self.get_world().is_occupied(90, 123))
+        self.assertTrue(self.get_world().is_occupied(95, 123))
+        self.assertTrue(self.get_world().is_occupied(96, 127))
+        self.assertTrue(self.get_world().is_occupied(96, 128))
+        polygon = m.collision_box.get_polygon()
+
+        m = self.create_wall(44, 102)
+        m.performe_ray_trace()
+
+        self.assertAlmostEqual(306, m.collision_box.get_area())
+        self.assertEqual(270, m.collision_box.rotation)
+        m.absorb_bleading_out()
+        self.assertEqual(371, m.collision_box.get_area())
+        m.fill_box()
+        self.assertTrue(self.get_world().is_occupied(46, 77))
+        self.assertEqual(270, m.collision_box.rotation)
+        polygon = m.collision_box.get_polygon()
+
+        self.assertAlmostEqual(40,polygon.bounds[0])
+        self.assertAlmostEqual(76, polygon.bounds[1])
+        self.assertAlmostEqual(46, polygon.bounds[2])
+        self.assertAlmostEqual(128, polygon.bounds[3])

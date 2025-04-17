@@ -2,13 +2,13 @@ import logging
 import math
 from copy import deepcopy
 
-from shapely import LineString
+from shapely import LineString, Point
 
 from floor_plan_reader.math.Constants import Constants
-from floor_plan_reader.scan_result import ScanResult
-from floor_plan_reader.sonde import Sonde
-from floor_plan_reader.sonde_data import SondeData
 
+
+from vector_based.agents.DataPoint import DataPoint
+from vector_based.agents.scan_result import ScanResult
 
 
 class Key:
@@ -146,6 +146,7 @@ class WallScanner:
         return last_valid_x, last_valid_y, steps_walked
 
     def measure_extent(self, mush, k):
+        max_distance = 300
         """Measure extent along a given direction vector (dx, dy) properly.
        - First, crawl backward to find the start.
        - Then, count forward to find the total steps.
@@ -153,45 +154,52 @@ class WallScanner:
         d = k.direction
         x = k.x
         y = k.y
-        dx, dy = d.dx(), d.dy()
-        height, width = self.world.grid.shape
-        min_x = None
-        min_y = None
-        max_x = None
-        max_y = None
-        # Step 1: Crawl backward until hitting a boundary
-        if self.is_cell_valid(k, mush):
-            min_x = x
-            min_y = y
-        else:
-            pass
+
         d_reverse = d.copy()
-        d_reverse.scale(-1)
-        k_reverse = Key(d_reverse, x, y)
-        back_x, back_y, _ = self.walk_until_invalid(mush, k_reverse, self.ping)
+        d_r = d_reverse.opposite()
 
-        # 3) Walk forward from that backward boundary
-        #    to find the forward boundary
-        k_forward = Key(d, back_x, back_y)
-        extra = SondeExtra()
-        forward_x, forward_y, forward_steps = self.walk_until_invalid(mush, k_forward, self.ping, extra)
+        end = Point(x + d.dx() * max_distance, y + d.dy() * max_distance)
+        origin = Point(x + d_r.dx() * max_distance, y + d_r.dy() * max_distance)
 
-        if min_x is None:
-            logging.info(f"{x} {y}  {width} {height}")
-        # Step 2: Move one step forward to set the actual starting point
+        ray = LineString([origin, end])
+        intersection = ray.intersection(mush.blob.poly.exterior)
+        #intersection.coords
+        steps = 0
+        if intersection.geom_type == 'Point':
+            return intersection
 
-        data = SondeData(forward_steps, back_x, back_y, forward_x, forward_y)
-        data.extra = extra
-        return data  # The total step count along this direction
+        elif intersection.geom_type in ['MultiPoint', 'LineString', 'MultiLineString']:
+            # For MultiPoint: return closest one
+            points = []
+            if intersection.geom_type == 'MultiPoint':
+                points = list(intersection.geoms)
+                steps = points[0].distance(points[1])
+            elif intersection.geom_type == 'LineString':
+                points = [Point(c) for c in intersection.coords]
+                steps = points[0].distance(points[1])
+            elif intersection.geom_type == 'MultiLineString':
+                for line in intersection.geoms:
+                    points.extend([Point(c) for c in line.coords])
+
+            points.sort(key=lambda p: origin.distance(p))
+
+            min_x = min(pt.x for pt in points)
+            max_x = max(pt.x for pt in points)
+            min_y = min(pt.y for pt in points)
+            max_y = max(pt.y for pt in points)
+
+
+            data = DataPoint(steps, min_x, max_x, min_y, max_y,k)
+
+
+            return data  # The total step count along this direction
 
     def scan_for_walls(self, mush, x, y, directions=Constants.DIRECTIONS_8.values()):
         results = ScanResult()
         for d in directions:
             k = Key(d, x, y)
             data = self.measure_extent(mush, k)
-            s = Sonde(d, data)
-
-            results.add_sonde(d, s)
+            results.add_sonde(d,data)
         results.calculate_result()
 
         return results
