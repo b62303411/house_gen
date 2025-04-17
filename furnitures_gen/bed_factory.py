@@ -49,6 +49,30 @@ def add_bevel_modifier(obj, width=0.05, segments=2, angle=45.0):
 
 
 class BedFactory:
+    BED_SIZES = {
+        "twin": (0.99, 1.91),
+        "twin_xl": (0.99, 2.03),
+        "full": (1.37, 1.91),
+        "double": (1.37, 1.91),
+        "queen": (1.52, 2.03),
+        "king": (1.93, 2.03),
+        "california_king": (1.83, 2.13),
+        "euro_single": (0.90, 2.00),
+        "euro_double": (1.40, 2.00),
+        "euro_king": (1.60, 2.00),
+    }
+
+    @staticmethod
+    def create_bed_of_all_types():
+        for type in BedFactory.BED_SIZES:
+            BedFactory.create_bed_of_type(type)
+
+        
+    @staticmethod
+    def create_bed_of_type(type):
+        size = BedFactory.BED_SIZES[type]
+        BedFactory.create_bed(name=type, length=size[1], width=size[2], height=0.5,
+                   materials=None, mattress_bevel=0.06, location=(0, 0, 0))
     @staticmethod
     def create_fold(obj):
         # Get a BMesh representation of the mesh

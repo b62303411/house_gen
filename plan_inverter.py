@@ -5,7 +5,7 @@ import os
 PLAN_WIDTH = 1000
 PLAN_HEIGHT = 1000
 
-INPUT_PATH = "resources/experiment_floorplan.json"
+INPUT_PATH = "resources/experiment_floorplan_diag.json"
 OUTPUT_PATH = "resources/corrected_floorplan.json"
 
 
@@ -30,7 +30,7 @@ def fix_coordinates(data):
             width = opening.get("width")
             new_width = width * pixel_to_meter
             opening["width"] = new_width
-            center_x = -opening.get("center_x")
+            center_x = opening.get("center_x")
             opening["center_x"] = center_x * pixel_to_meter
 
     return data
